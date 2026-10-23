@@ -1,0 +1,65 @@
+.layout-web {
+  display: flex;
+  justify-content: center;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.pages-container {
+  flex: 6;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: 100vh;
+  gap: 1rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  /* flex-wrap: wrap; */
+}
+
+/* Khi chỉ có 1 page thì căn giữa */
+.pages-container.one {
+  justify-content: center;
+}
+.pages-container.one .page-render {
+  margin: auto;
+}
+/* Khi có 2 page thì chia đều */
+.pages-container.two {
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Page hiển thị */
+.page-render {
+  flex: 1;
+  max-width: 700px;
+  height: 93vh;
+box-shadow: 10px 10px 46px -21px rgba(0, 0, 0, 0.75);
+  -webkit-box-shadow: 10px 10px 46px -21px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 46px -21px rgba(0, 0, 0, 0.75);
+  border: 1.5px solid rgb(193, 192, 192);
+  border-radius: 30px;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  /* justify-content: center; */
+  align-items: flex-start;
+  animation: pop 0.2s ease 0s normal forwards;
+  padding: 20px;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+
+@keyframes pop {
+	0% {
+		transform: scale(0.5);
+	}
+
+	100% {
+		transform: scale(1);
+	}
+}
+
+
