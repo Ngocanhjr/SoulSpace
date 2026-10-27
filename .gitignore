@@ -1,0 +1,15 @@
+# Local credentials and TLS private material; examples stay versioned.
+.env.docker
+.env.neon
+certs/
+.idea/
+old/
+# Environment files; keep examples
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Runtime logs
+*.log
+logs/

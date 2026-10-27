@@ -53,6 +53,7 @@
 }
 
 .avatar {
+  flex-shrink: 0;
   width: 52px;
   height: 52px;
   border-radius: 50%;
@@ -62,11 +63,22 @@
 
 .userInfo {
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
-.userInfo span {
+.userInfo strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.userInfo time {
+  flex-shrink: 0;
+  white-space: nowrap;
   font-size: 13px;
   color: #6b7280;
 }

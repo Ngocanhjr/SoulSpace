@@ -2,8 +2,7 @@ import "./EditAvt.css";
 import axios from "axios";
 import { buildApiUrl } from "../../config/api";
 import { toast } from "sonner";
-import { useState, useRef, useEffect } from "react";
-import { CloudCog } from "lucide-react";
+import { useState, useRef } from "react";
 import { createPortal } from "react-dom";
 
 
@@ -12,10 +11,7 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
   const [avatarFile, setAvatarFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null); //lấy dữ liệu đã chuyển thành url để hiển thị preview 
   const fileInputRef = useRef(null); //để có thể reset input sau khi xóa file
-  // const [isLoggedIn, setIsLogin] = useState(false);
-  // const [isDelete, setIsDelete] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState({});
   const [isSubmit, setIsSubmit] = useState(false);
   const defaultAvatar = "http://res.cloudinary.com/drwznlrbn/image/upload/v1762008409/9db2e9f0-8423-481e-8bd6-e2f911e15097.jpg";
 
@@ -36,7 +32,6 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
       toast.success("Avatar deleted successfully!", { id: loadingToast });
 
       const updatedUser = await axios.get(buildApiUrl(`/api/v1/users/${storedUserId}`));
-      setUser(updatedUser.data); // gán lại user mới
       if (onSave) {
       onSave(updatedUser.data); // 👈 Gửi luôn dữ liệu user mới (chứa avatar mặc định)
       onClose();
@@ -46,11 +41,6 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
       console.error("Delete avatar error:", error); // thêm dòng này để dễ debug
       toast.error("Delete failed!", { id: loadingToast });
     }
-  };
-
-  //để khi mở edit avatar sẽ có avt hiện tại 
-  const handleAvatarClick = () => {
-    fileInputRef.current.click();
   };
 
   //Chọn file - hiển thị preview
@@ -65,18 +55,6 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
     }
     e.target.value = ""; // reset input file để chọn lại được cùng file nếu cần
   }
-
-  //Xóa file 
-  const handleRemoveImage = () => {
-    setAvatarFile(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl); //thu hồi URL cũ nếu có
-      setPreviewUrl(null);
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
   const handleCancelChange = () => {
     if (previewUrl){
@@ -95,17 +73,6 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
     setPreviewUrl(currentAvatar || null);
   }
 
-
-  //Kiểm tra trạng thái đăng nhập
-  // const checkLogin = async () => {
-  //   const login = localStorage.getItem("isLoggedIn"); //cập nhật trạng thái đăng nhập
-  //   setIsLogin(login);
-  // };
-
-  //Chạy kiểm tra đăng nhập khi component mount
-  // useEffect(() => {
-  //   checkLogin();
-  // }, []);
 
   //Hàm submit file ảnh lên server
   const handleSubmit = async () => {
@@ -140,7 +107,7 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
         onSave(response.data);
         onClose();
       }
-    } catch (error) {
+    } catch {
       toast.error("Upload failed!", { id: loadingToast });
     } finally {
       setIsSubmit(false);
@@ -198,20 +165,17 @@ export default function EditAvt({ onClose, currentAvatar, onSave }) {
 
         {/* Tách ra khỏi header cho đúng cấu trúc */}
         <div className="modal-actions">
-          {/* {previewUrl && ( */}
           <button
             onClick={deleteAvatar}
             disabled={isSubmit}
             className="remove-btn">
             Remove
           </button>
-          {/* )} */}
           <button
             onClick={handleSubmit}
             disabled={!avatarFile || loading}
             className="save-btn"
           > Save Change
-            {/* {loading ? "Saving..." : "Save Changes"} */}
           </button>
         </div>
       </div>

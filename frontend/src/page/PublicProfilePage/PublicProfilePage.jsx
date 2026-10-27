@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import style from "./PublicProfilePage.module.css";
 import { assetUrl } from "../../config/assets";
+import Timestamp from "../../Components/Timestamp";
 
 export default function PublicProfilePage() {
   const { userId } = useParams();
@@ -107,13 +108,7 @@ export default function PublicProfilePage() {
                 />
                 <div className={style.postMeta}>
                   <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
-                  <span>
-                    {post.createdAt
-                      ? new Date(post.createdAt).toLocaleString("vi-VN", {
-                          hour12: false,
-                        })
-                      : ""}
-                  </span>
+                  <Timestamp value={post.createdAt} />
                 </div>
               </div>
 

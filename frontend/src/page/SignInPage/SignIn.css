@@ -4,8 +4,9 @@
   flex-direction: column;
   align-items: center;         /* Căn giữa theo chiều dọc */
   justify-content: center;     /* Căn giữa theo chiều ngang */
-  height: 100vh;               /* Chiếm toàn màn hình */
-  width: 100vw;
+  min-height: 100dvh;
+  width: 100%;
+  padding: 16px;
   background-color: #fff;
   /*background */
   background-image: url("/SOUL-SPACE.svg"); /* đường dẫn tới ảnh */
@@ -20,6 +21,8 @@
   flex-direction: column;
   align-items: center;
   padding: 2rem 2.5rem;
+  width: 380px;
+  max-width: 100%;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   background-color: #ffffff;
@@ -37,7 +40,8 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-  width: 300px;
+  width: 100%;
+  min-width: 0;
 }
 
 /* Input */

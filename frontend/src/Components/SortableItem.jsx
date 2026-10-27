@@ -9,7 +9,7 @@ export function SortableItem({ id, children }) {
     transform: CSS.Transform.toString(transform),
     transition,
     flex: 1,
-    minWidth: "300px",
+    minWidth: 0,
   };
 
   return (

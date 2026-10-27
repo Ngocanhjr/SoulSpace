@@ -23,6 +23,7 @@
 }
 
 .avatar_mini_wrapper {
+  flex-shrink: 0;
   width: 50px;
   height: 50px;
   position: relative;
@@ -48,6 +49,10 @@
 
 .user-box{
   font-weight: bold;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .desc-box{
@@ -66,21 +71,6 @@
 
 .expanded{
   display: block;
-}
-
-.readMoreBtn{
-  background: none;
-  border: none;
-  color: #1877f2;
-  font-weight: 600;
-  cursor: pointer;
-  padding: 0;
-  margin-bottom: 10px;
-  font-size: 14px;
-}
-
-.readMoreBtn:hover{
-  text-decoration: underline;
 }
 
 .status-bar{
@@ -148,7 +138,7 @@
 }
 
 .picture {
-  max-width: 500px;
+  max-width: min(100%, 500px);
   max-height: 500px;
   width: auto;
   height: auto;
@@ -157,13 +147,6 @@
   border: 1px solid #ccc;
   background-color: #f9f9f9;
   padding: 3px;
-}
-
-.action-icon {
-  width: 20px;
-  height: 20px;
-  object-fit: contain;
-  display: block;
 }
 
 .btn-share {
@@ -191,13 +174,15 @@
 
 .postMeta{
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 4px;
-  margin: 6px 0 10px;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
 }
 
 .postTime{
+  flex-shrink: 0;
+  white-space: nowrap;
   display: inline-block;
   color: grey;
   font-size: 13px;

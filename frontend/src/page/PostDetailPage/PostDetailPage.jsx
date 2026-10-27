@@ -7,6 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import CommentPopup from "../../Components/Comment/CommentPopup.jsx";
 import style from "./PostDetailPage.module.css";
 import { assetUrl } from "../../config/assets";
+import Timestamp from "../../Components/Timestamp";
 
 export default function PostDetailPage() {
   const { postId } = useParams();
@@ -192,13 +193,7 @@ export default function PostDetailPage() {
             />
             <div className={style.userInfo}>
               <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
-              <span>
-                {post.createdAt
-                  ? new Date(post.createdAt).toLocaleString("vi-VN", {
-                      hour12: false,
-                    })
-                  : ""}
-              </span>
+                <Timestamp value={post.createdAt} relative={false} />
             </div>
           </div>
 

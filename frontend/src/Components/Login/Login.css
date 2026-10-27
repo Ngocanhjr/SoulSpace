@@ -2,13 +2,15 @@
 /* .title{
     color: #041B2D;
 } */
-.container {
+.login-prompt {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     width: 350px;
-    height: 45vh;
+    max-width: 100%;
+    min-height: 320px;
+    padding: 20px;
     border-radius: 20px;
     box-shadow: 0px 0px 6px 3px rgba(0, 0, 0, 0.06);
     border: 1.5px solid rgb(193, 192, 192);
@@ -16,12 +18,12 @@
     text-align: center;
     line-height: 1.0;
 }
-h2{
+.login-prompt h2{
     font-size: 25px;
     font-family: 'Segoe UI';
 }
 
-p{
+.login-prompt p{
     font-size: 14px;
     color: #575757fd;
     opacity: 0.6;
@@ -31,11 +33,11 @@ p{
     margin-bottom: 23px;
 }
 
-a{
+.login-prompt a{
     margin-top: -10px;
     margin-bottom: 10px;
 }
-a:link{
+.login-prompt a:link{
     color: #3d899c;
     text-decoration: none;
     transition: font-weight 0.1s ease;
@@ -43,17 +45,16 @@ a:link{
     font-family: 'Segoe UI';
     letter-spacing: 0.3px;
 }
-a:hover{
+.login-prompt a:hover{
     font-weight: bold;
 }
-a:visited{
+.login-prompt a:visited{
     color: #081249;
-    //text-decoration: none;
     transition: font-weight 0.1s ease;
 
 }
 
-.buttonLogin{
+.login-prompt .buttonLogin{
     display: flex;
     align-items: center;
     justify-content: center;
@@ -71,6 +72,13 @@ a:visited{
     color: #000000;
 }
 
-.btn:hover{
+.login-prompt .buttonLogin:hover{
     background: #888888
+}
+
+@media (max-width: 768px) {
+    .login-prompt {
+        order: -1;
+        width: 100%;
+    }
 }

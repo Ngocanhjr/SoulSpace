@@ -3,7 +3,6 @@ import "./Edit.css";
 import axios from "axios";
 import { buildApiUrl } from "../../config/api";
 import { toast } from "sonner";
-import { Button } from "../ui/button";
 import { createPortal } from "react-dom";
 export default function Edit({ user, onClose, onSave }) {
   const [formData, setFormData] = useState(user);
@@ -22,7 +21,6 @@ export default function Edit({ user, onClose, onSave }) {
         toast.error("User session error. Please log in again.");
         return; // Dừng thực thi
       }
-      //doi Hieu Nhan viet API response de lay id tu localStorage 
 
       const response = await axios.patch(
         buildApiUrl(`/api/v1/users/${userId}`),

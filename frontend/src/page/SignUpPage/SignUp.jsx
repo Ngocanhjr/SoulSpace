@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "./SignUp.css";
 import axios from "axios";
 import { buildApiUrl } from "../../config/api";
@@ -64,14 +64,6 @@ export default function SignUp() {
       setIsSubmit(false);
     }
   };
-
-  //chỉ để kiểm tra form trước khi gửi (debug)
-  console.log({
-    fullname,
-    username,
-    password,
-    birthday,
-  });
 
   return (
     <div className="signup-container">

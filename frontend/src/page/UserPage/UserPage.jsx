@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { buildApiUrl } from "../../config/api";
 import { assetUrl } from "../../config/assets";
+import Timestamp from "../../Components/Timestamp";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import "./UserPage.css";
@@ -355,7 +356,7 @@ export default function UserPage() {
                     />
                     <button
                       className="edit-avatar-btn"
-                      onMouseDown={() => setShowEditAvt(true)}
+                      onClick={() => setShowEditAvt(true)}
                       title="Edit Avatar"
                     >
                       ✎
@@ -365,7 +366,7 @@ export default function UserPage() {
 
                 <button
                   className="edit-btn"
-                  onMouseDown={() => setShowEdit(true)}
+                  onClick={() => setShowEdit(true)}
                 >
                   Edit profile
                 </button>
@@ -405,10 +406,11 @@ export default function UserPage() {
                               />
                             </div>
 
-                            <div className="user-box">
-                              {post.username
-                                ? "@" + post.username
-                                : "Unknown user"}
+                            <div className="post-meta">
+                              <div className="user-box" title={post.username}>
+                                {post.username ? "@" + post.username : "Unknown user"}
+                              </div>
+                              <Timestamp value={post.createdAt} className="post-time" />
                             </div>
 
                             <div className="modifileButton">
@@ -632,13 +634,6 @@ export default function UserPage() {
                             />
                           ))}
 
-                        <span
-                          style={{ color: "grey", fontSize: 13, opacity: "70%" }}
-                        >
-                          {new Date(post.createdAt).toLocaleString("vi-VN", {
-                            hour12: false,
-                          })}
-                        </span>
                       </div>
                     ))
                   ) : (
@@ -671,10 +666,11 @@ export default function UserPage() {
                             />
                           </div>
 
-                          <div className="user-box">
-                            {post.username
-                              ? "@" + post.username
-                              : "Unknown user"}
+                          <div className="post-meta">
+                            <div className="user-box" title={post.username}>
+                              {post.username ? "@" + post.username : "Unknown user"}
+                            </div>
+                            <Timestamp value={post.sharedAt} className="post-time" />
                           </div>
                         </div>
                       </div>
@@ -694,22 +690,10 @@ export default function UserPage() {
                       <div className="shared-time-group">
                         {post.originalCreatedAt && (
                           <span className="shared-time-item">
-                            Original:{" "}
-                            {new Date(post.originalCreatedAt).toLocaleString(
-                              "vi-VN",
-                              { hour12: false }
-                            )}
+                            Bài gốc: <Timestamp value={post.originalCreatedAt} />
                           </span>
                         )}
 
-                        {post.sharedAt && (
-                          <span className="shared-time-item">
-                            Shared:{" "}
-                            {new Date(post.sharedAt).toLocaleString("vi-VN", {
-                              hour12: false,
-                            })}
-                          </span>
-                        )}
                       </div>
 
                       <div className="status-bar readonly-status-bar">

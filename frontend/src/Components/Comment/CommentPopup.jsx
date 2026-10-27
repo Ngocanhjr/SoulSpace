@@ -4,6 +4,7 @@ import axios from "axios";
 import { buildApiUrl } from "../../config/api";
 import { toast } from "sonner";
 import { assetUrl } from "../../config/assets";
+import Timestamp from "../Timestamp";
 
 function HeartButton({ liked, onClick }) {
   return (
@@ -65,13 +66,7 @@ function CommentItem({
               <strong>
                 {comment.username ? `@${comment.username}` : "Unknown user"}
               </strong>
-              <span>
-                {comment.createdAt
-                  ? new Date(comment.createdAt).toLocaleString("vi-VN", {
-                      hour12: false,
-                    })
-                  : ""}
-              </span>
+              <Timestamp value={comment.createdAt} />
             </div>
             <p>{comment.content}</p>
           </div>

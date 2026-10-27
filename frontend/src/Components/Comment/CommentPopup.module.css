@@ -87,7 +87,7 @@
 
 .commentHeader {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     gap: 12px;
     margin-bottom: 4px;
@@ -95,11 +95,17 @@
 
 .commentHeader strong {
     font-size: 0.98rem;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.commentHeader span {
+.commentHeader time {
+    flex-shrink: 0;
     font-size: 0.78rem;
     color: #8a8a8a;
+    white-space: nowrap;
 }
 
 .commentBubble p {

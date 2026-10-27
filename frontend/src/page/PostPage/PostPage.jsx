@@ -41,7 +41,6 @@ export default function PostPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isSubmit, setIsSubmit] = useState(false);
-  console.log(files)
   // ✅ Khi chọn file — hiển thị preview
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -125,7 +124,6 @@ export default function PostPage() {
     }
 
     if (body.trim() === "" && files.length===0) {
-      console.log("Khong co hinh va content");
       toast.warning("Content cannot be blank!");
       return;
     }
@@ -229,7 +227,14 @@ export default function PostPage() {
           </div>
 
           {progress > 0 && progress < 100 && (
-            <div className={style.progressBar}>
+            <div
+              className={style.progressBar}
+              role="progressbar"
+              aria-label="Upload progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progress}
+            >
               <div
                 className={style.progressFill}
                 style={{ width: `${progress}%` }}
@@ -241,20 +246,6 @@ export default function PostPage() {
         <div className="logged-out-container">
           <h2>You are not signed in</h2>
           <p>Please sign in or sign up to view your profile.</p>
-          {/* <div className="auth-buttons">
-            <button
-              className="auth-btn login-btn"
-              onClick={() => navigate("/signin")}
-            >
-              Đăng nhập
-            </button>
-            <button
-              className="auth-btn register-btn"
-              onClick={() => navigate("/signup")}
-            >
-              Đăng ký
-            </button>
-          </div> */}
         </div>
       )}
     </div>

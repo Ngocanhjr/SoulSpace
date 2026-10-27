@@ -1,0 +1,26 @@
+name: soulspace
+services:
+  postgres:
+    image: postgres:17.11-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env.docker}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env.docker}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      DB_PASSWORD: ${DB_PASSWORD:?Set runtime DB_PASSWORD}
+      FLYWAY_PASSWORD: ${FLYWAY_PASSWORD:?Set FLYWAY_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./infra/postgres/provision.sql:/opt/soulspace/provision.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+volumes:
+  postgres_data:

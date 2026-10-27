@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useLocation } from "react-router-dom";
-//import { Toaster } from "sonner"; 
 import {
   DndContext,
   closestCenter,
@@ -15,16 +14,12 @@ import {
   sortableKeyboardCoordinates,
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Toaster } from "sonner";
 import { SortableItem } from "./Components/SortableItem";
 import appCSS from "./App.module.css";
 import Navigation from "./Components/Navigation/Navigation";
 import Router from "./routes/Routes";
 import Login from "./Components/Login/Login";
 import Explore from "./page/ExplorePage/Explore";
-
-// localStorage.removeItem("isLoggedIn"); //thêm tạm thời để test giao diện khi chưa đăng nhập
-// //mỗi lần reload trang sẽ bị đăng xuất
 
 function App() {
   const [showSecond, setShowSecond] = useState(false);
@@ -72,16 +67,6 @@ function App() {
 
   return (
     <div className={appCSS["layout-web"]}>
-      <Toaster
-        position="bottom-right"
-        toastOptions={{
-          classNames: {
-            success: "toast-success",
-            error: "toast-error",
-            warning: "toast-warning",
-          },
-        }}
-      />
       <div className={appCSS["nav"]}>
         <Navigation showPage={() => setShowSecond(!showSecond)} />
       </div>

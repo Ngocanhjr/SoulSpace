@@ -1,5 +1,6 @@
 .boxlayout{
-  width: 100vw;
+  width: 100%;
+  min-width: 0;
   padding-top: 10px;
   padding-left: 30px;
   padding-right: 30px;
@@ -10,19 +11,19 @@
   align-items:center;
   gap: 20px;
 }
-textarea {
+.input {
   width: 100%;
   height: 150px;
   padding-left: 20px;
-  font-size: 16x;
+  font-size: 16px;
   /* min-height: 300px; */
-  resize: he;
+  resize: vertical;
   border-left: 2px solid rgba(0, 0, 0, 0.281);
   border-top: none;
   border-right: none;
   border-bottom: none;
   outline: none;
-  overflow: hidden;
+  overflow-y: auto;
 }
 body::-webkit-scrollbar {
   display: none;
@@ -44,15 +45,6 @@ body {
   border-radius: 50%;
   object-fit: cover;
 }
-.selectForm{
-  border-radius: 5px;
-  background-color: white;
-  border: 2px solid black;
-  cursor: pointer;
-}
-.selectForm:hover{
-  background-color: rgba(193, 192, 192, 0.295);
-}
 .header_post{
   display: flex;
   justify-content: start;
@@ -68,24 +60,11 @@ body {
   display: none;
 }
 
-.buttonPost-2 {
-  width: 35px;
-  height: 35px;
-  border-radius: 10px;
-  border: none;
-  padding: 3px 0 0 5px;
-  cursor: pointer;
-}
-
-.buttonPost-2:hover {
-  background-color: rgba(193, 192, 192, 0.295);
-  opacity: 100%;
-}
-
 .option {
   width: 100%;
-  height: 33px;
+  min-height: 40px;
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   justify-content: space-between;
   align-items: center;
@@ -104,10 +83,11 @@ body {
 .previewWrapper {
   position: relative;
   display: inline-block;
+  max-width: 100%;
 }
 
 .previewImage {
-  max-width: 500px;
+  max-width: min(100%, 500px);
   max-height: 500px;
   width: auto;
   height: auto;
@@ -149,4 +129,34 @@ body {
 
 .logged-out-container{
   width: 100%;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  margin-top: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5e7eb;
+}
+
+.progressFill {
+  height: 100%;
+  background: #1877f2;
+}
+
+@media (max-width: 768px) {
+  .boxlayout {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .header_post {
+    margin-left: 0;
+  }
+
+  .leftbuttons {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
 }

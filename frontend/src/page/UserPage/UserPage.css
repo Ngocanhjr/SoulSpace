@@ -7,17 +7,6 @@
   position: relative;
 }
 
-.user-page .edit-avatar-modal {
-  position: absolute; /* hoặc fixed nếu bạn muốn giữa trang */
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10; /* Chỉ cao trong vùng userpage */
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-}
-
 /*----------------------------- NAV BAR -----------------------------*/
 .nav-bar {
   position: fixed;
@@ -100,22 +89,6 @@
 }
 
 /*-------------------------- EDIT BUTTON --------------------------*/
-/* .edit-profile-btn {
-  position: absolute;
-  top: 180px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 90%;
-  padding: 5px 12px;
-  font-size: 15px;
-  font-family: 'Roboto';
-  font-weight: 550;
-  border: 1px solid #afafaf9a;
-  border-radius: 10px;
-  background: #ffffff;
-  cursor: pointer;
-} */
-
 .edit-btn {
   position: absolute;
   top: 180px;
@@ -290,45 +263,6 @@
   font-family: 'Roboto';
 }
 
-.auth-buttons {
-  display: flex;
-  gap: 15px;
-  /* Khoảng cách giữa 2 nút */
-}
-
-.auth-btn {
-  padding: 12px 24px;
-  font-size: 16px;
-  font-weight: 600;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.login-btn {
-  background-color: #007bff;
-  /* Màu xanh dương chính */
-  color: white;
-}
-
-.login-btn:hover {
-  background-color: #0056b3;
-  /* Xanh đậm hơn khi hover */
-}
-
-.register-btn {
-  background-color: #f0f0f0;
-  /* Nền xám nhạt */
-  color: #333;
-  border: 1px solid #ddd;
-}
-
-.register-btn:hover {
-  background-color: #e0e0e0;
-  /* Xám đậm hơn khi hover */
-}
-
 /*------------------------profile-avt--------------------------------------*/
 
 
@@ -396,6 +330,7 @@
   border: 2px solid #ddd;
 }
 .avatar_mini_wrapper {
+  flex-shrink: 0;
   width: 50px;
   height: 50px;
   position: relative;
@@ -437,10 +372,33 @@
   margin: 20px 0;
 }
 .modifileButton{
-  width: 75%;
+  flex-shrink: 0;
+  margin-left: auto;
   display: flex;
   justify-content: end;
   gap:10px
+}
+
+.user-page .post-meta {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-page .post-meta .user-box {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-page .post-time {
+  flex-shrink: 0;
+  white-space: nowrap;
+  color: #6b7280;
+  font-size: 13px;
 }
 .previewWrapper {
   position: relative;

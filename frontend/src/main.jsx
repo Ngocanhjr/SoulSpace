@@ -9,7 +9,17 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HashRouter>
       <App />
-      <Toaster richColors position="bottom-right" /> 
+      <Toaster
+        richColors
+        position="bottom-right"
+        toastOptions={{
+          classNames: {
+            success: "toast-success",
+            error: "toast-error",
+            warning: "toast-warning",
+          },
+        }}
+      />
     </HashRouter>
   </StrictMode>,
 )

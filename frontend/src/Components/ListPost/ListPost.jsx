@@ -5,6 +5,7 @@ import { buildApiUrl } from "../../config/api";
 import { toast } from "sonner";
 import CommentPopup from "../Comment/CommentPopup.jsx";
 import { assetUrl } from "../../config/assets";
+import Timestamp from "../Timestamp";
 
 export default function ListPost() {
   const [data, setData] = useState([]);
@@ -183,15 +184,18 @@ export default function ListPost() {
                         className={style.avatar}
                       />
                     </div>
-                    <div className={style["user-box"]}>
-                      {post.username ? "@" + post.username : "Unknown user"}
+                    <div className={style.postMeta}>
+                      <div className={style["user-box"]} title={post.username}>
+                        {post.username ? "@" + post.username : "Unknown user"}
+                      </div>
+                      <Timestamp value={post.createdAt} className={style.postTime} />
                     </div>
                   </div>
                 </div>
 
                 <div
                   className={`${style["desc-box"]} ${
-                    isExpanded ? style.expanded : style.collapsed
+                    shouldShowToggle && !isExpanded ? style.collapsed : style.expanded
                   }`}
                 >
                   {post.content}
@@ -203,6 +207,7 @@ export default function ListPost() {
                       type="button"
                       className={style.readMoreBtn}
                       onClick={() => toggleExpand(post.id)}
+                      aria-expanded={isExpanded}
                     >
                       {isExpanded ? "See less" : "See more"}
                     </button>
@@ -218,14 +223,6 @@ export default function ListPost() {
                       alt={`Post image ${index}`}
                     />
                   ))}
-
-                <div className={style.timeWrapper}>
-                  <span className={style.postTime}>
-                    {new Date(post.createdAt).toLocaleString("vi-VN", {
-                      hour12: false,
-                    })}
-                  </span>
-                </div>
 
                 <div className={style["status-bar"]}>
                   <button
