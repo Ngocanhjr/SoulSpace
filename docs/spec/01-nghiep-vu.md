@@ -2,6 +2,8 @@
 
 ## Phạm vi và vai trò
 
+Bổ sung ngày 30/10/2026: [phân loại chủ đề](07-phan-loai-chu-de.md) là đặc tả giai đoạn AI sau core. Model tự gắn nhãn ở nền; đăng bài không thêm bước xác nhận, tác giả có thể đổi/bỏ nhãn và lựa chọn đó không bị model ghi đè. Các giới hạn “chưa có AI” bên dưới áp dụng riêng migration core.
+
 Giữ đăng ký, đăng nhập, xem/sửa/xóa hồ sơ, avatar, danh sách bài viết, bài công khai/riêng tư, chỉnh sửa bài và ảnh, comments/replies, like bài/bình luận, share/unshare và tìm kiếm hiện tại của frontend. Bổ sung sửa/xóa comment của chính tác giả theo quyết định ngày 27/10/2026. Tìm kiếm nâng cao hoặc tìm theo comment thuộc thiết kế tính năng riêng; không là điều kiện chốt database lần này. Chưa bổ sung search backend, theo dõi, lưu bài, chat, admin hay AI.
 
 | Tài nguyên hoặc thao tác | Guest | Người đăng nhập | Chủ tài nguyên |

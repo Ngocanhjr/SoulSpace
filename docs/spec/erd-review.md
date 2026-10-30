@@ -1,5 +1,7 @@
 # Rà soát và chốt thiết kế database SoulSpace
 
+Ghi chú 30/10/2026: báo cáo dưới đây giữ nguyên phạm vi core phiên bản 1.1 (9 bảng/57 cột, 35 endpoint). Phiên bản spec 1.2 bổ sung [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md), [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai), 1 bảng/2 cột và 2 endpoint; các kết luận rà soát cũ không chứng nhận implementation hoặc model của phần mở rộng.
+
 Ngày rà soát/chốt: 27/10/2026. Phiên bản spec: 1.1. Phạm vi: toàn bộ bộ spec, thiết kế dữ liệu trong [03-postgresql.md](03-postgresql.md), bốn sơ đồ nguồn, SVG và [erd.md](erd.md). Người dùng đã chọn chính sách comment, timestamp, attach/cleanup và lease. Đây là rà soát tài liệu, không phải xác nhận schema hoặc trigger đã chạy trên PostgreSQL.
 
 ## Kết luận
@@ -59,7 +61,7 @@ blog_likes.created_at, comment_likes.created_at và blog_shares.shared_at đã g
 
 ### R04 — Đã chốt: Attach/cleanup có khóa asset
 
-Đã mô tả luồng attach dùng chung trong 03/04: khóa user/blog đích rồi asset theo thứ tự ID, đọc lại state/owner/purpose và chỉ attach STAGED phù hợp. Scanner/cleanup khóa asset trước kiểm tra, DELETE_PENDING không được attach lại. Cloudinary ngoài transaction; enqueue không reset claim của job có sẵn. Kiểm MED11 và CON12.
+Đã mô tả luồng attach dùng chung trong 03/04: khóa user/blog đích rồi asset theo thứ tự ID, đọc lại state/owner/purpose và chỉ attach PENDING đã xác nhận đủ metadata. Scanner/cleanup khóa asset trước kiểm tra, DELETE_PENDING không được attach lại. Cloudinary ngoài transaction; enqueue không reset claim của job có sẵn. Kiểm MED11 và CON12.
 
 FK đơn vẫn chỉ kiểm tồn tại, không tự kiểm ownership/visibility. Thiết kế đã chọn service/procedure có khóa cho các quy tắc này; SQL quản trị trực tiếp không được coi là đường ghi API hợp lệ hoặc bằng chứng đã vượt qua kiểm quyền.
 
@@ -111,3 +113,7 @@ Chưa tạo/chạy Flyway, PostgreSQL Docker/Neon, trigger/procedure, kiểm th�
 | Khả năng xác nhận database vận hành | Đã tạo V1–V4 và kiểm thử bằng PostgreSQL WASM; **chưa xác nhận Docker/Neon/JDBC/Flyway runtime**. Chưa có entity nghiệp vụ. Xem [kết quả và giới hạn](../../infra/postgres/README.md). |
 
 Bước kế tiếp là triển khai Flyway/schema và các luồng service/procedure theo spec, rồi chạy bằng chứng nghiệm thu riêng trên Docker và Neon. Không dùng kết quả kiểm tra tài liệu này thay migration success, SQL integration test, benchmark hay chứng nhận BCNF toàn bộ.
+
+## Đồng bộ sơ đồ ngày 30/10/2026
+
+Cả bốn sơ đồ Mermaid trong 03-postgresql.md và năm SVG trong assets/erd đã được đồng bộ với thiết kế chủ đề: tổng quan 11 bảng/63 cột, blogs có 10 cột, categories có 3 cột và blog_categories có 2 cột. Các sơ đồ nhóm cùng hiển thị quan hệ N–N blogs–categories qua blog_categories. Mô tả categories, blog_categories và cột blogs.category_source đã bổ sung trong đặc tả PostgreSQL; số 9 bảng/57 cột ở báo cáo lịch sử bên trên chỉ core. Đây là cập nhật tài liệu, không xác nhận migration AI đã chạy.

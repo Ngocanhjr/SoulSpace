@@ -35,9 +35,9 @@ Provision chỉ dành cho database sạch, không tiếp quản schema đang có
 
 ## Schema và sử dụng
 
-- V1: 9 bảng/57 cột, FK avatar bổ sung sau tạo media, CHECK nội dung/metadata/lease, vị trí ảnh 0–9.
+- V1: 9 bảng/57 cột, FK avatar bổ sung sau tạo media, CHECK nội dung/metadata/lease, vị trí ảnh 0–9. Media có ba trạng thái PENDING/ATTACHED/DELETE_PENDING; PENDING dùng cả trước xác nhận upload và sau upload khi chưa gắn, phân biệt bằng bộ metadata provider_asset_id/format/size_bytes.
 - V2: 14 index bổ sung cho feed, cây comment, cascade và queue.
-- V3: counters, cây tối đa 5 cấp, cấu trúc bất biến, version comment, bài không rỗng ở cuối transaction. `blog_image_position` có thể được trì hoãn bằng `SET CONSTRAINTS blog_image_position DEFERRED` khi hoán đổi thứ tự ảnh; mặc định kiểm ngay.
+- V3: counters, cây tối đa 5 cấp, cấu trúc bất biến, version comment, bài không rỗng ở cuối transaction; metadata media đã xác nhận bất biến và state ATTACHED không quay về PENDING. `blog_image_position` có thể được trì hoãn bằng `SET CONSTRAINTS blog_image_position DEFERRED` khi hoán đổi thứ tự ảnh; mặc định kiểm ngay.
 - V4: bốn procedure SECURITY INVOKER, quyền runtime và chặn truy cập Flyway history. Chúng không tự COMMIT; service phải mở transaction, lấy actor từ session và đọc response sau cập nhật.
 
 Content edit/delete tự tăng `comments.version` và `updated_at` trong trigger. Service vẫn bắt buộc `WHERE version=:expectedVersion`, kiểm affected rows; JPA không merge toàn entity để tránh ghi đè counters. Counter updates không tăng version. Xóa mềm phải xóa likes của node trong cùng transaction; constraint deferred chặn placeholder còn likes.

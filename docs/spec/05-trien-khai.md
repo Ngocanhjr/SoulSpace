@@ -109,6 +109,8 @@ Neon có thể có thời gian mở compute/kết nối lại tùy cấu hình p
 
 ## Mốc triển khai và điều kiện chuyển mốc
 
+Sau các mốc migration core bên dưới, thực hiện giai đoạn phân loại chủ đề theo [thứ tự triển khai riêng](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng). Giai đoạn đó thêm Flyway mới cho categories, blog_categories và cột blogs.category_source, nâng tổng thiết kế lên 11 bảng/63 cột; các số 9 bảng/57 cột trong mốc core vẫn chỉ phạm vi core. Không sửa migration đã áp dụng hoặc cài dependency model trong lượt cập nhật tài liệu này.
+
 | Mốc | Công việc | Điều kiện hoàn tất |
 | --- | --- | --- |
 | M0 | Xác minh Boot/JDK/dependency; inventory 29 legacy routes, 6 route bổ sung, frontend callers và baseline Git. | Build nền được ghi nhận, hợp đồng 35 routes được dùng làm checklist; chưa kết nối nhầm Mongo hoặc Neon dùng chung. |

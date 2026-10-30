@@ -33,6 +33,11 @@ DECLARE
     child_id UUID := gen_random_uuid();
     parent UUID;
     node UUID;
+    unconfirmed_asset UUID := gen_random_uuid();
+    partial_asset UUID := gen_random_uuid();
+    unconfirmed_attached_asset UUID := gen_random_uuid();
+    bad_format_asset UUID := gen_random_uuid();
+    bad_size_asset UUID := gen_random_uuid();
     asset UUID := gen_random_uuid();
     image_post UUID := gen_random_uuid();
     empty_post UUID := gen_random_uuid();
@@ -102,11 +107,43 @@ BEGIN
     PERFORM pg_temp.assert_true((SELECT author_id IS NULL AND version = 3 FROM comments WHERE id = root_id), 'anonymized tombstone');
     PERFORM pg_temp.assert_true(EXISTS(SELECT FROM comments WHERE id = child_id), 'other author reply survives account deletion');
 
+    INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id)
+    VALUES(unconfirmed_asset, owner_id, 'BLOG', 'PENDING', 'test/' || unconfirmed_asset);
+    PERFORM pg_temp.assert_true(
+        (SELECT provider_asset_id IS NULL AND format IS NULL AND size_bytes IS NULL
+         FROM media_assets WHERE id = unconfirmed_asset),
+        'pending receipt can exist before upload confirmation');
     PERFORM pg_temp.expect_error(format(
-        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id) VALUES(%L,%L,''BLOG'',''STAGED'',%L)',
-        gen_random_uuid(), owner_id, 'test/missing-metadata'), '23514');
-    INSERT INTO media_assets(id, owner_id, purpose, state, provider_public_id, format, size_bytes)
-    VALUES(asset, owner_id, 'BLOG', 'STAGED', 'test/' || asset, 'png', 100);
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id,provider_asset_id,format,size_bytes) VALUES(%L,%L,''BLOG'',''ATTACHED'',%L,%L,''png'',100)',
+        gen_random_uuid(), owner_id, 'test/empty-provider-id', ''), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id,provider_asset_id,format,size_bytes) VALUES(%L,%L,''BLOG'',''PENDING'',%L,%L,''png'',100)',
+        gen_random_uuid(), owner_id, 'test/blank-provider-id', '   '), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id,provider_asset_id,format) VALUES(%L,%L,''BLOG'',''PENDING'',%L,%L,''png'')',
+        partial_asset, owner_id, 'test/' || partial_asset, 'provider/' || partial_asset), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id) VALUES(%L,%L,''BLOG'',''ATTACHED'',%L)',
+        unconfirmed_attached_asset, owner_id, 'test/' || unconfirmed_attached_asset), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id,provider_asset_id,format,size_bytes) VALUES(%L,%L,''BLOG'',''PENDING'',%L,%L,''gif'',100)',
+        bad_format_asset, owner_id, 'test/' || bad_format_asset, 'provider/' || bad_format_asset), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id,provider_asset_id,format,size_bytes) VALUES(%L,%L,''BLOG'',''PENDING'',%L,%L,''png'',0)',
+        bad_size_asset, owner_id, 'test/' || bad_size_asset, 'provider/' || bad_size_asset), '23514');
+    INSERT INTO media_assets(id, owner_id, purpose, state, provider_public_id)
+    VALUES(asset, owner_id, 'BLOG', 'PENDING', 'test/' || asset);
+    UPDATE media_assets
+    SET provider_asset_id = 'provider/' || asset, format = 'png', size_bytes = 100
+    WHERE id = asset;
+    PERFORM pg_temp.assert_true(
+        (SELECT state = 'PENDING' AND provider_asset_id IS NOT NULL FROM media_assets WHERE id = asset),
+        'confirmed but unattached upload remains pending');
+    UPDATE media_assets SET state = 'ATTACHED' WHERE id = asset;
+    PERFORM pg_temp.expect_error(format(
+        'UPDATE media_assets SET format=''jpeg'' WHERE id=%L', asset), '23514');
+    PERFORM pg_temp.expect_error(format(
+        'UPDATE media_assets SET state=''PENDING'' WHERE id=%L', asset), '23514');
     INSERT INTO blogs(id, author_id) VALUES(image_post, owner_id);
     INSERT INTO blog_images(blog_id, asset_id, position) VALUES(image_post, asset, 0);
     SET CONSTRAINTS ALL IMMEDIATE;

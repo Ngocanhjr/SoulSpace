@@ -1,5 +1,7 @@
 # Hợp đồng API và tích hợp frontend
 
+Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH /api/v1/blogs/{blogId}/categories và categories/categorySource trên BlogDTO/SharedBlogDTO theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng sau mở rộng là 37 endpoint; chưa triển khai các bổ sung này.
+
 ## Quy ước chung
 
 Base path là `/api/v1`. Giữ JSON trực tiếp hoặc array trực tiếp như frontend hiện tại, không bọc thêm `result` hay `data`. Những endpoint xóa trả chuỗi legacy giữ `text/plain; charset=utf-8`. Tất cả response thành công của 29 endpoint legacy tiếp tục dùng HTTP 200. ID là UUID string; timestamp là ISO 8601 UTC; ngày sinh là `YYYY-MM-DD`; field danh sách không có phần tử trả `[]`, không trả null. Giới hạn ký tự trong text/password tính theo Unicode code points để thống nhất với char_length của PostgreSQL.
@@ -134,6 +136,10 @@ Các tên response dưới đây là tên hợp đồng, không bắt buộc tê
 
 B08/B09 bắt buộc có boolean thật, không nhận null hay string `"false"` trong JSON. Chỉ gửi `{userId}` như client cũ là 400, không được ngầm quay lại toggle. Các message like phản ánh trạng thái cuối, kể cả request không làm thay đổi row.
 
+Frontend cập nhật biểu tượng và trạng thái mong muốn ngay khi bấm (optimistic UI), rồi gửi `liked=true/false` mà không đợi app đóng hoặc giữ thay đổi 10 giây. Gộp các lần bấm nhanh theo từng blog/comment: mỗi mục chỉ có tối đa một request đang chạy; khi request đó chưa xong, chỉ giữ ý định cuối cùng thay vì gửi mọi lần đổi trạng thái. Khi response về, đối chiếu trạng thái đã lưu với ý định mới nhất; nếu khác thì gửi một request tiếp theo cho trạng thái cuối. Không để response cũ ghi đè giao diện mới hơn. Có thể dùng cửa sổ debounce ngắn tối đa khoảng 250 ms để gộp burst, nhưng không tạo queue lưu theo từng cú bấm.
+
+Response thành công là trạng thái đã commit ở server và cung cấp counter chuẩn. Nếu request lỗi mà không có ý định mới hơn, khôi phục trạng thái đã xác nhận gần nhất; nếu người dùng đã bấm tiếp, giữ ý định mới nhất và báo lỗi/cho retry an toàn. Retry phải gửi lại cùng `liked` mong muốn, không biến thành toggle.
+
 B15/B16 là hai endpoint mới, cùng HTTP 200 khi thành công; tổng hợp đồng là 35 endpoint (29 legacy + 6 bổ sung). expectedVersion bắt buộc là số nguyên không âm, không nhận null/string; thiếu hoặc sai kiểu trả 400. B15 content sau trim dài 1–2000; chỉ bind content/expectedVersion, không nhận trường cấu trúc hoặc author. B16 frontend dùng axios.delete(url,{data:{expectedVersion}}) kèm cookie/CSRF. Version là phiên bản trên cùng một hàng, không là ID record lịch sử.
 
 Thứ tự xử lý B15/B16: xác thực/CSRF, kiểm quyền xem bài và comment thuộc bài, kiểm tác giả, kiểm body hợp lệ; khóa blog rồi comment. B16 nếu node đã xóa thì trả thành công với trạng thái hiện tại sau kiểm quyền/body, không kiểm khớp version nữa. B15 trên node đã xóa trả 409 COMMENT_DELETED; B15 và lần xóa đầu B16 có version cũ trả 409 CONCURRENT_MODIFICATION. Không tự retry HTTP bằng version mới. Xóa tài khoản đã gỡ tác giả làm tài khoản/session đó không còn quyền thực hiện B15/B16.
@@ -155,7 +161,7 @@ UI hiện PATCH nội dung rồi PATCH published thành hai request. Hợp đồ
 | M03 | DELETE | `/api/v1/delete` | Query `imgUrl` | `{success:true,message:string,cleanupPending:true}`, asset chưa gắn và thuộc actor. |
 | M04 | GET | `/api/v1/media/{assetId}` | UUID path | Binary image, kiểm quyền theo liên kết hiện tại. |
 
-M01–M03 giữ route và field chính legacy; `cleanupPending` là field bổ sung để mô tả xóa bất đồng bộ. Upload độc lập là asset staged, chỉ chủ asset xem được, tự hết hạn sau 24 giờ nếu không dùng; frontend hiện không dùng hai route này để tạo bài. M03 nhận đúng URL API đã cấp, không nhận URL Cloudinary tùy ý, không tải URL client gửi. Asset đang làm avatar hoặc gắn với bài trả 409; gỡ ảnh qua endpoint nghiệp vụ tương ứng. Asset không tồn tại hoặc thuộc người khác trả 404.
+M01–M03 giữ route và field chính legacy; `cleanupPending` là field bổ sung để mô tả xóa bất đồng bộ. Upload độc lập là asset PENDING đã xác nhận upload nhưng chưa gắn, chỉ chủ asset xem được, tự hết hạn sau 24 giờ nếu không dùng; frontend hiện không dùng hai route này để tạo bài. M03 nhận đúng URL API đã cấp, không nhận URL Cloudinary tùy ý, không tải URL client gửi. Asset đang làm avatar hoặc gắn với bài trả 409; gỡ ảnh qua endpoint nghiệp vụ tương ứng. Asset không tồn tại hoặc thuộc người khác trả 404.
 
 M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nếu tất cả thành công. M01 lỗi upstream trả 502. Không có files là 400; file sai loại là 415, vượt kích thước là 413. M04 có `Content-Type` từ ảnh đã kiểm tra, `X-Content-Type-Options:nosniff` và `Cache-Control:no-store`, không redirect tới provider.
 
@@ -197,8 +203,8 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 | `SignInPage/SignIn.jsx` | Lấy CSRF trước login, xử lý 401/429, nhận avatarUrl, lấy token mới sau login; bỏ log response xác thực. |
 | `SignUpPage/SignUp.jsx` | Gửi `dob` canonical; API vẫn nhận birthday; cập nhật policy password và bỏ log password/form. |
 | `Navigation`, `UserPage`, mọi nơi logout | Gọi A04 rồi clear state; không chỉ xóa localStorage. |
-| `ListPost`, `PostDetailPage` | Gửi `{liked:!currentLiked}`, khóa thao tác khi đang gửi; lỗi thì giữ state đã xác nhận. |
-| `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Gửi liked mong muốn; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. |
+| `ListPost`, `PostDetailPage` | Optimistic UI; gửi `liked` mong muốn và gộp lần bấm nhanh theo blog, tối đa một request đang chạy/mục; response không ghi đè ý định mới hơn. Counter chuẩn lấy từ response. |
+| `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Like comment dùng cùng quy tắc optimistic/coalescing; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. |
 | `UserPage` sửa bài | Gộp published vào B14; giữ các tên multipart hiện có. |
 | `UserPage` xóa tài khoản | Dialog xác nhận lại password và gửi U08 body; lỗi không xóa state trước khi server xác nhận. |
 | `EditProfile`, `EditAvatar`, `PostPage`, `SearchPage`, `PublicProfilePage` | Dùng chung HTTP client; UUID là string, ảnh API relative URL; xử lý privacy/expired session. |

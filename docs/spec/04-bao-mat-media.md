@@ -2,6 +2,8 @@
 
 ## Mục tiêu và giới hạn
 
+Giai đoạn AI bổ sung quyền chỉnh chủ đề chỉ dành cho tác giả, session/CSRF cho thao tác ghi và kiểm soát nội dung gửi vào model theo [đặc tả chủ đề](07-phan-loai-chu-de.md#xử-lý-nền-model-và-bảo-mật). Phân loại nội bộ không mở quyền đọc bài private và không gửi nội dung private đến dịch vụ bên thứ ba.
+
 Thiết kế giảm các nguy cơ giả danh qua userId, đọc tài nguyên riêng tư, CSRF, đánh cắp session qua JavaScript, brute force đăng nhập, SQL injection và upload nguy hiểm. Phạm vi là một backend, một frontend web, Neon PostgreSQL cho dùng chung/online và PostgreSQL Docker cho local. Tài liệu không phải chứng nhận an toàn hoặc kết quả pentest.
 
 ## Session và vòng đời đăng nhập
@@ -86,8 +88,8 @@ GET `/api/v1/media/{assetId}` giải quyết quyền bằng database hiện tạ
 | Avatar đang được user còn tồn tại dùng | Công khai. |
 | Ảnh gắn với blog public | Công khai. |
 | Ảnh gắn với blog private | Chỉ chủ bài. |
-| STAGED chưa gắn | Chỉ owner. |
-| PENDING_UPLOAD hoặc DELETE_PENDING, asset mất owner/đã xóa | Không phục vụ, trả 404. |
+| PENDING đã xác nhận upload nhưng chưa gắn | Chỉ owner. |
+| PENDING chưa xác nhận, DELETE_PENDING, asset mất owner/đã xóa | Không phục vụ, trả 404. |
 
 Backend tạo signed download URL nội bộ, tải từ Cloudinary với timeout/giới hạn bytes, rồi stream bytes sau kiểm quyền; không trả URL này, không redirect và không log chữ ký. Endpoint chỉ tải asset theo metadata đáng tin, không nhận upstream URL client gửi. Trả Content-Type đã xác minh, inline filename do server sinh, nosniff và no-store. Chi phí/băng thông media đi qua backend cần được đo; không thêm cache làm bỏ qua kiểm quyền.
 
@@ -97,13 +99,13 @@ Nếu provider không sẵn sàng, media trả 502; UI hiển thị placeholder 
 
 ## Upload và commit dữ liệu
 
-1. Validate file và quyền cơ bản. Sinh UUID/public_id mới theo namespace riêng từng môi trường, lưu receipt PENDING_UPLOAD trong transaction ngắn; public_id không ghi đè hoặc dùng lại cho ảnh khác.
-2. Upload ngoài transaction, đặt timeout kết nối 5 giây, đọc 30 giây. Ghi metadata receipt thành STAGED sau khi provider xác nhận; kiểm user/receipt vẫn còn hợp lệ.
-3. Transaction nghiệp vụ giữ khóa actor, khóa user/blog đích rồi các asset FOR UPDATE theo UUID tăng dần. Sau khi lấy khóa, kiểm lại ownership/visibility và asset thuộc actor, purpose đúng AVATAR/BLOG, state=STAGED, metadata hợp lệ. Gắn asset, đổi STAGED thành ATTACHED và cập nhật avatar/bài trong cùng commit. Ảnh ATTACHED đang giữ nguyên không phải attach mới; DELETE_PENDING không được gắn lại.
+1. Validate file và quyền cơ bản. Sinh UUID/public_id mới theo namespace riêng từng môi trường, lưu receipt tối thiểu state=PENDING trong transaction ngắn; provider_asset_id, format và size_bytes đều NULL. Receipt giúp dọn ảnh nếu tiến trình dừng giữa lúc gọi Cloudinary và ghi nghiệp vụ; public_id không ghi đè hoặc dùng lại cho ảnh khác.
+2. Upload ngoài transaction, đặt timeout kết nối 5 giây, đọc 30 giây. Sau khi provider xác nhận, giữ metadata trả về để ghi cùng transaction nghiệp vụ; kiểm user/receipt vẫn còn hợp lệ.
+3. Transaction nghiệp vụ giữ khóa actor, khóa user/blog đích rồi các asset FOR UPDATE theo UUID tăng dần. Sau khi lấy khóa, kiểm lại ownership/visibility và asset thuộc actor, purpose đúng AVATAR/BLOG, state=PENDING. Ghi đồng thời provider_asset_id/format/size_bytes; chỉ asset có đủ metadata mới được chuyển ATTACHED và gắn vào avatar/bài trong cùng commit. Upload độc lập ghi đủ metadata nhưng giữ PENDING. Ảnh ATTACHED đang giữ nguyên không phải attach mới; DELETE_PENDING không được gắn lại.
 4. Với ảnh gỡ bỏ, khóa asset, bỏ liên kết, chuyển DELETE_PENDING và enqueue job trong cùng transaction. INSERT job ON CONFLICT(asset_id) DO NOTHING; không reset lượt claim/lease của job có sẵn. Thay avatar dùng public_id mới để không ghi đè ảnh trước commit.
-5. Nếu transaction nghiệp vụ thất bại, enqueue cleanup cho ảnh mới đã upload; nếu process crash trước bước này, bộ quét STAGED sau 24 giờ sẽ thu hồi.
+5. Nếu transaction nghiệp vụ thất bại, enqueue cleanup cho ảnh mới đã upload; nếu process crash trước bước này, bộ quét PENDING đã xác nhận sau 24 giờ sẽ thu hồi.
 
-Upload bị timeout có thể đã thành công ở provider. Không retry upload mù bằng public_id mới. PENDING_UPLOAD tồn tại quá 10 phút được đưa vào đối soát/cleanup, có khoảng chờ 1 giờ trước lần destroy đầu để giảm cuộc đua với upload chưa xác nhận. Nếu receipt đến muộn sau khi user/blog đã xóa hoặc job đã được lập, chỉ enqueue compensation, không gắn ảnh trở lại.
+Upload bị timeout có thể đã thành công ở provider nhưng backend chưa kịp commit metadata. Không retry upload mù bằng public_id mới. PENDING chưa xác nhận (ba trường metadata còn NULL) quá 10 phút được đưa vào đối soát/cleanup, có khoảng chờ 1 giờ trước lần destroy đầu để giảm cuộc đua với upload chưa xác nhận. PENDING đã xác nhận nhưng chưa gắn được bộ quét thu hồi sau 24 giờ. Nếu receipt đến muộn sau khi user/blog đã xóa hoặc job đã được lập, chỉ enqueue compensation, không gắn ảnh trở lại.
 
 Scanner khóa asset trước khi đọc lại state/age/liên kết và enqueue. Nếu asset đã được gắn thì bỏ qua; nếu scanner đã chuyển DELETE_PENDING thì attach phải từ chối. Purpose của asset bất biến. Thứ tự khóa chung theo [thiết kế PostgreSQL](03-postgresql.md), không giữ transaction trong bất kỳ lời gọi upload/download/destroy nào.
 

@@ -13,18 +13,24 @@ CREATE TABLE media_assets (
     id UUID PRIMARY KEY,
     owner_id UUID REFERENCES users(id) ON DELETE SET NULL,
     purpose VARCHAR(16) NOT NULL CHECK (purpose IN ('AVATAR', 'BLOG', 'STANDALONE')),
-    state VARCHAR(20) NOT NULL CHECK (state IN ('PENDING_UPLOAD', 'STAGED', 'ATTACHED', 'DELETE_PENDING')),
+    state VARCHAR(20) NOT NULL CHECK (state IN ('PENDING', 'ATTACHED', 'DELETE_PENDING')),
     provider_public_id TEXT NOT NULL UNIQUE CHECK (length(btrim(provider_public_id)) > 0),
     provider_asset_id TEXT UNIQUE,
     format VARCHAR(8),
     size_bytes BIGINT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT media_provider_asset_id_nonempty CHECK (
+        provider_asset_id IS NULL OR length(btrim(provider_asset_id)) > 0
+    ),
     CONSTRAINT media_format CHECK (format IS NULL OR format IN ('jpeg', 'png')),
     CONSTRAINT media_size CHECK (size_bytes IS NULL OR size_bytes > 0),
     CONSTRAINT confirmed_media_metadata CHECK (
-        state NOT IN ('STAGED', 'ATTACHED')
-        OR (format IS NOT NULL AND size_bytes IS NOT NULL AND size_bytes > 0)
+        (provider_asset_id IS NULL AND format IS NULL AND size_bytes IS NULL)
+        OR (provider_asset_id IS NOT NULL AND format IS NOT NULL AND size_bytes IS NOT NULL AND size_bytes > 0)
+    ),
+    CONSTRAINT attached_media_confirmed CHECK (
+        state <> 'ATTACHED' OR provider_asset_id IS NOT NULL
     )
 );
 ALTER TABLE users ADD CONSTRAINT users_avatar_fk

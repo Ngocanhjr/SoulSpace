@@ -68,7 +68,7 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | MED03 | Lấy API URL ảnh rồi đổi bài sang private/xóa | Guest/user khác bị 404 ở lần đọc quyền tiếp theo; không dựa vào việc UI đã giấu ảnh. |
 | MED04 | Đổi avatar rồi DB commit thất bại | Avatar cũ vẫn dùng được; asset mới được enqueue/quét thu hồi. |
 | MED05 | Cleanup provider lỗi/timeout/backend crash sau claim | Nghiệp vụ đã commit vẫn giữ; lease/retry phục hồi; thất bại hoặc hết lease ở lượt thứ 5 thành DEAD, không có lượt tự động thứ 6. |
-| MED06 | Receipt PENDING_UPLOAD/STAGED bị bỏ dở | Bộ quét đối soát và enqueue đúng; timeout upload không bị báo thành công. |
+| MED06 | Receipt PENDING bị bỏ dở, có/không có metadata xác nhận | Bộ quét phân biệt hai trường hợp theo metadata, đối soát/enqueue đúng; timeout upload không bị báo thành công. |
 | MED07 | Xóa user rồi cleanup worker chạy | Receipt/job vẫn có đủ public_id; không FK mất queue theo user. |
 | MED08 | Hai worker claim cùng job, destroy not found, receipt đến muộn | Không ghi đè asset; xử lý lặp an toàn, không gắn lại tài nguyên đã bị xóa. |
 | MED09 | Queue clone sang môi trường có MEDIA_NAMESPACE khác | Worker từ chối destroy; không xóa ảnh của môi trường gốc. |
@@ -112,7 +112,7 @@ Chạy query đối soát cả bốn loại counter sau các ca trên khi không
 | DB03 | RUNNING không lease; PENDING/DEAD có lease; attempts âm hoặc >5 | CHECK từ chối; claim và chuyển trạng thái hợp lệ được ghi. |
 | DB04 | Trùng vị trí ảnh, position=NULL/ngoài 0–9, gắn cùng asset hai bài | NOT NULL/PK/UNIQUE/CHECK từ chối; không gỡ index/constraint để chạy demo. |
 | DB05 | Sửa ID/blog_id/parent_id comment, đổi author sang người khác, tạo vòng hoặc cấp 6 | Trigger/FK từ chối; đổi author sang NULL chỉ hợp lệ khi nội dung đã xóa. |
-| DB06 | STAGED/ATTACHED thiếu format/size hoặc format ngoài jpeg/png | CHECK metadata từ chối cả trường hợp NULL; PENDING_UPLOAD được phép thiếu metadata. |
+| DB06 | Metadata PENDING thiếu một phần; ATTACHED thiếu xác nhận; format ngoài jpeg/png hoặc size <= 0 | CHECK từ chối metadata một phần/sai; receipt PENDING chưa xác nhận được phép để cả ba trường NULL; ATTACHED phải có đủ metadata. |
 | DB07 | Xóa trực tiếp user còn comment hoạt động ở bài người khác, chưa xóa nội dung | Không để tồn tại comment author=NULL nhưng còn nội dung; transaction thiếu bước chuẩn bị thất bại, service đúng quy trình DEL02 thành công. |
 
 DB01–DB07 kiểm các invariant có thể thực thi bằng constraint/trigger; ownership/visibility và xác nhận claim còn phải kiểm qua các luồng service/procedure đã khóa. Không coi FK đơn là bằng chứng bảo vệ mọi phép ghi SQL quản trị.
@@ -150,9 +150,11 @@ Không chạy negative TLS bằng cách sửa endpoint hoặc credential của d
 
 Thực hiện lần lượt signup, login, reload, xem feed/profile/search hiện tại, tạo text và ảnh, sửa bài và quyền xem, avatar, like/unlike, comment/reply/comment like, sửa/xóa comment, share/unshare, logout, hết session và xóa tài khoản. Kiểm Guest, tác giả comment, chủ bài khác tác giả và user khác bằng browser/session riêng. Danh sách vẫn là array; placeholder/tác giả null được dựng đúng, không mất replies; ảnh relative URL hoạt động qua proxy. Tìm kiếm nâng cao theo comment nằm ngoài mốc chốt database này.
 
-Đặc biệt kiểm SignUp không còn log password, SignIn xử lý 401/429, UI không coi localStorage là auth, request desired-state không gửi đồng thời trái nhau, sửa bài không cần hai commit và dialog xóa account không làm lộ password.
+Đặc biệt kiểm SignUp không còn log password, SignIn xử lý 401/429, UI không coi localStorage là auth; khi bấm like/unlike liên tục, biểu tượng đổi tức thì, request được gộp theo từng mục, tối đa một request chạy cùng lúc và kết quả cuối khớp ý định cuối cùng. Response cũ không ghi đè giao diện mới; lỗi khôi phục trạng thái đã xác nhận hoặc cho retry desired-state an toàn. Sửa bài không cần hai commit và dialog xóa account không làm lộ password.
 
 ## Bằng chứng và điều kiện bàn giao
+
+Giai đoạn AI có các ca TOP-T01–TOP-T12 tại [nghiệm thu phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng), gồm model lỗi không chặn đăng bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 11 bảng/63 cột và tổng 37 endpoint; Definition of Done bên dưới vẫn dành cho migration core.
 
 Lưu báo cáo tương lai dưới `docs/verification/<run-id>/` với commit, thời gian UTC, môi trường, version, lệnh thực chạy, PASS/FAIL/chưa kiểm, test report, query plan và ảnh/video demo khi cần. Các đường dẫn này là đầu ra dự kiến, chưa có báo cáo ở thời điểm lập spec.
 

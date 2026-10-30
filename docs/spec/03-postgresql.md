@@ -1,6 +1,6 @@
 # Thiết kế PostgreSQL và giao dịch
 
-Thiết kế cập nhật ngày 27/10/2026 theo các quyết định đã chốt về comment, xóa tài khoản, timestamp, media và lease cleanup. Xem [bản SVG](erd.md) và [báo cáo chốt thiết kế](erd-review.md). Đã tạo Flyway V1–V4 và kiểm thử SQL bằng PostgreSQL WASM; chưa chạy qua JDBC/Flyway trên Docker hoặc Neon. Hướng dẫn tại [database foundation](../../infra/postgres/README.md).
+Thiết kế cập nhật ngày 30/10/2026, gồm chủ đề bài viết theo giai đoạn AI và các quyết định đã chốt về comment, xóa tài khoản, timestamp, media và lease cleanup. Xem [bản SVG](erd.md) và [báo cáo chốt thiết kế](erd-review.md). Đã tạo Flyway V1–V4 và kiểm thử SQL bằng PostgreSQL WASM; chưa chạy qua JDBC/Flyway trên Docker hoặc Neon. Hướng dẫn tại [database foundation](../../infra/postgres/README.md).
 
 ## Ánh xạ nghiệp vụ legacy sang kỹ thuật SQL
 
@@ -39,13 +39,15 @@ route /api/v1 hiện có + liked=true/false + actor từ session
   -> commit rồi trả response
 ```
 
-Gọi lặp `liked=true` giữ một quan hệ và một lượt tăng; rollback phải hoàn tác cả quan hệ lẫn thay đổi counter. Trong nhóm tương tác, triển khai like bài làm mẫu để kiểm đủ procedure, trigger, transaction và constraint, rồi mở rộng comment/share. Các luồng CRUD/avatar/xóa áp dụng ranh giới transaction ở trên theo [mốc triển khai](05-trien-khai.md). Feed và trang tác giả là các luồng đo index. DDL được triển khai trước theo Flyway V1–V4; bằng chứng từng kỹ thuật theo [nghiệm thu](06-nghiem-thu.md).
+Gọi lặp `liked=true` giữ một quan hệ và một lượt tăng; rollback phải hoàn tác cả quan hệ lẫn thay đổi counter. Mỗi request được xử lý và commit ngay trong transaction; backend không giữ like trong queue chờ đủ thời gian hay chờ app đóng. Frontend cập nhật lạc quan và gộp các lần bấm nhanh theo từng mục, còn database giữ trạng thái cuối qua procedure, khóa chính ghép và trigger chỉ cập nhật counter khi quan hệ thật sự đổi. Trong nhóm tương tác, triển khai like bài làm mẫu để kiểm đủ procedure, trigger, transaction và constraint, rồi mở rộng comment/share. Các luồng CRUD/avatar/xóa áp dụng ranh giới transaction ở trên theo [mốc triển khai](05-trien-khai.md). Feed và trang tác giả là các luồng đo index. DDL được triển khai trước theo Flyway V1–V4; bằng chứng từng kỹ thuật theo [nghiệm thu](06-nghiem-thu.md).
 
 ## Mô hình và kiểu dữ liệu
 
+Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 11 bảng/63 cột**, gồm core và phân loại chủ đề. Bổ sung ngày 30/10/2026: [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md#dữ-liệu-mở-rộng) thêm categories (3 cột), blog_categories (2 cột) và blogs.category_source (1 cột), thành **11 bảng/63 cột** khi triển khai giai đoạn AI. Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai); không sửa Flyway core đã có.
+
 PostgreSQL là nguồn dữ liệu nghiệp vụ duy nhất của backend mới: Neon cho dùng chung/online và Docker cho local, mỗi lần chạy chỉ trỏ một database. Chọn cùng major, mặc định 17; cùng một bộ Flyway, trigger và procedure trên cả hai. Không đồng bộ hoặc tự động failover ghi dữ liệu giữa Neon và Docker. Dùng UUID sinh ở server cho các thực thể và trả string qua JSON. Không lưu ObjectId, snapshot tác giả, cây comments dưới dạng JSON, hoặc danh sách like trong một cột. `UserInfo` legacy được thay bằng JOIN users khi dựng DTO.
 
-Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú nullable. Sơ đồ tổng quan có đủ 9 bảng với 57 cột; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
+Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú nullable. Sơ đồ tổng quan có đủ 11 bảng với 63 cột; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
 
 ### Đọc mô hình bằng chữ
 
@@ -54,7 +56,9 @@ Có thể đọc bảng dưới đây rồi chuyển đến phần mô tả từ
 | Bảng | Lưu thông tin gì? | Liên kết và cách đọc |
 | --- | --- | --- |
 | users | Tài khoản, hồ sơ và hash mật khẩu | Một user có nhiều bài viết và bình luận; avatar_media_id trỏ đến một media asset hoặc NULL khi dùng avatar mặc định. |
-| blogs | Nội dung, quyền công khai, thời gian và counters của bài viết | author_id trỏ đến user viết bài. Mỗi bài có nhiều comments, ảnh, likes và shares. |
+| blogs | Nội dung, quyền công khai, chủ đề, thời gian và counters của bài viết | author_id trỏ đến user viết bài; category_source xác định chế độ AUTO/MANUAL; các chủ đề nối qua blog_categories. Mỗi bài có nhiều comments, ảnh, likes và shares. |
+| blog_categories | Tập chủ đề của từng bài | Bảng nối N–N; PK ghép (blog_id, category_id), mỗi hàng nối đúng một bài với một chủ đề. |
+| categories | Danh mục chủ đề: ID, tên và slug | Một chủ đề có 0..n bài; mỗi bài có 0..n chủ đề qua blog_categories. |
 | comments | Một bình luận hoặc một reply, trạng thái xóa và version chỉnh sửa | blog_id xác định bài chứa comment; author_id xác định người viết nếu tài khoản còn tồn tại. parent_id=NULL là bình luận gốc; parent_id có giá trị là trả lời comment đó trong cùng bài. |
 | blog_likes | Ai đang like bài nào và thời điểm like | Mỗi hàng nối một user với một blog; cặp blog_id/user_id chỉ được xuất hiện một lần. Xóa hàng là bỏ like. |
 | comment_likes | Ai đang like comment nào và thời điểm like | Mỗi hàng nối một user với một comment; cặp comment_id/user_id chỉ được xuất hiện một lần. |
@@ -69,7 +73,7 @@ Các trường thời gian và counters nằm ngay trên bảng mô tả đối 
 
 ### Sơ đồ tổng quan
 
-Sơ đồ gồm đủ chín bảng và toàn bộ 57 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
+Sơ đồ gồm đủ mười một bảng và toàn bộ 63 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
 
 ```mermaid
 ---
@@ -78,6 +82,8 @@ config:
 ---
 erDiagram
     direction LR
+    blogs ||--o{ blog_categories : has
+    categories ||--o{ blog_categories : classifies
     users ||--o{ blogs : authors
     users o|--o{ comments : writes
     blogs ||--o{ comments : contains
@@ -105,6 +111,17 @@ erDiagram
         TIMESTAMPTZ updated_at
     }
 
+    blog_categories {
+        UUID blog_id PK, FK
+        UUID category_id PK, FK
+    }
+
+    categories {
+        UUID id PK
+        VARCHAR(100) name
+        VARCHAR(100) slug UK
+    }
+
     blogs {
         UUID id PK
         UUID author_id FK
@@ -115,6 +132,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        VARCHAR(6) category_source "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -152,11 +170,11 @@ erDiagram
         UUID id PK
         UUID owner_id FK "nullable"
         VARCHAR(16) purpose
-        VARCHAR(20) state
+        VARCHAR(20) state "PENDING, ATTACHED, DELETE_PENDING"
         TEXT provider_public_id UK
         TEXT provider_asset_id UK "nullable"
-        VARCHAR(8) format "nullable khi PENDING_UPLOAD"
-        BIGINT size_bytes "nullable khi PENDING_UPLOAD"
+        VARCHAR(8) format "nullable truoc xac nhan upload"
+        BIGINT size_bytes "nullable truoc xac nhan upload"
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
     }
@@ -190,6 +208,8 @@ config:
 ---
 erDiagram
     direction LR
+    blogs ||--o{ blog_categories : has
+    categories ||--o{ blog_categories : classifies
     users ||--o{ blogs : authors
     users o|--o{ comments : writes
     blogs ||--o{ comments : contains
@@ -206,6 +226,17 @@ erDiagram
         TIMESTAMPTZ updated_at
     }
 
+    blog_categories {
+        UUID blog_id PK, FK
+        UUID category_id PK, FK
+    }
+
+    categories {
+        UUID id PK
+        VARCHAR(100) name
+        VARCHAR(100) slug UK
+    }
+
     blogs {
         UUID id PK
         UUID author_id FK
@@ -216,6 +247,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        VARCHAR(6) category_source "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -243,6 +275,8 @@ config:
 ---
 erDiagram
     direction LR
+    blogs ||--o{ blog_categories : has
+    categories ||--o{ blog_categories : classifies
     users ||--o{ blog_likes : likes
     blogs ||--o{ blog_likes : receives
     users ||--o{ comment_likes : likes
@@ -261,6 +295,17 @@ erDiagram
         TIMESTAMPTZ updated_at
     }
 
+    blog_categories {
+        UUID blog_id PK, FK
+        UUID category_id PK, FK
+    }
+
+    categories {
+        UUID id PK
+        VARCHAR(100) name
+        VARCHAR(100) slug UK
+    }
+
     blogs {
         UUID id PK
         UUID author_id FK
@@ -271,6 +316,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        VARCHAR(6) category_source "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -316,6 +362,8 @@ config:
 ---
 erDiagram
     direction LR
+    blogs ||--o{ blog_categories : has
+    categories ||--o{ blog_categories : classifies
     users o|--o{ media_assets : owns
     users o|--o| media_assets : avatar
     blogs ||--o{ blog_images : contains
@@ -333,6 +381,17 @@ erDiagram
         TIMESTAMPTZ updated_at
     }
 
+    blog_categories {
+        UUID blog_id PK, FK
+        UUID category_id PK, FK
+    }
+
+    categories {
+        UUID id PK
+        VARCHAR(100) name
+        VARCHAR(100) slug UK
+    }
+
     blogs {
         UUID id PK
         UUID author_id FK
@@ -343,17 +402,18 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+        VARCHAR(6) category_source "AUTO or MANUAL; AI"
     }
 
     media_assets {
         UUID id PK
         UUID owner_id FK "nullable"
         VARCHAR(16) purpose
-        VARCHAR(20) state
+        VARCHAR(20) state "PENDING, ATTACHED, DELETE_PENDING"
         TEXT provider_public_id UK
         TEXT provider_asset_id UK "nullable"
-        VARCHAR(8) format "nullable khi PENDING_UPLOAD"
-        BIGINT size_bytes "nullable khi PENDING_UPLOAD"
+        VARCHAR(8) format "nullable truoc xac nhan upload"
+        BIGINT size_bytes "nullable truoc xac nhan upload"
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
     }
@@ -411,6 +471,25 @@ Thứ tự này áp dụng lúc tạo cấu trúc database. Khi đăng ký tài 
 
 users lưu hash mật khẩu, không lưu mật khẩu gốc hoặc session. Session được Spring Security quản lý ở bộ nhớ backend, chỉ giữ user ID và dữ liệu xác thực tối thiểu. Mỗi request xác thực kiểm tra tài khoản còn tồn tại; xóa tài khoản phải thu hồi session sau commit.
 
+## Bảng categories (giai đoạn AI)
+
+| Cột | Kiểu và ràng buộc |
+| --- | --- |
+| id | UUID, PK; server/seed cấp |
+| name | VARCHAR(100), NOT NULL; CHECK char_length(btrim(name)) BETWEEN 1 AND 100 |
+| slug | VARCHAR(100), NOT NULL, UNIQUE; CHECK slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' |
+
+Tên hiển thị có dấu; slug ổn định và dùng chữ thường không dấu, ví dụ Học tập / hoc-tap. Danh mục phải khớp nhãn model, không tự tạo từ đầu ra suy luận. Không xóa danh mục đang có bài tham chiếu (ON DELETE RESTRICT). Xem [quy tắc phân loại và API](07-phan-loai-chu-de.md).
+
+## Bảng blog_categories (giai đoạn AI)
+
+| Cột | Kiểu và ràng buộc |
+| --- | --- |
+| blog_id | UUID, NOT NULL, FK blogs(id) ON DELETE CASCADE; thuộc PK ghép |
+| category_id | UUID, NOT NULL, FK categories(id) ON DELETE RESTRICT; thuộc PK ghép |
+
+PRIMARY KEY (blog_id, category_id) ngăn gán trùng; không cần id riêng. Quan hệ blogs–categories là N–N: mỗi bên có 0..n liên kết. Bài chưa có chủ đề không có hàng ở bảng nối. Xóa bài chỉ cascade các liên kết; danh mục đang được sử dụng không được xóa. PK hỗ trợ tra cứu theo blog_id; index theo category_id chỉ bổ sung khi query/EXPLAIN cần. Khi thay tập chủ đề, khóa hàng blogs và ghi toàn bộ liên kết cùng category_source trong một transaction. Không phân trang trực tiếp qua JOIN N–N; phân trang blogs trước rồi batch lấy chủ đề.
+
 ## Bảng blogs
 
 Mỗi hàng là một bài viết của một user. published quyết định bài được xem công khai hay chỉ chủ bài được xem. Ảnh nằm ở bảng blog_images; các danh sách người like/share và comments nằm ở bảng quan hệ riêng. Các cột *_count là tổng lưu sẵn để đọc danh sách; trigger duy trì chúng từ dữ liệu quan hệ thật.
@@ -426,6 +505,9 @@ Mỗi hàng là một bài viết của một user. published quyết định b�
 | shares_count | BIGINT, không âm, mặc định 0 |
 | created_at | TIMESTAMPTZ, NOT NULL DEFAULT now() |
 | updated_at | TIMESTAMPTZ, NOT NULL DEFAULT now() |
+| category_source | VARCHAR(6), NOT NULL DEFAULT 'AUTO'; CHECK IN ('AUTO','MANUAL'); bổ sung giai đoạn AI |
+
+Model chỉ ghi khi category_source=AUTO và nội dung vẫn khớp snapshot. MANUAL kể cả tập chủ đề rỗng giữ lựa chọn đổi/bỏ nhãn của tác giả. Các thay đổi nhãn tự động không đổi updated_at hoặc counters. Cột category_source cùng categories/blog_categories được triển khai bằng Flyway mới, không sửa V1–V4.
 
 ### Bài phải có nội dung hoặc ảnh khi commit
 
@@ -570,15 +652,25 @@ Mỗi hàng mô tả một ảnh đang hoặc đã upload lên Cloudinary. id l�
 | id | UUID, PK; server sinh trước khi gọi provider để có receipt theo dõi upload |
 | owner_id | UUID, nullable; FK users(id) ON DELETE SET NULL; giữ asset để cleanup sau khi tài khoản bị xóa |
 | purpose | VARCHAR(16), NOT NULL; CHECK (purpose IN ('AVATAR','BLOG','STANDALONE')) |
-| state | VARCHAR(20), NOT NULL; CHECK (state IN ('PENDING_UPLOAD','STAGED','ATTACHED','DELETE_PENDING')) |
+| state | VARCHAR(20), NOT NULL; CHECK (state IN ('PENDING','ATTACHED','DELETE_PENDING')) |
 | provider_public_id | TEXT, NOT NULL, UNIQUE; server sinh và giữ nguyên namespace/folder; không tái sử dụng cho ảnh khác |
-| provider_asset_id | TEXT, nullable, UNIQUE; nhận từ response provider khi upload được xác nhận |
-| format | VARCHAR(8), nullable khi PENDING_UPLOAD; khi STAGED/ATTACHED bắt buộc NOT NULL và IN ('jpeg','png') |
-| size_bytes | BIGINT, nullable khi PENDING_UPLOAD; khi STAGED/ATTACHED bắt buộc NOT NULL và > 0 |
-| created_at | TIMESTAMPTZ, NOT NULL; thời điểm tạo receipt, dùng phát hiện upload/staged bị bỏ dở |
+| provider_asset_id | TEXT, nullable, UNIQUE; CHECK NULL hoặc length(btrim(provider_asset_id)) > 0; nhận từ response provider khi upload được xác nhận |
+| format | VARCHAR(8), nullable trước khi provider xác nhận; khi đã xác nhận bắt buộc NOT NULL và IN ('jpeg','png') |
+| size_bytes | BIGINT, nullable trước khi provider xác nhận; khi đã xác nhận bắt buộc NOT NULL và > 0 |
+| created_at | TIMESTAMPTZ, NOT NULL; thời điểm tạo receipt, dùng phát hiện upload bị bỏ dở |
 | updated_at | TIMESTAMPTZ, NOT NULL; thời điểm thay đổi metadata/trạng thái của asset |
 
-CHECK metadata theo state phải kiểm NOT NULL rõ; phép so sánh với NULL không đủ để từ chối dữ liệu thiếu. PENDING_UPLOAD dùng khi provider chưa xác nhận, STAGED là ảnh đã upload nhưng chưa gắn, ATTACHED là ảnh đang được sử dụng và DELETE_PENDING là ảnh đã được đưa vào quy trình dọn. Asset không còn owner không được phục vụ qua API ảnh.
+`provider_asset_id`, `format` và `size_bytes` phải cùng NULL hoặc cùng có giá trị; format chỉ nhận jpeg/png, kích thước phải > 0. `ATTACHED` bắt buộc có đủ metadata đã xác nhận. PENDING dùng cho receipt chưa xác nhận (cả ba cột NULL) hoặc ảnh upload thành công nhưng chưa gắn (cả ba cột có giá trị). ATTACHED là ảnh đang được sử dụng; DELETE_PENDING đã vào quy trình dọn. Asset PENDING chỉ được phục vụ cho owner nếu upload đã xác nhận; receipt chưa xác nhận và asset DELETE_PENDING trả 404.
+
+Các CHECK tương ứng:
+
+```sql
+CHECK (
+    (provider_asset_id IS NULL AND format IS NULL AND size_bytes IS NULL)
+ OR (provider_asset_id IS NOT NULL AND format IS NOT NULL AND size_bytes IS NOT NULL AND size_bytes > 0)
+),
+CHECK (state <> 'ATTACHED' OR provider_asset_id IS NOT NULL)
+```
 
 ## Bảng blog_images
 
@@ -631,11 +723,11 @@ Delivery type cố định `authenticated`, resource type cố định `image` t
 
 Không lưu mime_type. Sau khi kiểm tra nội dung ảnh, backend canonical hóa định dạng thành jpeg/png; một hàm dùng chung ánh xạ jpeg -> image/jpeg, png -> image/png cho Content-Type. Không lấy định dạng tin cậy từ tên file hoặc MIME client gửi. Metadata của asset đã attach không được đổi sang file khác; thay ảnh tạo asset mới.
 
-Luồng attach dùng chung khóa user/blog đích trước, rồi khóa các asset FOR UPDATE theo UUID tăng dần. Sau khi lấy khóa, kiểm owner đúng actor, purpose đúng AVATAR/BLOG của thao tác, state=STAGED và metadata hợp lệ; chỉ sau đó thêm liên kết và chuyển ATTACHED trong cùng transaction. Asset đã ATTACHED hoặc DELETE_PENDING không được gắn lại vào một liên kết mới; ảnh giữ nguyên trong bài không phải thao tác attach mới. Purpose không đổi sau tạo; không cho một asset làm avatar đồng thời ảnh bài. Upload độc lập không được gắn qua URL tùy ý trong request hiện tại.
+Luồng attach dùng chung khóa user/blog đích trước, rồi khóa các asset FOR UPDATE theo UUID tăng dần. Sau khi lấy khóa, kiểm owner đúng actor, purpose đúng AVATAR/BLOG của thao tác, state=PENDING và metadata đã xác nhận; chỉ sau đó thêm liên kết và chuyển ATTACHED trong cùng transaction. Upload avatar/bài hoàn tất việc ghi metadata, gắn asset và cập nhật quan hệ trong transaction nghiệp vụ; upload độc lập lưu metadata xác nhận nhưng giữ PENDING. Trigger V3 cho phép PENDING -> ATTACHED/DELETE_PENDING và ATTACHED -> DELETE_PENDING; không cho ATTACHED quay về PENDING hay DELETE_PENDING phục hồi. Sau khi provider_asset_id đã có, format và size_bytes bất biến. Asset ATTACHED hoặc DELETE_PENDING không được gắn lại vào liên kết mới; ảnh giữ nguyên trong bài không phải thao tác attach mới. Purpose không đổi sau tạo; không cho một asset làm avatar đồng thời ảnh bài. Upload độc lập không được gắn qua URL tùy ý trong request hiện tại.
 
 Gỡ liên kết/cleanup scanner cũng khóa asset, đọc lại trạng thái và liên kết trước khi đổi DELETE_PENDING. Scanner bỏ qua asset đã được attach; attach từ chối asset đã chuyển DELETE_PENDING. Worker sau claim khóa asset rồi job để kiểm trạng thái DELETE_PENDING, namespace và không còn liên kết sống; không destroy nếu kiểm tra thất bại. Các transaction này kết thúc trước lời gọi Cloudinary. Ràng buộc FK không thay thế kiểm owner/purpose/state tại luồng service đã khóa.
 
-Khi gỡ ảnh, thay avatar, xóa blog/tài khoản: service lập job và đổi asset sang DELETE_PENDING trong cùng transaction với thay đổi nghiệp vụ. Enqueue dùng INSERT ... ON CONFLICT(asset_id) DO NOTHING, không reset status/attempts/lease của job đã tồn tại. Thu thập đủ assets và khóa theo thứ tự trước khi cascade, gồm cả STAGED/PENDING_UPLOAD thuộc tài khoản bị xóa. Job không FK trực tiếp tới users/blogs nên không bị mất khi các hàng đó bị xóa. Nếu enqueue thất bại phải rollback nghiệp vụ.
+Khi gỡ ảnh, thay avatar, xóa blog/tài khoản: service lập job và đổi asset sang DELETE_PENDING trong cùng transaction với thay đổi nghiệp vụ. Enqueue dùng INSERT ... ON CONFLICT(asset_id) DO NOTHING, không reset status/attempts/lease của job đã tồn tại. Thu thập đủ assets và khóa theo thứ tự trước khi cascade, gồm mọi PENDING thuộc tài khoản bị xóa (có thể chưa xác nhận hoặc đã xác nhận nhưng chưa gắn). Job không FK trực tiếp tới users/blogs nên không bị mất khi các hàng đó bị xóa. Nếu enqueue thất bại phải rollback nghiệp vụ.
 
 Ví dụ thay avatar: upload asset mới trước, rồi trong một transaction đổi users.avatar_media_id, đánh dấu asset cũ cần dọn và lập cleanup job. Sau commit, worker mới gọi Cloudinary xóa ảnh cũ. Nếu transaction rollback, user vẫn giữ avatar cũ; nếu Cloudinary lỗi sau commit, job còn trong database để thử lại.
 
@@ -655,7 +747,7 @@ Ví dụ thay avatar: upload asset mới trước, rồi trong một transaction
 | blog_shares(blog_id) | Counter/cascade theo bài; PK đã có user_id đứng đầu. |
 | blog_shares(user_id,shared_at DESC,blog_id DESC) | Trang bài đã share. |
 | media_assets(owner_id) | Thu thập tài sản khi xóa user. |
-| media_assets(state,created_at) | Quét upload/staged quá hạn. |
+| media_assets(state,created_at) | Quét PENDING quá hạn; metadata phân biệt upload chưa xác nhận với asset đã xác nhận nhưng chưa gắn. |
 | media_cleanup_jobs(available_at,id) WHERE status='PENDING' | Worker nhận job đến hạn. |
 | media_cleanup_jobs(lease_until) WHERE status='RUNNING' | Thu hồi lease quá hạn. |
 
