@@ -1,6 +1,9 @@
 # Thiết kế PostgreSQL và giao dịch
 
-Thiết kế cập nhật ngày 30/10/2026, gồm chủ đề bài viết theo giai đoạn AI và các quyết định đã chốt về comment, xóa tài khoản, timestamp, media và lease cleanup. Xem [bản SVG](erd.md) và [báo cáo chốt thiết kế](erd-review.md). Đã tạo Flyway V1–V4 và kiểm thử SQL bằng PostgreSQL WASM; chưa chạy qua JDBC/Flyway trên Docker hoặc Neon. Hướng dẫn tại [database foundation](../../infra/postgres/README.md).
+Thiết kế cập nhật ngày 31/10/2026, gồm chủ đề bài viết theo giai đoạn AI và các quyết định đã chốt về comment, xóa tài
+khoản, timestamp, media và lease cleanup. Xem [bản SVG](erd.md) và [báo cáo chốt thiết kế](erd-review.md). Đã tạo Flyway
+V1–V5 và kiểm thử SQL bằng PostgreSQL WASM; chưa chạy qua JDBC/Flyway trên Docker hoặc Neon. Hướng dẫn
+tại [database foundation](../../infra/postgres/README.md).
 
 ## Ánh xạ nghiệp vụ legacy sang kỹ thuật SQL
 
@@ -39,33 +42,45 @@ route /api/v1 hiện có + liked=true/false + actor từ session
   -> commit rồi trả response
 ```
 
-Gọi lặp `liked=true` giữ một quan hệ và một lượt tăng; rollback phải hoàn tác cả quan hệ lẫn thay đổi counter. Mỗi request được xử lý và commit ngay trong transaction; backend không giữ like trong queue chờ đủ thời gian hay chờ app đóng. Frontend cập nhật lạc quan và gộp các lần bấm nhanh theo từng mục, còn database giữ trạng thái cuối qua procedure, khóa chính ghép và trigger chỉ cập nhật counter khi quan hệ thật sự đổi. Trong nhóm tương tác, triển khai like bài làm mẫu để kiểm đủ procedure, trigger, transaction và constraint, rồi mở rộng comment/share. Các luồng CRUD/avatar/xóa áp dụng ranh giới transaction ở trên theo [mốc triển khai](05-trien-khai.md). Feed và trang tác giả là các luồng đo index. DDL được triển khai trước theo Flyway V1–V4; bằng chứng từng kỹ thuật theo [nghiệm thu](06-nghiem-thu.md).
+Gọi lặp `liked=true` giữ một quan hệ và một lượt tăng; rollback phải hoàn tác cả quan hệ lẫn thay đổi counter. Mỗi
+request được xử lý và commit ngay trong transaction; backend không giữ like trong queue chờ đủ thời gian hay chờ app
+đóng. Frontend cập nhật lạc quan và gộp các lần bấm nhanh theo từng mục, còn database giữ trạng thái cuối qua procedure,
+khóa chính ghép và trigger chỉ cập nhật counter khi quan hệ thật sự đổi. Trong nhóm tương tác, triển khai like bài làm
+mẫu để kiểm đủ procedure, trigger, transaction và constraint, rồi mở rộng comment/share. Các luồng CRUD/avatar/xóa áp
+dụng ranh giới transaction ở trên theo [mốc triển khai](05-trien-khai.md). Feed và trang tác giả là các luồng đo index.
+DDL được triển khai trước theo Flyway V1–V5; bằng chứng từng kỹ thuật theo [nghiệm thu](06-nghiem-thu.md).
 
 ## Mô hình và kiểu dữ liệu
 
-Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 11 bảng/63 cột**, gồm core và phân loại chủ đề. Bổ sung ngày 30/10/2026: [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md#dữ-liệu-mở-rộng) thêm categories (3 cột), blog_categories (2 cột) và blogs.category_source (1 cột), thành **11 bảng/63 cột** khi triển khai giai đoạn AI. Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai); không sửa Flyway core đã có.
+Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 11 bảng/65 cột**, gồm chủ đề và confidence. V1 đã bổ sung
+categories (3 cột), blog_categories (4 cột) và blogs.category_mode trước lần chạy Flyway đầu tiên theo xác nhận của
+người dùng. Model triển khai theo [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md#dữ-liệu-mở-rộng).
+Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai).
 
 PostgreSQL là nguồn dữ liệu nghiệp vụ duy nhất của backend mới: Neon cho dùng chung/online và Docker cho local, mỗi lần chạy chỉ trỏ một database. Chọn cùng major, mặc định 17; cùng một bộ Flyway, trigger và procedure trên cả hai. Không đồng bộ hoặc tự động failover ghi dữ liệu giữa Neon và Docker. Dùng UUID sinh ở server cho các thực thể và trả string qua JSON. Không lưu ObjectId, snapshot tác giả, cây comments dưới dạng JSON, hoặc danh sách like trong một cột. `UserInfo` legacy được thay bằng JOIN users khi dựng DTO.
 
-Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú nullable. Sơ đồ tổng quan có đủ 11 bảng với 63 cột; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
+Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú
+nullable. Sơ đồ tổng quan có đủ 11 bảng với 65 cột; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ
+đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa
+chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
 
 ### Đọc mô hình bằng chữ
 
 Có thể đọc bảng dưới đây rồi chuyển đến phần mô tả từng bảng mà không cần xem sơ đồ. `NULL` ở cột liên kết nghĩa là hàng đó chưa có hoặc không còn liên kết tương ứng; điều kiện được phép NULL được quy định riêng theo từng bảng.
 
-| Bảng | Lưu thông tin gì? | Liên kết và cách đọc |
-| --- | --- | --- |
-| users | Tài khoản, hồ sơ và hash mật khẩu | Một user có nhiều bài viết và bình luận; avatar_media_id trỏ đến một media asset hoặc NULL khi dùng avatar mặc định. |
-| blogs | Nội dung, quyền công khai, chủ đề, thời gian và counters của bài viết | author_id trỏ đến user viết bài; category_source xác định chế độ AUTO/MANUAL; các chủ đề nối qua blog_categories. Mỗi bài có nhiều comments, ảnh, likes và shares. |
-| blog_categories | Tập chủ đề của từng bài | Bảng nối N–N; PK ghép (blog_id, category_id), mỗi hàng nối đúng một bài với một chủ đề. |
-| categories | Danh mục chủ đề: ID, tên và slug | Một chủ đề có 0..n bài; mỗi bài có 0..n chủ đề qua blog_categories. |
-| comments | Một bình luận hoặc một reply, trạng thái xóa và version chỉnh sửa | blog_id xác định bài chứa comment; author_id xác định người viết nếu tài khoản còn tồn tại. parent_id=NULL là bình luận gốc; parent_id có giá trị là trả lời comment đó trong cùng bài. |
-| blog_likes | Ai đang like bài nào và thời điểm like | Mỗi hàng nối một user với một blog; cặp blog_id/user_id chỉ được xuất hiện một lần. Xóa hàng là bỏ like. |
-| comment_likes | Ai đang like comment nào và thời điểm like | Mỗi hàng nối một user với một comment; cặp comment_id/user_id chỉ được xuất hiện một lần. |
-| blog_shares | Ai chia sẻ bài nào và thời điểm share | Mỗi hàng nối một user với một blog. Nội dung hiển thị được lấy từ bài gốc hiện tại; không có bản sao nội dung trong hàng share. |
-| media_assets | Metadata của một ảnh đã hoặc đang upload | owner_id xác định chủ asset; purpose phân biệt avatar/ảnh bài/upload độc lập; state theo dõi vòng đời. File ảnh nằm ở Cloudinary; bảng giữ ID provider, định dạng, kích thước và thời gian. |
-| blog_images | Ảnh nào được gắn vào bài nào và ở vị trí nào | blog_id trỏ đến bài; asset_id trỏ đến ảnh và là PK của bảng. position xác định thứ tự hiển thị, từ 0 đến 9. |
-| media_cleanup_jobs | Công việc dọn một asset khỏi Cloudinary | asset_id xác định ảnh cần dọn. status, attempts, available_at, lease_until và last_error giúp worker nhận việc, thử lại và theo dõi lỗi. |
+| Bảng               | Lưu thông tin gì?                                                     | Liên kết và cách đọc                                                                                                                                                                        |
+|--------------------|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| users              | Tài khoản, hồ sơ và hash mật khẩu                                     | Một user có nhiều bài viết và bình luận; avatar_media_id trỏ đến một media asset hoặc NULL khi dùng avatar mặc định.                                                                        |
+| blogs              | Nội dung, quyền công khai, chủ đề, thời gian và counters của bài viết | author_id trỏ đến user viết bài; category_mode chọn tập AUTO/MANUAL để hiển thị; blog_categories lưu riêng hai tập theo category_source. Mỗi bài có nhiều comments, ảnh, likes và shares.   |
+| blog_categories    | Tập chủ đề của từng bài                                               | Bảng nối N–N; PK ghép (blog_id, category_id, category_source), mỗi hàng nối đúng một bài với một chủ đề và một nguồn AUTO/MANUAL.                                                           |
+| categories         | Danh mục chủ đề: ID, tên và slug                                      | Một chủ đề có 0..n bài; mỗi bài có 0..n chủ đề qua blog_categories.                                                                                                                         |
+| comments           | Một bình luận hoặc một reply, trạng thái xóa và version chỉnh sửa     | blog_id xác định bài chứa comment; author_id xác định người viết nếu tài khoản còn tồn tại. parent_id=NULL là bình luận gốc; parent_id có giá trị là trả lời comment đó trong cùng bài.     |
+| blog_likes         | Ai đang like bài nào và thời điểm like                                | Mỗi hàng nối một user với một blog; cặp blog_id/user_id chỉ được xuất hiện một lần. Xóa hàng là bỏ like.                                                                                    |
+| comment_likes      | Ai đang like comment nào và thời điểm like                            | Mỗi hàng nối một user với một comment; cặp comment_id/user_id chỉ được xuất hiện một lần.                                                                                                   |
+| blog_shares        | Ai chia sẻ bài nào và thời điểm share                                 | Mỗi hàng nối một user với một blog. Nội dung hiển thị được lấy từ bài gốc hiện tại; không có bản sao nội dung trong hàng share.                                                             |
+| media_assets       | Metadata của một ảnh đã hoặc đang upload                              | owner_id xác định chủ asset; purpose phân biệt avatar/ảnh bài/upload độc lập; state theo dõi vòng đời. File ảnh nằm ở Cloudinary; bảng giữ ID provider, định dạng, kích thước và thời gian. |
+| blog_images        | Ảnh nào được gắn vào bài nào và ở vị trí nào                          | blog_id trỏ đến bài; asset_id trỏ đến ảnh và là PK của bảng. position xác định thứ tự hiển thị, từ 0 đến 9.                                                                                 |
+| media_cleanup_jobs | Công việc dọn một asset khỏi Cloudinary                               | asset_id xác định ảnh cần dọn. status, attempts, available_at, lease_until và last_error giúp worker nhận việc, thử lại và theo dõi lỗi.                                                    |
 
 Ví dụ một bài có hai ảnh và ba người like sẽ có một hàng blogs, hai hàng blog_images và ba hàng blog_likes. Sửa tên tác giả cập nhật hàng users; khi đọc bài/comment/share, backend JOIN users để lấy tên mới. Xóa một quan hệ share không xóa bài gốc hoặc ảnh của bài.
 
@@ -73,7 +88,9 @@ Các trường thời gian và counters nằm ngay trên bảng mô tả đối 
 
 ### Sơ đồ tổng quan
 
-Sơ đồ gồm đủ mười một bảng và toàn bộ 63 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
+Sơ đồ gồm đủ mười một bảng và toàn bộ 65 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là
+không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK
+cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
 
 ```mermaid
 ---
@@ -114,6 +131,8 @@ erDiagram
     blog_categories {
         UUID blog_id PK, FK
         UUID category_id PK, FK
+        VARCHAR(6) category_source PK "AUTO or MANUAL"
+        DOUBLE confidence "nullable; 0..1"
     }
 
     categories {
@@ -132,7 +151,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
-        VARCHAR(6) category_source "AUTO or MANUAL; AI"
+        VARCHAR(6) category_mode "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -229,6 +248,8 @@ erDiagram
     blog_categories {
         UUID blog_id PK, FK
         UUID category_id PK, FK
+        VARCHAR(6) category_source PK "AUTO or MANUAL"
+        DOUBLE confidence "nullable; 0..1"
     }
 
     categories {
@@ -247,7 +268,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
-        VARCHAR(6) category_source "AUTO or MANUAL; AI"
+        VARCHAR(6) category_mode "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -298,6 +319,8 @@ erDiagram
     blog_categories {
         UUID blog_id PK, FK
         UUID category_id PK, FK
+        VARCHAR(6) category_source PK "AUTO or MANUAL"
+        DOUBLE confidence "nullable; 0..1"
     }
 
     categories {
@@ -316,7 +339,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
-        VARCHAR(6) category_source "AUTO or MANUAL; AI"
+        VARCHAR(6) category_mode "AUTO or MANUAL; AI"
     }
 
     comments {
@@ -384,6 +407,8 @@ erDiagram
     blog_categories {
         UUID blog_id PK, FK
         UUID category_id PK, FK
+        VARCHAR(6) category_source PK "AUTO or MANUAL"
+        DOUBLE confidence "nullable; 0..1"
     }
 
     categories {
@@ -402,7 +427,7 @@ erDiagram
         BIGINT shares_count
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
-        VARCHAR(6) category_source "AUTO or MANUAL; AI"
+        VARCHAR(6) category_mode "AUTO or MANUAL; AI"
     }
 
     media_assets {
@@ -483,31 +508,43 @@ Tên hiển thị có dấu; slug ổn định và dùng chữ thường không 
 
 ## Bảng blog_categories (giai đoạn AI)
 
-| Cột | Kiểu và ràng buộc |
-| --- | --- |
-| blog_id | UUID, NOT NULL, FK blogs(id) ON DELETE CASCADE; thuộc PK ghép |
-| category_id | UUID, NOT NULL, FK categories(id) ON DELETE RESTRICT; thuộc PK ghép |
+| Cột             | Kiểu và ràng buộc                                                                                        |
+|-----------------|----------------------------------------------------------------------------------------------------------|
+| blog_id         | UUID, NOT NULL, FK blogs(id) ON DELETE CASCADE; thuộc PK ghép                                            |
+| category_id     | UUID, NOT NULL, FK categories(id) ON DELETE RESTRICT; thuộc PK ghép                                      |
+| category_source | VARCHAR(6), NOT NULL; CHECK IN ('AUTO','MANUAL'); thuộc PK ghép                                          |
+| confidence      | DOUBLE PRECISION; CHECK 0 <= confidence AND confidence <= 1; AUTO bắt buộc có điểm, MANUAL bắt buộc NULL |
 
-PRIMARY KEY (blog_id, category_id) ngăn gán trùng; không cần id riêng. Quan hệ blogs–categories là N–N: mỗi bên có 0..n liên kết. Bài chưa có chủ đề không có hàng ở bảng nối. Xóa bài chỉ cascade các liên kết; danh mục đang được sử dụng không được xóa. PK hỗ trợ tra cứu theo blog_id; index theo category_id chỉ bổ sung khi query/EXPLAIN cần. Khi thay tập chủ đề, khóa hàng blogs và ghi toàn bộ liên kết cùng category_source trong một transaction. Không phân trang trực tiếp qua JOIN N–N; phân trang blogs trước rồi batch lấy chủ đề.
+PRIMARY KEY (blog_id, category_id, category_source) ngăn gán trùng trong cùng nguồn; cùng bài/chủ đề được lưu cả AUTO và
+MANUAL. Không cần id riêng. Quan hệ blogs–categories là N–N: mỗi bên có 0..n liên kết. Tập nhãn rỗng không có hàng cho
+nguồn đó. Xóa bài chỉ cascade các liên kết; danh mục đang được sử dụng không được xóa. PK hỗ trợ tra cứu theo blog_id;
+index theo category_id chỉ bổ sung khi query/EXPLAIN cần. Khi thay tập chủ đề, khóa hàng blogs và chỉ thay các hàng của
+đúng nguồn: thao tác tác giả thay MANUAL và đổi category_mode; worker thay AUTO, giữ MANUAL/category_mode. Không phân
+trang trực tiếp qua JOIN N–N; phân trang blogs trước rồi batch lấy chủ đề khớp category_mode.
 
 ## Bảng blogs
 
 Mỗi hàng là một bài viết của một user. published quyết định bài được xem công khai hay chỉ chủ bài được xem. Ảnh nằm ở bảng blog_images; các danh sách người like/share và comments nằm ở bảng quan hệ riêng. Các cột *_count là tổng lưu sẵn để đọc danh sách; trigger duy trì chúng từ dữ liệu quan hệ thật.
 
-| Cột | Kiểu và ràng buộc |
-| --- | --- |
-| id | UUID, PK |
-| author_id | UUID, NOT NULL, FK users ON DELETE CASCADE |
-| content | TEXT, NOT NULL DEFAULT ''; CHECK char_length(content) <= 5000 |
-| published | BOOLEAN, NOT NULL DEFAULT true |
-| likes_count | BIGINT, không âm, mặc định 0 |
+| Cột            | Kiểu và ràng buộc                                                                                  |
+|----------------|----------------------------------------------------------------------------------------------------|
+| id             | UUID, PK                                                                                           |
+| author_id      | UUID, NOT NULL, FK users ON DELETE CASCADE                                                         |
+| content        | TEXT, NOT NULL DEFAULT ''; CHECK char_length(content) <= 5000                                      |
+| published      | BOOLEAN, NOT NULL DEFAULT true                                                                     |
+| likes_count    | BIGINT, không âm, mặc định 0                                                                       |
 | comments_count | BIGINT, không âm, mặc định 0; tính mọi comment/reply có deleted_at IS NULL, không tính placeholder |
-| shares_count | BIGINT, không âm, mặc định 0 |
-| created_at | TIMESTAMPTZ, NOT NULL DEFAULT now() |
-| updated_at | TIMESTAMPTZ, NOT NULL DEFAULT now() |
-| category_source | VARCHAR(6), NOT NULL DEFAULT 'AUTO'; CHECK IN ('AUTO','MANUAL'); bổ sung giai đoạn AI |
+| shares_count   | BIGINT, không âm, mặc định 0                                                                       |
+| created_at     | TIMESTAMPTZ, NOT NULL DEFAULT now()                                                                |
+| updated_at     | TIMESTAMPTZ, NOT NULL DEFAULT now()                                                                |
+| category_mode  | VARCHAR(6), NOT NULL DEFAULT 'AUTO'; CHECK IN ('AUTO','MANUAL'); bổ sung giai đoạn AI              |
 
-Model chỉ ghi khi category_source=AUTO và nội dung vẫn khớp snapshot. MANUAL kể cả tập chủ đề rỗng giữ lựa chọn đổi/bỏ nhãn của tác giả. Các thay đổi nhãn tự động không đổi updated_at hoặc counters. Cột category_source cùng categories/blog_categories được triển khai bằng Flyway mới, không sửa V1–V4.
+Model chỉ thay tập nguồn AUTO khi nội dung vẫn khớp snapshot; không đổi category_mode hoặc tập MANUAL. Hai nguồn được
+giữ riêng để đối chiếu, category_mode chọn nguồn hiển thị và MANUAL rỗng không fallback sang AUTO. Khi nội dung đổi, xóa
+AUTO cũ rồi phân loại lại, giữ lựa chọn MANUAL. Các thay đổi nhãn tự động không đổi updated_at hoặc counters. Cột
+category_mode, categories và blog_categories(category_source, confidence) đã nằm trong V1 do chưa chạy Flyway lần đầu;
+thay đổi sau khi áp dụng phải dùng migration mới. Confidence của tập nhãn hiện tại hỗ trợ phân tích model, không phải
+lịch sử dự đoán; chi tiết ở 07.
 
 ### Bài phải có nội dung hoặc ảnh khi commit
 
@@ -822,14 +859,86 @@ Khi xóa user đang có request ghi khác, những request đã giữ khóa acto
 
 Các query đọc dựng BlogDTO dùng JOIN users, batch lấy ảnh và trạng thái like viewer theo các ID trong kết quả. Comment lấy flat rows theo blog, LEFT JOIN users để giữ node có author_id=NULL, rồi dựng cây gồm placeholder trong bộ nhớ; tránh truy vấn từng reply. Không gọi lazy collection riêng cho từng bài hoặc ghi snapshot tác giả để tránh JOIN.
 
+## View đọc bài công khai: v_public_blog_feed
+
+Migration [V5__read_views.sql](../../soulspace/src/main/resources/db/migration/V5__read_views.sql) tạo view
+thường `public.v_public_blog_feed`. View JOIN blogs với users và lọc `blogs.published=true`, mỗi blog public đúng một
+hàng. View không thêm bảng hoặc dữ liệu sao chép; schema có 11 bảng/65 cột, cộng 1 view có 11 cột; view không thay đổi
+số cột của bảng gốc.
+
+| Cột view                                  | Nguồn và công dụng                                            |
+|-------------------------------------------|---------------------------------------------------------------|
+| blog_id                                   | blogs.id; định danh bài gốc, ánh xạ thành id của BlogDTO      |
+| author_id                                 | blogs.author_id; lọc bài công khai của một tác giả            |
+| username, fullname                        | users; thông tin tác giả hiện tại                             |
+| avatar_media_id                           | users; backend ánh xạ sang URL API media hoặc avatar mặc định |
+| content                                   | blogs.content; nội dung hiện tại                              |
+| likes_count, comments_count, shares_count | blogs; counters do trigger quản lý                            |
+| created_at, updated_at                    | blogs; thời gian bài viết, không phải thời gian sửa hồ sơ     |
+
+Công dụng là dùng chung phép JOIN và quy tắc đọc bài public cho feed và trang công khai của tác giả. Không phải sửa các
+query ở nhiều caller khi thay đổi phần projection dùng chung. View không tự tăng tốc; index vẫn nằm ở bảng gốc, cần
+EXPLAIN khi đo hiệu năng. Không chọn password_hash/dob hoặc định danh provider media vào view.
+
+Repository feed dự kiến SELECT các cột cần dùng từ view, ORDER BY created_at DESC, blog_id DESC và phân trang. Trang cá
+nhân người khác thêm WHERE author_id=:profileUserId. Trang của chính mình cần cả private dùng query riêng có kiểm quyền.
+Backend batch lấy ảnh qua blog_images/media_assets và trạng thái like của viewer; view chưa phải BlogDTO hoàn chỉnh,
+không JOIN các quan hệ nhiều hàng làm nhân bản bài.
+
+```sql
+SELECT blog_id,
+       author_id,
+       username,
+       fullname,
+       avatar_media_id,
+       content,
+       likes_count,
+       comments_count,
+       shares_count,
+       created_at,
+       updated_at
+FROM public.v_public_blog_feed
+WHERE author_id = :profileUserId
+ORDER BY created_at DESC, blog_id DESC LIMIT :limit
+OFFSET :offset;
+```
+
+Đây là SQL có tham số cho repository, không chạy literal các placeholder bằng psql. Không có ORDER BY/LIMIT cố định
+trong định nghĩa view; caller chọn bộ lọc và phân trang theo hợp đồng API.
+
+| Thao tác trên bảng gốc               | Khi SELECT lại sau commit                              |
+|--------------------------------------|--------------------------------------------------------|
+| Đăng bài public / private            | Public xuất hiện; private không xuất hiện              |
+| Sửa nội dung bài                     | Hiển thị nội dung mới                                  |
+| Tác giả đổi username/fullname/avatar | Các bài hiển thị thông tin tác giả hiện tại            |
+| Chuyển private / public trở lại      | Ẩn / xuất hiện lại; không xóa hoặc tạo bản sao dữ liệu |
+| Share hoặc bỏ share                  | Bài gốc vẫn một hàng; shares_count đổi qua trigger     |
+| Xóa bài                              | Không còn hàng tương ứng                               |
+
+An share bài của Bình không tạo bài mới trong blogs hoặc đổi author_id thành An. Bài gốc của Bình vẫn hiện một lần nếu
+public. Danh sách bài An share phải đọc blog_shares JOIN bài gốc; nếu gộp vào trang cá nhân thì dùng query kết hợp
+riêng. View này không tạo mục hoạt động share trong feed.
+
+View thường không cần REFRESH. Java vẫn ghi bảng gốc hoặc gọi procedure trong transaction; không INSERT/UPDATE/DELETE
+qua view. Frontend gọi API rồi cập nhật/tải lại dữ liệu, không truy cập database trực tiếp và không tự được cập nhật màn
+hình khi bảng đổi.
+
+V5 dùng security_invoker=true và chỉ cấp SELECT cho runtime; thu hồi DML mà default privileges có thể cấp lúc tạo
+relation. Runtime cần quyền đọc blogs/users đã có ở V4. Đây là query dùng chung, không thay thế kiểm quyền ở service
+hoặc bảo vệ ảnh private. Xem [CREATE VIEW PostgreSQL 17](https://www.postgresql.org/docs/17/sql-createview.html).
+
+Kiểm thử SQL riêng tại [public_blog_feed.sql](../../infra/postgres/tests/public_blog_feed.sql). Chưa có
+repository/service đọc view trong backend; nghiệm thu sử dụng thật được yêu cầu ở 06.
+
 ## Flyway và quyền database
 
-| Migration dự kiến | Nội dung |
-| --- | --- |
-| V1__core_schema.sql | Chín bảng, PK/FK/UNIQUE/CHECK, thứ tự xử lý FK avatar. |
-| V2__query_indexes.sql | Các index bổ sung có mục đích ở trên. |
+| Migration dự kiến               | Nội dung                                                                                                                  |
+|---------------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| V1__core_schema.sql             | Mười một bảng/65 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
+| V2__query_indexes.sql           | Các index bổ sung có mục đích ở trên.                                                                                     |
 | V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, kiểm cây 5 cấp không lưu depth, field bất biến và nonempty blog deferred constraint. |
-| V4__interaction_procedures.sql | Bốn stored procedure và quyền EXECUTE. |
+| V4__interaction_procedures.sql  | Bốn stored procedure và quyền EXECUTE.                                                                                    |
+| V5__read_views.sql              | View bài public kèm tác giả hiện tại; runtime chỉ SELECT.                                                                 |
 
 Đặt dưới `soulspace/src/main/resources/db/migration/`. Seed không nằm trong versioned migration; không sửa migration đã áp dụng. Hibernate dùng `ddl-auto=validate`, không `update/create/create-drop` để quản lý schema.
 

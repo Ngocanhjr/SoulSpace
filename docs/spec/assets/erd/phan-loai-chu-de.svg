@@ -1,1 +1,971 @@
-<svg id="my-svg" width="776.921875" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="erDiagram" height="647.5" viewBox="4 4 776.921875 647.5" role="graphics-document document" aria-roledescription="er" style="background-color: white;"><style>#my-svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;fill:#333;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#my-svg .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear infinite;stroke-linecap:round;}#my-svg .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#my-svg .error-icon{fill:#552222;}#my-svg .error-text{fill:#552222;stroke:#552222;}#my-svg .edge-thickness-normal{stroke-width:1px;}#my-svg .edge-thickness-thick{stroke-width:3.5px;}#my-svg .edge-pattern-solid{stroke-dasharray:0;}#my-svg .edge-thickness-invisible{stroke-width:0;fill:none;}#my-svg .edge-pattern-dashed{stroke-dasharray:3;}#my-svg .edge-pattern-dotted{stroke-dasharray:2;}#my-svg .marker{fill:#333333;stroke:#333333;}#my-svg .marker.cross{stroke:#333333;}#my-svg svg{font-family:"trebuchet ms",verdana,arial,sans-serif;font-size:16px;}#my-svg p{margin:0;}#my-svg .entityBox{fill:#ECECFF;stroke:#9370DB;}#my-svg .relationshipLabelBox{fill:hsl(80, 100%, 96.2745098039%);opacity:0.7;background-color:hsl(80, 100%, 96.2745098039%);}#my-svg .relationshipLabelBox rect{opacity:0.5;}#my-svg .labelBkg{background-color:rgba(248.6666666666, 255, 235.9999999999, 0.5);}#my-svg .edgeLabel{background-color:rgba(232,232,232, 0.8);}#my-svg .edgeLabel .label rect{fill:rgba(232,232,232, 0.8);}#my-svg .edgeLabel .label text{fill:#333;}#my-svg .edgeLabel .label{fill:#9370DB;font-size:14px;}#my-svg .label{font-family:"trebuchet ms",verdana,arial,sans-serif;color:#333;}#my-svg .edge-pattern-dashed{stroke-dasharray:8,8;}#my-svg .node rect,#my-svg .node circle,#my-svg .node ellipse,#my-svg .node polygon{fill:#ECECFF;stroke:#9370DB;stroke-width:1;}#my-svg .relationshipLine{stroke:#333333;stroke-width:1;fill:none;}#my-svg .marker{fill:none!important;stroke:#333333!important;stroke-width:1;}#my-svg [data-look=neo].labelBkg{background-color:rgba(248.6666666666, 255, 235.9999999999, 0.5);}#my-svg .cluster rect{fill:#ffffde;stroke:#aaaa33;stroke-width:1px;}#my-svg .cluster text{fill:#333;}#my-svg .cluster-label text{fill:#333;}#my-svg .node .neo-node{stroke:#9370DB;}#my-svg [data-look="neo"].node rect,#my-svg [data-look="neo"].cluster rect,#my-svg [data-look="neo"].node polygon{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].swimlane.cluster rect{filter:none;}#my-svg [data-look="neo"].node path{stroke:#9370DB;stroke-width:1px;}#my-svg [data-look="neo"].node .outer-path{filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node .neo-line path{stroke:#9370DB;filter:none;}#my-svg [data-look="neo"].node circle{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].node circle .state-start{fill:#000000;}#my-svg [data-look="neo"].icon-shape .icon{fill:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg [data-look="neo"].icon-shape .icon-neo path{stroke:#9370DB;filter:drop-shadow(1px 2px 2px rgba(185, 185, 185, 1));}#my-svg :root{--mermaid-font-family:"trebuchet ms",verdana,arial,sans-serif;}</style><g><defs><marker id="my-svg_er-onlyOneStart" class="marker onlyOne er" refX="0" refY="9" markerWidth="18" markerHeight="18" orient="auto" markerUnits="userSpaceOnUse"><path d="M9,0 L9,18 M15,0 L15,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-onlyOneEnd" class="marker onlyOne er" refX="18" refY="9" markerWidth="18" markerHeight="18" orient="auto" markerUnits="userSpaceOnUse"><path d="M3,0 L3,18 M9,0 L9,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-zeroOrOneStart" class="marker zeroOrOne er" refX="0" refY="9" markerWidth="30" markerHeight="18" orient="auto" markerUnits="userSpaceOnUse"><circle fill="#ECECFF" cx="21" cy="9" stroke-width="1" r="6"/><path d="M9,0 L9,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-zeroOrOneEnd" class="marker zeroOrOne er" refX="30" refY="9" markerWidth="30" markerHeight="18" markerUnits="userSpaceOnUse" orient="auto"><circle fill="#ECECFF" cx="9" cy="9" stroke-width="1" r="6"/><path d="M21,0 L21,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-oneOrMoreStart" class="marker oneOrMore er" refX="18" refY="18" markerWidth="45" markerHeight="36" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,18 Q 18,0 36,18 Q 18,36 0,18 M42,9 L42,27" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-oneOrMoreEnd" class="marker oneOrMore er" refX="27" refY="18" markerWidth="45" markerHeight="36" markerUnits="userSpaceOnUse" orient="auto"><path d="M3,9 L3,27 M9,18 Q27,0 45,18 Q27,36 9,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-zeroOrMoreStart" class="marker zeroOrMore er" refX="18" refY="18" markerWidth="57" markerHeight="36" markerUnits="userSpaceOnUse" orient="auto"><circle fill="#ECECFF" cx="45.5" cy="18" r="6" stroke-width="1"/><path d="M0,18 Q18,0 36,18 Q18,36 0,18" stroke-width="1"/></marker></defs><defs><marker id="my-svg_er-zeroOrMoreEnd" class="marker zeroOrMore er" refX="39" refY="18" markerWidth="57" markerHeight="36" orient="auto" markerUnits="userSpaceOnUse"><circle fill="#ECECFF" cx="11" cy="18" r="6" stroke-width="1"/><path d="M21,18 Q39,0 57,18 Q39,36 21,18" stroke-width="1"/></marker></defs><g class="root"><g class="clusters"/><g class="edges edgePaths"><path d="M244.0078125,427.25L244.0078125,503.1789321881345Q244.0078125,510.25 251.07888031186548,510.25L397.4067967714679,510.25Q404.47786458333337,510.25 404.47786458333337,517.3210678118655L404.47786458333337,530.25" id="my-svg-id_entity-blogs-0_entity-blog_categories-1_0" class="edge-thickness-normal edge-pattern-solid relationshipLine" style="stroke-dasharray: 0 0 258.14178466796875 0; stroke-dashoffset: 0;fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="id_entity-blogs-0_entity-blog_categories-1_0" data-points="W3sieCI6MjQ0LjAwNzgxMjUsInkiOjQyNy4yNX0seyJ4IjoyNDQuMDA3ODEyNSwieSI6NTEwLjI1fSx7IngiOjQwNC40Nzc4NjQ1ODMzMzMzNywieSI6NTEwLjI1fSx7IngiOjQwNC40Nzc4NjQ1ODMzMzMzNywieSI6NTMwLjI1fV0=" data-look="neo" marker-start="url(#my-svg_er-onlyOneStart)" marker-end="url(#my-svg_er-zeroOrMoreEnd)"/><path d="M641.34375,427.25L641.34375,503.1789321881345Q641.34375,510.25 634.2726821881345,510.25L487.94476572853216,510.25Q480.8736979166667,510.25 480.8736979166667,517.3210678118655L480.8736979166667,530.25" id="my-svg-id_entity-categories-2_entity-blog_categories-1_1" class="edge-thickness-normal edge-pattern-solid relationshipLine" style="stroke-dasharray: 0 0 258.1417541503906 0; stroke-dashoffset: 0;fill:none;;;fill:none" data-edge="true" data-et="edge" data-id="id_entity-categories-2_entity-blog_categories-1_1" data-points="W3sieCI6NjQxLjM0Mzc1LCJ5Ijo0MjcuMjV9LHsieCI6NjQxLjM0Mzc1LCJ5Ijo1MTAuMjV9LHsieCI6NDgwLjg3MzY5NzkxNjY2NjcsInkiOjUxMC4yNX0seyJ4Ijo0ODAuODczNjk3OTE2NjY2NywieSI6NTMwLjI1fV0=" data-look="neo" marker-start="url(#my-svg_er-onlyOneStart)" marker-end="url(#my-svg_er-zeroOrMoreEnd)"/></g><g class="edgeLabels"><g class="edgeLabel" transform="translate(243.58203125, 478.75)"><g class="label" data-id="id_entity-blogs-0_entity-blog_categories-1_0" transform="translate(-0.16650390625, -9.000000476837158)"><g><rect class="background" style="" x="-13.8125" y="-1" width="28.1484375" height="23"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">has</tspan></tspan></text></g></g></g><g class="edgeLabel" transform="translate(641.2265625, 478.75)"><g class="label" data-id="id_entity-categories-2_entity-blog_categories-1_1" transform="translate(-0.1630859375, -9.000000476837158)"><g><rect class="background" style="" x="-34.125" y="-1" width="68.765625" height="23"/><text y="-10.1" text-anchor="middle" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em" text-anchor="middle"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">classifies</tspan></tspan></text></g></g></g></g><g class="nodes"><g class="node default" id="my-svg-entity-blogs-0" data-look="neo" transform="translate(244.0078125, 219.625)"><g class="outer-path" style=""><path d="M-232.0078125 -207.625 L232.0078125 -207.625 L232.0078125 207.625 L-232.0078125 207.625" stroke="none" stroke-width="0" fill="#ECECFF"/><path d="M-232.0078125 -207.625 C-49.58724362487945 -207.625, 132.8333252502411 -207.625, 232.0078125 -207.625 M-232.0078125 -207.625 C-87.02821696999638 -207.625, 57.95137856000724 -207.625, 232.0078125 -207.625 M232.0078125 -207.625 C232.0078125 -110.47358070843617, 232.0078125 -13.322161416872348, 232.0078125 207.625 M232.0078125 -207.625 C232.0078125 -113.70602772210786, 232.0078125 -19.787055444215724, 232.0078125 207.625 M232.0078125 207.625 C49.99901446352692 207.625, -132.00978357294616 207.625, -232.0078125 207.625 M232.0078125 207.625 C97.479538729761 207.625, -37.04873504047799 207.625, -232.0078125 207.625 M-232.0078125 207.625 C-232.0078125 47.964997421743305, -232.0078125 -111.69500515651339, -232.0078125 -207.625 M-232.0078125 207.625 C-232.0078125 47.1305944717779, -232.0078125 -113.3638110564442, -232.0078125 -207.625" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-232.0078125 -169.875 L232.0078125 -169.875 L232.0078125 -132.125 L-232.0078125 -132.125" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-232.0078125 -169.875 C-87.69846959525353 -169.875, 56.610873309492945 -169.875, 232.0078125 -169.875 M-232.0078125 -169.875 C-71.76476242675474 -169.875, 88.47828764649051 -169.875, 232.0078125 -169.875 M232.0078125 -169.875 C232.0078125 -155.96247191109126, 232.0078125 -142.04994382218254, 232.0078125 -132.125 M232.0078125 -169.875 C232.0078125 -161.88430607711456, 232.0078125 -153.89361215422915, 232.0078125 -132.125 M232.0078125 -132.125 C70.46447585871888 -132.125, -91.07886078256223 -132.125, -232.0078125 -132.125 M232.0078125 -132.125 C77.17577511233091 -132.125, -77.65626227533818 -132.125, -232.0078125 -132.125 M-232.0078125 -132.125 C-232.0078125 -145.02507222372998, -232.0078125 -157.92514444745996, -232.0078125 -169.875 M-232.0078125 -132.125 C-232.0078125 -141.89241837473043, -232.0078125 -151.65983674946085, -232.0078125 -169.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-232.0078125 -132.125 L232.0078125 -132.125 L232.0078125 -94.375 L-232.0078125 -94.375" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-232.0078125 -132.125 C-136.87217790914914 -132.125, -41.73654331829829 -132.125, 232.0078125 -132.125 M-232.0078125 -132.125 C-50.30107786384346 -132.125, 131.40565677231308 -132.125, 232.0078125 -132.125 M232.0078125 -132.125 C232.0078125 -121.17212630015058, 232.0078125 -110.21925260030116, 232.0078125 -94.375 M232.0078125 -132.125 C232.0078125 -119.41001460373879, 232.0078125 -106.69502920747757, 232.0078125 -94.375 M232.0078125 -94.375 C69.83793829442388 -94.375, -92.33193591115224 -94.375, -232.0078125 -94.375 M232.0078125 -94.375 C123.81498623581088 -94.375, 15.622159971621755 -94.375, -232.0078125 -94.375 M-232.0078125 -94.375 C-232.0078125 -103.24711895968295, -232.0078125 -112.11923791936589, -232.0078125 -132.125 M-232.0078125 -94.375 C-232.0078125 -107.32301572269823, -232.0078125 -120.27103144539646, -232.0078125 -132.125" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-232.0078125 -94.375 L232.0078125 -94.375 L232.0078125 -56.625 L-232.0078125 -56.625" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-232.0078125 -94.375 C-74.11864717827808 -94.375, 83.77051814344384 -94.375, 232.0078125 -94.375 M-232.0078125 -94.375 C-63.3904893605756 -94.375, 105.2268337788488 -94.375, 232.0078125 -94.375 M232.0078125 -94.375 C232.0078125 -79.66725457332352, 232.0078125 -64.95950914664702, 232.0078125 -56.625 M232.0078125 -94.375 C232.0078125 -83.33050939894486, 232.0078125 -72.28601879788971, 232.0078125 -56.625 M232.0078125 -56.625 C65.56260156443511 -56.625, -100.88260937112977 -56.625, -232.0078125 -56.625 M232.0078125 -56.625 C58.85814511194164 -56.625, -114.29152227611672 -56.625, -232.0078125 -56.625 M-232.0078125 -56.625 C-232.0078125 -70.67461421861879, -232.0078125 -84.72422843723757, -232.0078125 -94.375 M-232.0078125 -56.625 C-232.0078125 -66.15873188665334, -232.0078125 -75.69246377330668, -232.0078125 -94.375" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-232.0078125 -56.625 L232.0078125 -56.625 L232.0078125 -18.875 L-232.0078125 -18.875" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-232.0078125 -56.625 C-103.02548761374112 -56.625, 25.95683727251776 -56.625, 232.0078125 -56.625 M-232.0078125 -56.625 C-128.0873756468456 -56.625, -24.1669387936912 -56.625, 232.0078125 -56.625 M232.0078125 -56.625 C232.0078125 -44.089373473769164, 232.0078125 -31.553746947538333, 232.0078125 -18.875 M232.0078125 -56.625 C232.0078125 -47.44476038683902, 232.0078125 -38.26452077367804, 232.0078125 -18.875 M232.0078125 -18.875 C133.60285553079376 -18.875, 35.19789856158749 -18.875, -232.0078125 -18.875 M232.0078125 -18.875 C76.81741801198328 -18.875, -78.37297647603344 -18.875, -232.0078125 -18.875 M-232.0078125 -18.875 C-232.0078125 -32.790765242690185, -232.0078125 -46.70653048538038, -232.0078125 -56.625 M-232.0078125 -18.875 C-232.0078125 -33.36813156915029, -232.0078125 -47.86126313830059, -232.0078125 -56.625" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-232.0078125 -18.875 L232.0078125 -18.875 L232.0078125 18.875 L-232.0078125 18.875" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-232.0078125 -18.875 C-57.044673432949224 -18.875, 117.91846563410155 -18.875, 232.0078125 -18.875 M-232.0078125 -18.875 C-91.37932189883034 -18.875, 49.24916870233932 -18.875, 232.0078125 -18.875 M232.0078125 -18.875 C232.0078125 -7.951028770751289, 232.0078125 2.972942458497421, 232.0078125 18.875 M232.0078125 -18.875 C232.0078125 -10.1969443824337, 232.0078125 -1.5188887648673983, 232.0078125 18.875 M232.0078125 18.875 C87.35358210919324 18.875, -57.30064828161352 18.875, -232.0078125 18.875 M232.0078125 18.875 C73.2356102286505 18.875, -85.536592042699 18.875, -232.0078125 18.875 M-232.0078125 18.875 C-232.0078125 7.85054865641947, -232.0078125 -3.1739026871610605, -232.0078125 -18.875 M-232.0078125 18.875 C-232.0078125 3.869640750968113, -232.0078125 -11.135718498063774, -232.0078125 -18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-232.0078125 18.875 L232.0078125 18.875 L232.0078125 56.625 L-232.0078125 56.625" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-232.0078125 18.875 C-128.5973427253737 18.875, -25.186872950747386 18.875, 232.0078125 18.875 M-232.0078125 18.875 C-135.70791026844364 18.875, -39.40800803688731 18.875, 232.0078125 18.875 M232.0078125 18.875 C232.0078125 31.628311179621257, 232.0078125 44.38162235924251, 232.0078125 56.625 M232.0078125 18.875 C232.0078125 32.02680343840068, 232.0078125 45.17860687680136, 232.0078125 56.625 M232.0078125 56.625 C124.95769537709607 56.625, 17.907578254192146 56.625, -232.0078125 56.625 M232.0078125 56.625 C108.7678922407601 56.625, -14.47202801847979 56.625, -232.0078125 56.625 M-232.0078125 56.625 C-232.0078125 42.11949577890215, -232.0078125 27.613991557804294, -232.0078125 18.875 M-232.0078125 56.625 C-232.0078125 41.84719550263112, -232.0078125 27.069391005262244, -232.0078125 18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-232.0078125 56.625 L232.0078125 56.625 L232.0078125 94.375 L-232.0078125 94.375" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-232.0078125 56.625 C-48.52810723901749 56.625, 134.95159802196503 56.625, 232.0078125 56.625 M-232.0078125 56.625 C-54.80773160234875 56.625, 122.3923492953025 56.625, 232.0078125 56.625 M232.0078125 56.625 C232.0078125 69.16346496450517, 232.0078125 81.70192992901033, 232.0078125 94.375 M232.0078125 56.625 C232.0078125 69.46776434849033, 232.0078125 82.31052869698067, 232.0078125 94.375 M232.0078125 94.375 C83.06284832296313 94.375, -65.88211585407373 94.375, -232.0078125 94.375 M232.0078125 94.375 C75.5425077583576 94.375, -80.9227969832848 94.375, -232.0078125 94.375 M-232.0078125 94.375 C-232.0078125 85.57889479135272, -232.0078125 76.78278958270545, -232.0078125 56.625 M-232.0078125 94.375 C-232.0078125 81.69222908159908, -232.0078125 69.00945816319816, -232.0078125 56.625" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-232.0078125 94.375 L232.0078125 94.375 L232.0078125 132.125 L-232.0078125 132.125" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-232.0078125 94.375 C-52.4198738764791 94.375, 127.1680647470418 94.375, 232.0078125 94.375 M-232.0078125 94.375 C-88.58869753461477 94.375, 54.83041743077047 94.375, 232.0078125 94.375 M232.0078125 94.375 C232.0078125 107.8100649155207, 232.0078125 121.24512983104141, 232.0078125 132.125 M232.0078125 94.375 C232.0078125 106.86603630033207, 232.0078125 119.35707260066413, 232.0078125 132.125 M232.0078125 132.125 C65.47355962467466 132.125, -101.06069325065067 132.125, -232.0078125 132.125 M232.0078125 132.125 C72.73805328818213 132.125, -86.53170592363574 132.125, -232.0078125 132.125 M-232.0078125 132.125 C-232.0078125 117.31460241953417, -232.0078125 102.50420483906832, -232.0078125 94.375 M-232.0078125 132.125 C-232.0078125 122.0475272025793, -232.0078125 111.9700544051586, -232.0078125 94.375" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-232.0078125 132.125 L232.0078125 132.125 L232.0078125 169.875 L-232.0078125 169.875" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-232.0078125 132.125 C-112.64563557348787 132.125, 6.716541353024269 132.125, 232.0078125 132.125 M-232.0078125 132.125 C-131.65965798589747 132.125, -31.311503471794907 132.125, 232.0078125 132.125 M232.0078125 132.125 C232.0078125 141.05275576890983, 232.0078125 149.98051153781967, 232.0078125 169.875 M232.0078125 132.125 C232.0078125 142.04665242993153, 232.0078125 151.96830485986303, 232.0078125 169.875 M232.0078125 169.875 C129.2370154586054 169.875, 26.466218417210854 169.875, -232.0078125 169.875 M232.0078125 169.875 C87.43131098260366 169.875, -57.145190534792675 169.875, -232.0078125 169.875 M-232.0078125 169.875 C-232.0078125 160.3124173333992, -232.0078125 150.7498346667984, -232.0078125 132.125 M-232.0078125 169.875 C-232.0078125 157.3115236086914, -232.0078125 144.7480472173828, -232.0078125 132.125" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-232.0078125 169.875 L232.0078125 169.875 L232.0078125 207.625 L-232.0078125 207.625" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-232.0078125 169.875 C-57.56630848737032 169.875, 116.87519552525936 169.875, 232.0078125 169.875 M-232.0078125 169.875 C-63.94528434413479 169.875, 104.11724381173042 169.875, 232.0078125 169.875 M232.0078125 169.875 C232.0078125 181.63970508495603, 232.0078125 193.40441016991204, 232.0078125 207.625 M232.0078125 169.875 C232.0078125 180.426223514216, 232.0078125 190.97744702843198, 232.0078125 207.625 M232.0078125 207.625 C92.0998532562007 207.625, -47.808105987598594 207.625, -232.0078125 207.625 M232.0078125 207.625 C78.17291961088742 207.625, -75.66197327822516 207.625, -232.0078125 207.625 M-232.0078125 207.625 C-232.0078125 199.67450935547868, -232.0078125 191.72401871095735, -232.0078125 169.875 M-232.0078125 207.625 C-232.0078125 194.9772548241698, -232.0078125 182.32950964833955, -232.0078125 169.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-18.625, -198.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blogs</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-219.5078125, -160.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, -160.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, -160.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(95.25, -160.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, -122.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, -122.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">author_id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, -122.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">FK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(95.25, -122.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, -85)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, -85)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">content</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, -85)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, -85)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, -47.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BOOLEAN</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, -47.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">published</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, -47.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, -47.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">likes_count</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">comments_count</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, 66)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, 66)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">shares_count</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, 66)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, 66)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, 103.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TIMESTAMPTZ</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, 103.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">created_at</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, 103.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, 103.75)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, 141.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TIMESTAMPTZ</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, 141.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">updated_at</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, 141.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, 141.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-219.5078125, 179.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(6)</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-96.4140625, 179.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">category_source</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(51.328125, 179.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(95.25, 179.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">AUTO</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> or</tspan><tspan font-style="normal" class="text-inner-tspan" font-weight="normal"> MANUAL</tspan></tspan></text></g><g class="divider"><path d="M-232.0078125 -169.87505 L-232.0078125 -169.87495 L232.0078125 -169.87495 L232.0078125 -169.87505" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-232.0078125 -169.87505 C-232.0078125 -169.87502345348915, -232.0078125 -169.8749969069783, -232.0078125 -169.87495 M-232.0078125 -169.87505 C-232.0078125 -169.87501959449526, -232.0078125 -169.8749891889905, -232.0078125 -169.87495 M-232.0078125 -169.87495 C-101.44629953686669 -169.87495, 29.11521342626662 -169.87495, 232.0078125 -169.87495 M-232.0078125 -169.87495 C-68.35744016390717 -169.87495, 95.29293217218566 -169.87495, 232.0078125 -169.87495 M232.0078125 -169.87495 C232.0078125 -169.87498218712378, 232.0078125 -169.87501437424757, 232.0078125 -169.87505 M232.0078125 -169.87495 C232.0078125 -169.87498542712385, 232.0078125 -169.87502085424768, 232.0078125 -169.87505 M232.0078125 -169.87505 C134.34704375456377 -169.87505, 36.68627500912754 -169.87505, -232.0078125 -169.87505 M232.0078125 -169.87505 C61.29351943777979 -169.87505, -109.42077362444041 -169.87505, -232.0078125 -169.87505" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-108.9141125 -169.875 L-108.9140125 -169.875 L-108.9140125 207.625 L-108.9141125 207.625" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-108.9141125 -169.875 C-108.9140734927007 -169.875, -108.91403448540137 -169.875, -108.9140125 -169.875 M-108.9141125 -169.875 C-108.91407313666687 -169.875, -108.91403377333374 -169.875, -108.9140125 -169.875 M-108.9140125 -169.875 C-108.9140125 -60.55428966913003, -108.9140125 48.76642066173994, -108.9140125 207.625 M-108.9140125 -169.875 C-108.9140125 -32.170610213977255, -108.9140125 105.53377957204549, -108.9140125 207.625 M-108.9140125 207.625 C-108.91403893861036 207.625, -108.91406537722074 207.625, -108.9141125 207.625 M-108.9140125 207.625 C-108.914041952474 207.625, -108.91407140494799 207.625, -108.9141125 207.625 M-108.9141125 207.625 C-108.9141125 112.58895600373262, -108.9141125 17.55291200746524, -108.9141125 -169.875 M-108.9141125 207.625 C-108.9141125 104.7102680691249, -108.9141125 1.795536138249787, -108.9141125 -169.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M38.828075 -169.875 L38.828175 -169.875 L38.828175 207.625 L38.828075 207.625" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M38.828075 -169.875 C38.82810203068493 -169.875, 38.82812906136986 -169.875, 38.828175 -169.875 M38.828075 -169.875 C38.82809735099472 -169.875, 38.828119701989436 -169.875, 38.828175 -169.875 M38.828175 -169.875 C38.828175 -45.42880663949681, 38.828175 79.01738672100637, 38.828175 207.625 M38.828175 -169.875 C38.828175 -61.937924156027464, 38.828175 45.99915168794507, 38.828175 207.625 M38.828175 207.625 C38.82815037248385 207.625, 38.828125744967686 207.625, 38.828075 207.625 M38.828175 207.625 C38.828153643197496 207.625, 38.82813228639498 207.625, 38.828075 207.625 M38.828075 207.625 C38.828075 58.44761428717837, 38.828075 -90.72977142564326, 38.828075 -169.875 M38.828075 207.625 C38.828075 124.28334125125124, 38.828075 40.94168250250249, 38.828075 -169.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M82.74995 -169.875 L82.75005 -169.875 L82.75005 207.625 L82.74995 207.625" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M82.74995 -169.875 C82.74997067566856 -169.875, 82.74999135133713 -169.875, 82.75005 -169.875 M82.74995 -169.875 C82.74998651578237 -169.875, 82.75002303156475 -169.875, 82.75005 -169.875 M82.75005 -169.875 C82.75005 -51.56005389029828, 82.75005 66.75489221940344, 82.75005 207.625 M82.75005 -169.875 C82.75005 -30.388934375778547, 82.75005 109.0971312484429, 82.75005 207.625 M82.75005 207.625 C82.75001388254832 207.625, 82.74997776509663 207.625, 82.74995 207.625 M82.75005 207.625 C82.75001934569543 207.625, 82.74998869139087 207.625, 82.74995 207.625 M82.74995 207.625 C82.74995 115.21125046534112, 82.74995 22.797500930682247, 82.74995 -169.875 M82.74995 207.625 C82.74995 104.70708706903852, 82.74995 1.789174138077044, 82.74995 -169.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-232.0078125 -169.87505 L-232.0078125 -169.87495 L232.0078125 -169.87495 L232.0078125 -169.87505" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-232.0078125 -169.87505 C-232.0078125 -169.8750299093352, -232.0078125 -169.8750098186704, -232.0078125 -169.87495 M-232.0078125 -169.87505 C-232.0078125 -169.87501565724358, -232.0078125 -169.87498131448714, -232.0078125 -169.87495 M-232.0078125 -169.87495 C-109.39460384813671 -169.87495, 13.218604803726578 -169.87495, 232.0078125 -169.87495 M-232.0078125 -169.87495 C-58.00532482181339 -169.87495, 115.99716285637322 -169.87495, 232.0078125 -169.87495 M232.0078125 -169.87495 C232.0078125 -169.8749895269875, 232.0078125 -169.87502905397497, 232.0078125 -169.87505 M232.0078125 -169.87495 C232.0078125 -169.87498847032114, 232.0078125 -169.87502694064227, 232.0078125 -169.87505 M232.0078125 -169.87505 C105.58217415700716 -169.87505, -20.84346418598568 -169.87505, -232.0078125 -169.87505 M232.0078125 -169.87505 C60.20176906470056 -169.87505, -111.60427437059889 -169.87505, -232.0078125 -169.87505" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g><g class="node default" id="my-svg-entity-blog_categories-1" data-look="neo" transform="translate(442.67578125, 586.875)"><g class="outer-path" style=""><path d="M-118.34375 -56.625 L118.34375 -56.625 L118.34375 56.625 L-118.34375 56.625" stroke="none" stroke-width="0" fill="#ECECFF"/><path d="M-118.34375 -56.625 C-70.11236696564652 -56.625, -21.88098393129303 -56.625, 118.34375 -56.625 M-118.34375 -56.625 C-28.92117654920891 -56.625, 60.50139690158218 -56.625, 118.34375 -56.625 M118.34375 -56.625 C118.34375 -32.60882249532591, 118.34375 -8.59264499065182, 118.34375 56.625 M118.34375 -56.625 C118.34375 -24.29624073600379, 118.34375 8.032518527992423, 118.34375 56.625 M118.34375 56.625 C46.591203454276595 56.625, -25.16134309144681 56.625, -118.34375 56.625 M118.34375 56.625 C24.09154676596455 56.625, -70.1606564680709 56.625, -118.34375 56.625 M-118.34375 56.625 C-118.34375 21.199445252493362, -118.34375 -14.226109495013276, -118.34375 -56.625 M-118.34375 56.625 C-118.34375 19.725829168711925, -118.34375 -17.17334166257615, -118.34375 -56.625" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-118.34375 -18.875 L118.34375 -18.875 L118.34375 18.875 L-118.34375 18.875" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-118.34375 -18.875 C-45.48140626357447 -18.875, 27.38093747285106 -18.875, 118.34375 -18.875 M-118.34375 -18.875 C-31.55237948226079 -18.875, 55.23899103547842 -18.875, 118.34375 -18.875 M118.34375 -18.875 C118.34375 -7.674283925878754, 118.34375 3.526432148242492, 118.34375 18.875 M118.34375 -18.875 C118.34375 -4.7880132667743265, 118.34375 9.298973466451347, 118.34375 18.875 M118.34375 18.875 C67.79553539951799 18.875, 17.247320799035975 18.875, -118.34375 18.875 M118.34375 18.875 C29.76611101322868 18.875, -58.81152797354264 18.875, -118.34375 18.875 M-118.34375 18.875 C-118.34375 9.245302890230947, -118.34375 -0.3843942195381054, -118.34375 -18.875 M-118.34375 18.875 C-118.34375 4.523247556793203, -118.34375 -9.828504886413594, -118.34375 -18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-118.34375 18.875 L118.34375 18.875 L118.34375 56.625 L-118.34375 56.625" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-118.34375 18.875 C-43.97711575916526 18.875, 30.389518481669484 18.875, 118.34375 18.875 M-118.34375 18.875 C-53.01480486539647 18.875, 12.314140269207059 18.875, 118.34375 18.875 M118.34375 18.875 C118.34375 33.28170640781925, 118.34375 47.6884128156385, 118.34375 56.625 M118.34375 18.875 C118.34375 30.177128153622334, 118.34375 41.47925630724467, 118.34375 56.625 M118.34375 56.625 C42.95865371992333 56.625, -32.42644256015333 56.625, -118.34375 56.625 M118.34375 56.625 C63.2249582952421 56.625, 8.106166590484193 56.625, -118.34375 56.625 M-118.34375 56.625 C-118.34375 42.89612045412987, -118.34375 29.16724090825975, -118.34375 18.875 M-118.34375 56.625 C-118.34375 47.88644826651005, -118.34375 39.1478965330201, -118.34375 18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-56.58203125, -47.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blog_categories</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-105.84375, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-45.640625, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blog_id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(63.4375, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK,FK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(130.84375, -9.5)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-105.84375, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan></tspan></text></g><g class="label attribute-name" transform="translate(-45.640625, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">category_id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(63.4375, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK,FK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(130.84375, 28.25)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="divider"><path d="M-118.34375 -18.87505 L-118.34375 -18.87495 L118.34375 -18.87495 L118.34375 -18.87505" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-118.34375 -18.87505 C-118.34375 -18.875010187968932, -118.34375 -18.874970375937867, -118.34375 -18.87495 M-118.34375 -18.87505 C-118.34375 -18.87501176830771, -118.34375 -18.874973536615425, -118.34375 -18.87495 M-118.34375 -18.87495 C-32.5806792098889 -18.87495, 53.1823915802222 -18.87495, 118.34375 -18.87495 M-118.34375 -18.87495 C-38.72624900852358 -18.87495, 40.89125198295284 -18.87495, 118.34375 -18.87495 M118.34375 -18.87495 C118.34375 -18.874982375074744, 118.34375 -18.87501475014949, 118.34375 -18.87505 M118.34375 -18.87495 C118.34375 -18.874976081031548, 118.34375 -18.875002162063097, 118.34375 -18.87505 M118.34375 -18.87505 C50.884807989622686 -18.87505, -16.574134020754627 -18.87505, -118.34375 -18.87505 M118.34375 -18.87505 C40.511055968820855 -18.87505, -37.32163806235829 -18.87505, -118.34375 -18.87505" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-58.140675 -18.875 L-58.140575 -18.875 L-58.140575 56.625 L-58.140675 56.625" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-58.140675 -18.875 C-58.14064842132258 -18.875, -58.14062184264515 -18.875, -58.140575 -18.875 M-58.140675 -18.875 C-58.14064787126963 -18.875, -58.14062074253926 -18.875, -58.140575 -18.875 M-58.140575 -18.875 C-58.140575 -1.616190538883508, -58.140575 15.642618922232984, -58.140575 56.625 M-58.140575 -18.875 C-58.140575 7.6307189945910245, -58.140575 34.13643798918205, -58.140575 56.625 M-58.140575 56.625 C-58.140601348702845 56.625, -58.14062769740569 56.625, -58.140675 56.625 M-58.140575 56.625 C-58.14059862502196 56.625, -58.14062225004392 56.625, -58.140675 56.625 M-58.140675 56.625 C-58.140675 37.013982353215184, -58.140675 17.402964706430367, -58.140675 -18.875 M-58.140675 56.625 C-58.140675 30.678016735523407, -58.140675 4.731033471046814, -58.140675 -18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M50.93745 -18.875 L50.93755 -18.875 L50.93755 56.625 L50.93745 56.625" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M50.93745 -18.875 C50.9374706379477 -18.875, 50.9374912758954 -18.875, 50.93755 -18.875 M50.93745 -18.875 C50.937470072239705 -18.875, 50.93749014447942 -18.875, 50.93755 -18.875 M50.93755 -18.875 C50.93755 1.0283055624819895, 50.93755 20.93161112496398, 50.93755 56.625 M50.93755 -18.875 C50.93755 10.91259544319297, 50.93755 40.70019088638594, 50.93755 56.625 M50.93755 56.625 C50.93751411141946 56.625, 50.93747822283892 56.625, 50.93745 56.625 M50.93755 56.625 C50.93752532324453 56.625, 50.93750064648905 56.625, 50.93745 56.625 M50.93745 56.625 C50.93745 39.816259792534034, 50.93745 23.007519585068067, 50.93745 -18.875 M50.93745 56.625 C50.93745 33.191582986447244, 50.93745 9.758165972894481, 50.93745 -18.875" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-118.34375 -18.87505 L-118.34375 -18.87495 L118.34375 -18.87495 L118.34375 -18.87505" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-118.34375 -18.87505 C-118.34375 -18.875024294746435, -118.34375 -18.874998589492865, -118.34375 -18.87495 M-118.34375 -18.87505 C-118.34375 -18.875025160045848, -118.34375 -18.875000320091694, -118.34375 -18.87495 M-118.34375 -18.87495 C-44.02833736974627 -18.87495, 30.287075260507464 -18.87495, 118.34375 -18.87495 M-118.34375 -18.87495 C-42.91554463647233 -18.87495, 32.512660727055334 -18.87495, 118.34375 -18.87495 M118.34375 -18.87495 C118.34375 -18.874981748000085, 118.34375 -18.875013496000168, 118.34375 -18.87505 M118.34375 -18.87495 C118.34375 -18.87497800669136, 118.34375 -18.875006013382727, 118.34375 -18.87505 M118.34375 -18.87505 C51.383935685344724 -18.87505, -15.575878629310552 -18.87505, -118.34375 -18.87505 M118.34375 -18.87505 C40.491935169614024 -18.87505, -37.35987966077195 -18.87505, -118.34375 -18.87505" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g><g class="node default" id="my-svg-entity-categories-2" data-look="neo" transform="translate(641.34375, 351.75)"><g class="outer-path" style=""><path d="M-119.078125 -75.5 L119.078125 -75.5 L119.078125 75.5 L-119.078125 75.5" stroke="none" stroke-width="0" fill="#ECECFF"/><path d="M-119.078125 -75.5 C-37.33879337692693 -75.5, 44.40053824614614 -75.5, 119.078125 -75.5 M-119.078125 -75.5 C-41.46500380036913 -75.5, 36.148117399261736 -75.5, 119.078125 -75.5 M119.078125 -75.5 C119.078125 -41.15902965926743, 119.078125 -6.818059318534864, 119.078125 75.5 M119.078125 -75.5 C119.078125 -43.70909296268416, 119.078125 -11.91818592536832, 119.078125 75.5 M119.078125 75.5 C37.64195046012834 75.5, -43.794224079743316 75.5, -119.078125 75.5 M119.078125 75.5 C33.76073325414313 75.5, -51.55665849171373 75.5, -119.078125 75.5 M-119.078125 75.5 C-119.078125 20.409922385835117, -119.078125 -34.68015522832977, -119.078125 -75.5 M-119.078125 75.5 C-119.078125 41.707499743665245, -119.078125 7.9149994873304905, -119.078125 -75.5" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-119.078125 -37.75 L119.078125 -37.75 L119.078125 0 L-119.078125 0" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-119.078125 -37.75 C-70.71801881662861 -37.75, -22.357912633257214 -37.75, 119.078125 -37.75 M-119.078125 -37.75 C-61.7120106554338 -37.75, -4.345896310867602 -37.75, 119.078125 -37.75 M119.078125 -37.75 C119.078125 -25.790110397330952, 119.078125 -13.830220794661905, 119.078125 0 M119.078125 -37.75 C119.078125 -24.196639146234027, 119.078125 -10.643278292468054, 119.078125 0 M119.078125 0 C55.383364942056886 0, -8.311395115886228 0, -119.078125 0 M119.078125 0 C40.6506888313734 0, -37.7767473372532 0, -119.078125 0 M-119.078125 0 C-119.078125 -13.17534576037932, -119.078125 -26.35069152075864, -119.078125 -37.75 M-119.078125 0 C-119.078125 -11.375709053951672, -119.078125 -22.751418107903344, -119.078125 -37.75" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-even"><path d="M-119.078125 0 L119.078125 0 L119.078125 37.75 L-119.078125 37.75" stroke="none" stroke-width="0" fill="hsl(240, 100%, 97.2745098039%)"/><path d="M-119.078125 0 C-40.195552884535175 0, 38.68701923092965 0, 119.078125 0 M-119.078125 0 C-40.844907794411654 0, 37.38830941117669 0, 119.078125 0 M119.078125 0 C119.078125 11.971306904923326, 119.078125 23.94261380984665, 119.078125 37.75 M119.078125 0 C119.078125 10.773643579248121, 119.078125 21.547287158496243, 119.078125 37.75 M119.078125 37.75 C69.49175534606991 37.75, 19.905385692139802 37.75, -119.078125 37.75 M119.078125 37.75 C69.0455195834629 37.75, 19.01291416692581 37.75, -119.078125 37.75 M-119.078125 37.75 C-119.078125 26.176458841797405, -119.078125 14.60291768359481, -119.078125 0 M-119.078125 37.75 C-119.078125 24.274764083618244, -119.078125 10.799528167236492, -119.078125 0" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g style="" class="row-rect-odd"><path d="M-119.078125 37.75 L119.078125 37.75 L119.078125 75.5 L-119.078125 75.5" stroke="none" stroke-width="0" fill="hsl(240, 100%, 100%)"/><path d="M-119.078125 37.75 C-43.42890502186677 37.75, 32.22031495626646 37.75, 119.078125 37.75 M-119.078125 37.75 C-61.888841118795604 37.75, -4.699557237591208 37.75, 119.078125 37.75 M119.078125 37.75 C119.078125 49.59140043913156, 119.078125 61.432800878263116, 119.078125 75.5 M119.078125 37.75 C119.078125 49.17482085540024, 119.078125 60.59964171080048, 119.078125 75.5 M119.078125 75.5 C46.00776779537472 75.5, -27.062589409250563 75.5, -119.078125 75.5 M119.078125 75.5 C36.47225635535061 75.5, -46.13361228929878 75.5, -119.078125 75.5 M-119.078125 75.5 C-119.078125 63.06941686508786, -119.078125 50.638833730175726, -119.078125 37.75 M-119.078125 75.5 C-119.078125 64.59325837129217, -119.078125 53.68651674258433, -119.078125 37.75" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="label name" transform="translate(-37.26171875, -66.125)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">categories</tspan></tspan></text></g><g class="label attribute-type" transform="translate(-106.578125, -28.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan></tspan></text></g><g class="label attribute-name" transform="translate(21.7734375, -28.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(86.203125, -28.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(131.578125, -28.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-106.578125, 9.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(100)</tspan></tspan></text></g><g class="label attribute-name" transform="translate(21.7734375, 9.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">name</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(86.203125, 9.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-comment" transform="translate(131.578125, 9.375)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="label attribute-type" transform="translate(-106.578125, 47.125)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(100)</tspan></tspan></text></g><g class="label attribute-name" transform="translate(21.7734375, 47.125)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">slug</tspan></tspan></text></g><g class="label attribute-keys" transform="translate(86.203125, 47.125)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"><tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UK</tspan></tspan></text></g><g class="label attribute-comment" transform="translate(131.578125, 47.125)" style=""><g><rect class="background" style="stroke: none"/></g><text y="-10.1" style=""><tspan class="text-outer-tspan row" x="0" y="-0.1em" dy="1.1em"/></text></g><g class="divider"><path d="M-119.078125 -37.75005 L-119.078125 -37.74995 L119.078125 -37.74995 L119.078125 -37.75005" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-119.078125 -37.75005 C-119.078125 -37.75002539570578, -119.078125 -37.750000791411544, -119.078125 -37.74995 M-119.078125 -37.75005 C-119.078125 -37.75001923330932, -119.078125 -37.74998846661863, -119.078125 -37.74995 M-119.078125 -37.74995 C-39.86080891283849 -37.74995, 39.35650717432301 -37.74995, 119.078125 -37.74995 M-119.078125 -37.74995 C-25.609423745210236 -37.74995, 67.85927750957953 -37.74995, 119.078125 -37.74995 M119.078125 -37.74995 C119.078125 -37.74997711159295, 119.078125 -37.7500042231859, 119.078125 -37.75005 M119.078125 -37.74995 C119.078125 -37.74998240971166, 119.078125 -37.75001481942332, 119.078125 -37.75005 M119.078125 -37.75005 C48.285997521683555 -37.75005, -22.50612995663289 -37.75005, -119.078125 -37.75005 M119.078125 -37.75005 C43.33608853697153 -37.75005, -32.40594792605694 -37.75005, -119.078125 -37.75005" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M9.2733875 -37.75 L9.2734875 -37.75 L9.2734875 75.5 L9.2733875 75.5" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M9.2733875 -37.75 C9.2734128501737 -37.75, 9.273438200347401 -37.75, 9.2734875 -37.75 M9.2733875 -37.75 C9.273426715464943 -37.75, 9.273465930929884 -37.75, 9.2734875 -37.75 M9.2734875 -37.75 C9.2734875 -3.9360946039343148, 9.2734875 29.87781079213137, 9.2734875 75.5 M9.2734875 -37.75 C9.2734875 5.757836985512334, 9.2734875 49.26567397102467, 9.2734875 75.5 M9.2734875 75.5 C9.273447729751622 75.5, 9.273407959503245 75.5, 9.2733875 75.5 M9.2734875 75.5 C9.273455756025704 75.5, 9.27342401205141 75.5, 9.2733875 75.5 M9.2733875 75.5 C9.2733875 45.446872299095396, 9.2733875 15.393744598190793, 9.2733875 -37.75 M9.2733875 75.5 C9.2733875 30.31129829190389, 9.2733875 -14.877403416192223, 9.2733875 -37.75" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M73.703075 -37.75 L73.703175 -37.75 L73.703175 75.5 L73.703075 75.5" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M73.703075 -37.75 C73.70310923018664 -37.75, 73.70314346037328 -37.75, 73.703175 -37.75 M73.703075 -37.75 C73.70309578794821 -37.75, 73.70311657589642 -37.75, 73.703175 -37.75 M73.703175 -37.75 C73.703175 3.918035302719595, 73.703175 45.58607060543919, 73.703175 75.5 M73.703175 -37.75 C73.703175 -2.530376398274555, 73.703175 32.68924720345089, 73.703175 75.5 M73.703175 75.5 C73.70315253923006 75.5, 73.70313007846012 75.5, 73.703075 75.5 M73.703175 75.5 C73.70315334286866 75.5, 73.70313168573732 75.5, 73.703075 75.5 M73.703075 75.5 C73.703075 41.68045846006927, 73.703075 7.860916920138536, 73.703075 -37.75 M73.703075 75.5 C73.703075 36.579846751102615, 73.703075 -2.3403064977947707, 73.703075 -37.75" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g><g class="divider"><path d="M-119.078125 -37.75005 L-119.078125 -37.74995 L119.078125 -37.74995 L119.078125 -37.75005" stroke="none" stroke-width="0" fill="#ECECFF" fill-rule="evenodd"/><path d="M-119.078125 -37.75005 C-119.078125 -37.75002444960583, -119.078125 -37.74999889921167, -119.078125 -37.74995 M-119.078125 -37.75005 C-119.078125 -37.75001058964958, -119.078125 -37.74997117929916, -119.078125 -37.74995 M-119.078125 -37.74995 C-61.98985845669152 -37.74995, -4.901591913383044 -37.74995, 119.078125 -37.74995 M-119.078125 -37.74995 C-41.36528068517501 -37.74995, 36.34756362964998 -37.74995, 119.078125 -37.74995 M119.078125 -37.74995 C119.078125 -37.74998696318669, 119.078125 -37.75002392637339, 119.078125 -37.75005 M119.078125 -37.74995 C119.078125 -37.74998794522479, 119.078125 -37.75002589044957, 119.078125 -37.75005 M119.078125 -37.75005 C63.19223569700519 -37.75005, 7.306346394010376 -37.75005, -119.078125 -37.75005 M119.078125 -37.75005 C41.96981999669909 -37.75005, -35.138485006601826 -37.75005, -119.078125 -37.75005" stroke="#9370DB" stroke-width="1.3" fill="none" stroke-dasharray="0 0"/></g></g></g></g></g><defs><filter id="my-svg-drop-shadow" height="130%" width="130%"><feDropShadow dx="4" dy="4" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs><defs><filter id="my-svg-drop-shadow-small" height="150%" width="150%"><feDropShadow dx="2" dy="2" stdDeviation="0" flood-opacity="0.06" flood-color="#000000"/></filter></defs></svg>
+<svg id="erdFinal4" width="817" xmlns="http://www.w3.org/2000/svg" class="erDiagram"
+     style="max-width: 100%; background-color: white; height: auto;" viewBox="4 4 816.5390625 679"
+     role="graphics-document document" aria-roledescription="er" height="679">
+    <rect x="4" y="4" width="816.5390625" height="679" fill="white"></rect>
+    <g class="edges edgePaths">
+        <path d="M258.02,405.25L258.02,496.25" id="id_entity-blogs-0_entity-blog_categories-1_0_0"
+              class="edge-thickness-normal edge-pattern-solid relationshipLine" style="undefined;;;undefined"
+              data-edge="true" data-et="edge" data-id="id_entity-blogs-0_entity-blog_categories-1_0_0"
+              data-points="W3sieCI6MjU4LjAxOTUzMTI1LCJ5Ijo0MDUuMjV9LHsieCI6MjU4LjAxOTUzMTI1LCJ5Ijo0OTYuMjV9XQ=="
+              marker-start="url(#erdFinal4_er-onlyOneStart)" marker-end="url(#erdFinal4_er-zeroOrMoreEnd)"></path>
+        <path d="M672.664,405.25L672.664,416.667C672.664,428.083,672.664,450.917,672.302,462.805C671.94,474.693,671.216,475.636,670.383,476.469C669.55,477.302,668.607,478.026,628.433,478.388C588.258,478.75,508.852,478.75,468.678,479.112C428.504,479.474,427.561,480.198,426.728,481.031C425.894,481.864,425.17,482.807,424.809,485.362C424.447,487.917,424.447,492.083,424.447,494.167L424.447,496.25"
+              id="id_entity-categories-2_entity-blog_categories-1_1_0"
+              class="edge-thickness-normal edge-pattern-solid relationshipLine" style="undefined;;;undefined"
+              data-edge="true" data-et="edge" data-id="id_entity-categories-2_entity-blog_categories-1_1_0"
+              data-points="W3sieCI6NjcyLjY2NDA2MjUsInkiOjQwNS4yNX0seyJ4Ijo2NzIuNjY0MDYyNSwieSI6NDc4Ljc1fSx7IngiOjQyNC40NDY2MTQ1ODMzMzMzNywieSI6NDc4Ljc1fSx7IngiOjQyNC40NDY2MTQ1ODMzMzMzNywieSI6NDk2LjI1fV0="
+              marker-start="url(#erdFinal4_er-onlyOneStart)" marker-end="url(#erdFinal4_er-zeroOrMoreEnd)"></path>
+    </g>
+    <style>#erdFinal4{font-family:Arial,sans-serif;font-size:16px;fill:#000000;}@keyframes
+        edge-animation-frame{from{stroke-dashoffset:0;}}@keyframes dash{to{stroke-dashoffset:0;}}#erdFinal4
+        .edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 50s linear
+        infinite;stroke-linecap:round;}#erdFinal4
+        .edge-animation-fast{stroke-dasharray:9,5!important;stroke-dashoffset:900;animation:dash 20s linear
+        infinite;stroke-linecap:round;}#erdFinal4 .error-icon{fill:#552222;}#erdFinal4
+        .error-text{fill:#552222;stroke:#552222;}#erdFinal4 .edge-thickness-normal{stroke-width:1px;}#erdFinal4
+        .edge-thickness-thick{stroke-width:3.5px;}#erdFinal4 .edge-pattern-solid{stroke-dasharray:0;}#erdFinal4
+        .edge-thickness-invisible{stroke-width:0;fill:none;}#erdFinal4
+        .edge-pattern-dashed{stroke-dasharray:3;}#erdFinal4 .edge-pattern-dotted{stroke-dasharray:2;}#erdFinal4
+        .marker{fill:#666;stroke:#666;}#erdFinal4 .marker.cross{stroke:#666;}#erdFinal4
+        svg{font-family:Arial,sans-serif;font-size:16px;}#erdFinal4 p{margin:0;}#erdFinal4
+        .entityBox{fill:#eee;stroke:#999;}#erdFinal4 .relationshipLabelBox{fill:hsl(-160, 0%,
+        93.3333333333%);opacity:0.7;background-color:hsl(-160, 0%, 93.3333333333%);}#erdFinal4 .relationshipLabelBox
+        rect{opacity:0.5;}#erdFinal4 .labelBkg{background-color:rgba(237.9999999999, 237.9999999999, 237.9999999999,
+        0.5);}#erdFinal4 .edgeLabel .label{fill:#999;font-size:14px;}#erdFinal4
+        .label{font-family:Arial,sans-serif;color:#000000;}#erdFinal4
+        .edge-pattern-dashed{stroke-dasharray:8,8;}#erdFinal4 .node rect,#erdFinal4 .node circle,#erdFinal4 .node
+        ellipse,#erdFinal4 .node polygon{fill:#eee;stroke:#999;stroke-width:1px;}#erdFinal4
+        .relationshipLine{stroke:#666;stroke-width:1;fill:none;}#erdFinal4
+        .marker{fill:none!important;stroke:#666!important;stroke-width:1;}#erdFinal4
+        :root{--mermaid-font-family:Arial,sans-serif;}
+    </style>
+    <g>
+        <defs>
+            <marker id="erdFinal4_er-onlyOneStart" class="marker onlyOne er" refX="0" refY="9" markerWidth="18"
+                    markerHeight="18" orient="auto">
+                <path d="M9,0 L9,18 M15,0 L15,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-onlyOneEnd" class="marker onlyOne er" refX="18" refY="9" markerWidth="18"
+                    markerHeight="18" orient="auto">
+                <path d="M3,0 L3,18 M9,0 L9,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-zeroOrOneStart" class="marker zeroOrOne er" refX="0" refY="9" markerWidth="30"
+                    markerHeight="18" orient="auto">
+                <circle fill="white" cx="21" cy="9" r="6"></circle>
+                <path d="M9,0 L9,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-zeroOrOneEnd" class="marker zeroOrOne er" refX="30" refY="9" markerWidth="30"
+                    markerHeight="18" orient="auto">
+                <circle fill="white" cx="9" cy="9" r="6"></circle>
+                <path d="M21,0 L21,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-oneOrMoreStart" class="marker oneOrMore er" refX="18" refY="18" markerWidth="45"
+                    markerHeight="36" orient="auto">
+                <path d="M0,18 Q 18,0 36,18 Q 18,36 0,18 M42,9 L42,27"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-oneOrMoreEnd" class="marker oneOrMore er" refX="27" refY="18" markerWidth="45"
+                    markerHeight="36" orient="auto">
+                <path d="M3,9 L3,27 M9,18 Q27,0 45,18 Q27,36 9,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-zeroOrMoreStart" class="marker zeroOrMore er" refX="18" refY="18" markerWidth="57"
+                    markerHeight="36" orient="auto">
+                <circle fill="white" cx="48" cy="18" r="6"></circle>
+                <path d="M0,18 Q18,0 36,18 Q18,36 0,18"></path>
+            </marker>
+        </defs>
+        <defs>
+            <marker id="erdFinal4_er-zeroOrMoreEnd" class="marker zeroOrMore er" refX="39" refY="18" markerWidth="57"
+                    markerHeight="36" orient="auto">
+                <circle fill="white" cx="9" cy="18" r="6"></circle>
+                <path d="M21,18 Q39,0 57,18 Q39,36 21,18"></path>
+            </marker>
+        </defs>
+    </g>
+    <g class="subgraphs"></g>
+    <g class="nodes">
+        <g class="node default" id="entity-blogs-0" transform="translate(258.01953125, 208.625)">
+            <g style="">
+                <path d="M-246.01953125 -196.625 L246.01953125 -196.625 L246.01953125 196.625 L-246.01953125 196.625"
+                      stroke="none" stroke-width="0" fill="#eee"></path>
+                <path d="M-246.01953125 -196.625 C-124.5491187247498 -196.625, -3.0787061994996066 -196.625, 246.01953125 -196.625 M-246.01953125 -196.625 C-123.55494328651099 -196.625, -1.0903553230219813 -196.625, 246.01953125 -196.625 M246.01953125 -196.625 C246.01953125 -71.27038940844182, 246.01953125 54.08422118311637, 246.01953125 196.625 M246.01953125 -196.625 C246.01953125 -109.9752518205166, 246.01953125 -23.325503641033208, 246.01953125 196.625 M246.01953125 196.625 C137.06485467989182 196.625, 28.110178109783675 196.625, -246.01953125 196.625 M246.01953125 196.625 C53.55372473235991 196.625, -138.91208178528018 196.625, -246.01953125 196.625 M-246.01953125 196.625 C-246.01953125 58.92779290999462, -246.01953125 -78.76941418001076, -246.01953125 -196.625 M-246.01953125 196.625 C-246.01953125 99.4436027048753, -246.01953125 2.2622054097506066, -246.01953125 -196.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-246.01953125 -160.875 L246.01953125 -160.875 L246.01953125 -125.125 L-246.01953125 -125.125"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-246.01953125 -160.875 C-87.69545590208767 -160.875, 70.62861944582465 -160.875, 246.01953125 -160.875 M-246.01953125 -160.875 C-141.8075578321829 -160.875, -37.595584414365845 -160.875, 246.01953125 -160.875 M246.01953125 -160.875 C246.01953125 -147.5715094029902, 246.01953125 -134.26801880598038, 246.01953125 -125.125 M246.01953125 -160.875 C246.01953125 -147.32610074771688, 246.01953125 -133.77720149543373, 246.01953125 -125.125 M246.01953125 -125.125 C104.01335783271355 -125.125, -37.992815584572895 -125.125, -246.01953125 -125.125 M246.01953125 -125.125 C122.07662923240117 -125.125, -1.8662727851976513 -125.125, -246.01953125 -125.125 M-246.01953125 -125.125 C-246.01953125 -136.16504562656587, -246.01953125 -147.20509125313174, -246.01953125 -160.875 M-246.01953125 -125.125 C-246.01953125 -133.73934166341374, -246.01953125 -142.35368332682748, -246.01953125 -160.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-246.01953125 -125.125 L246.01953125 -125.125 L246.01953125 -89.375 L-246.01953125 -89.375"
+                      stroke="none" stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-246.01953125 -125.125 C-81.19756127998903 -125.125, 83.62440869002194 -125.125, 246.01953125 -125.125 M-246.01953125 -125.125 C-121.02416252734753 -125.125, 3.9712061953049442 -125.125, 246.01953125 -125.125 M246.01953125 -125.125 C246.01953125 -116.26814101747772, 246.01953125 -107.41128203495545, 246.01953125 -89.375 M246.01953125 -125.125 C246.01953125 -113.8626542828555, 246.01953125 -102.600308565711, 246.01953125 -89.375 M246.01953125 -89.375 C52.29309798247638 -89.375, -141.43333528504724 -89.375, -246.01953125 -89.375 M246.01953125 -89.375 C108.82834991408342 -89.375, -28.362831421833164 -89.375, -246.01953125 -89.375 M-246.01953125 -89.375 C-246.01953125 -99.5697694430314, -246.01953125 -109.76453888606282, -246.01953125 -125.125 M-246.01953125 -89.375 C-246.01953125 -99.54732755116802, -246.01953125 -109.71965510233603, -246.01953125 -125.125"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-246.01953125 -89.375 L246.01953125 -89.375 L246.01953125 -53.625 L-246.01953125 -53.625"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-246.01953125 -89.375 C-106.93775836329189 -89.375, 32.14401452341622 -89.375, 246.01953125 -89.375 M-246.01953125 -89.375 C-136.83743264629737 -89.375, -27.655334042594774 -89.375, 246.01953125 -89.375 M246.01953125 -89.375 C246.01953125 -75.91689026980386, 246.01953125 -62.45878053960773, 246.01953125 -53.625 M246.01953125 -89.375 C246.01953125 -75.79959815065291, 246.01953125 -62.22419630130584, 246.01953125 -53.625 M246.01953125 -53.625 C101.93794372956722 -53.625, -42.14364379086555 -53.625, -246.01953125 -53.625 M246.01953125 -53.625 C81.13768402884992 -53.625, -83.74416319230016 -53.625, -246.01953125 -53.625 M-246.01953125 -53.625 C-246.01953125 -62.08086062005386, -246.01953125 -70.53672124010772, -246.01953125 -89.375 M-246.01953125 -53.625 C-246.01953125 -60.81650380698957, -246.01953125 -68.00800761397915, -246.01953125 -89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-246.01953125 -53.625 L246.01953125 -53.625 L246.01953125 -17.875 L-246.01953125 -17.875"
+                      stroke="none" stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-246.01953125 -53.625 C-110.90262952182064 -53.625, 24.214272206358714 -53.625, 246.01953125 -53.625 M-246.01953125 -53.625 C-122.64192917322266 -53.625, 0.7356729035546721 -53.625, 246.01953125 -53.625 M246.01953125 -53.625 C246.01953125 -44.306014048776944, 246.01953125 -34.98702809755389, 246.01953125 -17.875 M246.01953125 -53.625 C246.01953125 -40.08939969137801, 246.01953125 -26.553799382756026, 246.01953125 -17.875 M246.01953125 -17.875 C107.35679064143113 -17.875, -31.305949967137735 -17.875, -246.01953125 -17.875 M246.01953125 -17.875 C96.23030235323904 -17.875, -53.55892654352192 -17.875, -246.01953125 -17.875 M-246.01953125 -17.875 C-246.01953125 -29.081556868947324, -246.01953125 -40.28811373789465, -246.01953125 -53.625 M-246.01953125 -17.875 C-246.01953125 -30.705732716468358, -246.01953125 -43.536465432936716, -246.01953125 -53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-246.01953125 -17.875 L246.01953125 -17.875 L246.01953125 17.875 L-246.01953125 17.875"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-246.01953125 -17.875 C-107.35932337641563 -17.875, 31.300884497168738 -17.875, 246.01953125 -17.875 M-246.01953125 -17.875 C-91.21096670196582 -17.875, 63.59759784606837 -17.875, 246.01953125 -17.875 M246.01953125 -17.875 C246.01953125 -6.470171584476699, 246.01953125 4.934656831046603, 246.01953125 17.875 M246.01953125 -17.875 C246.01953125 -10.658214113026602, 246.01953125 -3.4414282260532065, 246.01953125 17.875 M246.01953125 17.875 C99.00127981910285 17.875, -48.016971611794304 17.875, -246.01953125 17.875 M246.01953125 17.875 C118.93046277428962 17.875, -8.158605701420754 17.875, -246.01953125 17.875 M-246.01953125 17.875 C-246.01953125 4.961379965355762, -246.01953125 -7.952240069288475, -246.01953125 -17.875 M-246.01953125 17.875 C-246.01953125 5.793307123913872, -246.01953125 -6.288385752172257, -246.01953125 -17.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-246.01953125 17.875 L246.01953125 17.875 L246.01953125 53.625 L-246.01953125 53.625"
+                      stroke="none" stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-246.01953125 17.875 C-81.81483121952658 17.875, 82.38986881094684 17.875, 246.01953125 17.875 M-246.01953125 17.875 C-139.38882498891016 17.875, -32.75811872782032 17.875, 246.01953125 17.875 M246.01953125 17.875 C246.01953125 28.95419282898174, 246.01953125 40.03338565796348, 246.01953125 53.625 M246.01953125 17.875 C246.01953125 29.03990837683994, 246.01953125 40.20481675367988, 246.01953125 53.625 M246.01953125 53.625 C129.9650254922334 53.625, 13.910519734466817 53.625, -246.01953125 53.625 M246.01953125 53.625 C89.70569144832638 53.625, -66.60814835334725 53.625, -246.01953125 53.625 M-246.01953125 53.625 C-246.01953125 44.512371992587845, -246.01953125 35.39974398517569, -246.01953125 17.875 M-246.01953125 53.625 C-246.01953125 39.432391486851046, -246.01953125 25.239782973702095, -246.01953125 17.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-246.01953125 53.625 L246.01953125 53.625 L246.01953125 89.375 L-246.01953125 89.375"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-246.01953125 53.625 C-97.99034897350882 53.625, 50.03883330298237 53.625, 246.01953125 53.625 M-246.01953125 53.625 C-91.13717605625061 53.625, 63.74517913749878 53.625, 246.01953125 53.625 M246.01953125 53.625 C246.01953125 62.02446514867384, 246.01953125 70.42393029734768, 246.01953125 89.375 M246.01953125 53.625 C246.01953125 64.42960437308666, 246.01953125 75.23420874617332, 246.01953125 89.375 M246.01953125 89.375 C97.04538986211907 89.375, -51.92875152576187 89.375, -246.01953125 89.375 M246.01953125 89.375 C121.78112272379575 89.375, -2.4572858024085065 89.375, -246.01953125 89.375 M-246.01953125 89.375 C-246.01953125 80.99821372922658, -246.01953125 72.62142745845316, -246.01953125 53.625 M-246.01953125 89.375 C-246.01953125 75.10917211854459, -246.01953125 60.843344237089184, -246.01953125 53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-246.01953125 89.375 L246.01953125 89.375 L246.01953125 125.125 L-246.01953125 125.125"
+                      stroke="none" stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-246.01953125 89.375 C-133.3039564263366 89.375, -20.588381602673223 89.375, 246.01953125 89.375 M-246.01953125 89.375 C-94.28415463903525 89.375, 57.4512219719295 89.375, 246.01953125 89.375 M246.01953125 89.375 C246.01953125 98.5216068901236, 246.01953125 107.6682137802472, 246.01953125 125.125 M246.01953125 89.375 C246.01953125 103.42519517222357, 246.01953125 117.47539034444715, 246.01953125 125.125 M246.01953125 125.125 C68.36665875220822 125.125, -109.28621374558355 125.125, -246.01953125 125.125 M246.01953125 125.125 C147.024148396567 125.125, 48.028765543134 125.125, -246.01953125 125.125 M-246.01953125 125.125 C-246.01953125 117.26637810088688, -246.01953125 109.40775620177376, -246.01953125 89.375 M-246.01953125 125.125 C-246.01953125 113.13670572322307, -246.01953125 101.14841144644613, -246.01953125 89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-246.01953125 125.125 L246.01953125 125.125 L246.01953125 160.875 L-246.01953125 160.875"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-246.01953125 125.125 C-87.92085928378052 125.125, 70.17781268243897 125.125, 246.01953125 125.125 M-246.01953125 125.125 C-88.51716305060893 125.125, 68.98520514878214 125.125, 246.01953125 125.125 M246.01953125 125.125 C246.01953125 136.34582958035355, 246.01953125 147.56665916070708, 246.01953125 160.875 M246.01953125 125.125 C246.01953125 135.9715683985992, 246.01953125 146.8181367971984, 246.01953125 160.875 M246.01953125 160.875 C88.8430615821666 160.875, -68.3334080856668 160.875, -246.01953125 160.875 M246.01953125 160.875 C71.85116631492025 160.875, -102.3171986201595 160.875, -246.01953125 160.875 M-246.01953125 160.875 C-246.01953125 151.16963759499157, -246.01953125 141.46427518998317, -246.01953125 125.125 M-246.01953125 160.875 C-246.01953125 152.2259328429421, -246.01953125 143.57686568588417, -246.01953125 125.125"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-246.01953125 160.875 L246.01953125 160.875 L246.01953125 196.625 L-246.01953125 196.625"
+                      stroke="none" stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-246.01953125 160.875 C-114.73110126187075 160.875, 16.557328726258504 160.875, 246.01953125 160.875 M-246.01953125 160.875 C-90.1284059655099 160.875, 65.7627193189802 160.875, 246.01953125 160.875 M246.01953125 160.875 C246.01953125 172.28513579088175, 246.01953125 183.6952715817635, 246.01953125 196.625 M246.01953125 160.875 C246.01953125 169.55117857498593, 246.01953125 178.22735714997185, 246.01953125 196.625 M246.01953125 196.625 C73.31506644596593 196.625, -99.38939835806815 196.625, -246.01953125 196.625 M246.01953125 196.625 C52.49966350425814 196.625, -141.02020424148373 196.625, -246.01953125 196.625 M-246.01953125 196.625 C-246.01953125 187.9018679112334, -246.01953125 179.17873582246685, -246.01953125 160.875 M-246.01953125 196.625 C-246.01953125 188.88888426633218, -246.01953125 181.15276853266437, -246.01953125 160.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="label name" transform="translate(-19.125, -187.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blogs</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, -151.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, -151.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, -151.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, -151.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, -115.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, -115.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">author_id</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, -115.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">FK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, -115.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, -80)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TEXT</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, -80)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">content</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, -80)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, -80)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BOOLEAN</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">published</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">likes_count</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">comments_count</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">BIGINT</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">shares_count</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, 98.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TIMESTAMPTZ</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, 98.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">created_at</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, 98.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, 98.75)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, 134.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">TIMESTAMPTZ</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, 134.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">updated_at</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, 134.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, 134.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-233.51953125, 170.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(6)</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-96.59765625, 170.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">category_mode</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(50.79296875, 170.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(98.46484375, 170.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">AUTO</tspan>
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">or</tspan>
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">MANUAL</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="divider">
+                <path d="M-246.01953125 -160.875 C-51.80842239917695 -160.875, 142.4026864516461 -160.875, 246.01953125 -160.875 M-246.01953125 -160.875 C-100.85202322943087 -160.875, 44.31548479113826 -160.875, 246.01953125 -160.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M-109.09765625 -160.875 C-109.09765625 -59.56370155458289, -109.09765625 41.74759689083422, -109.09765625 196.625 M-109.09765625 -160.875 C-109.09765625 -86.08447167853215, -109.09765625 -11.293943357064308, -109.09765625 196.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M38.29296875 -160.875 C38.29296875 -37.0243129190999, 38.29296875 86.8263741618002, 38.29296875 196.625 M38.29296875 -160.875 C38.29296875 -50.41215188252913, 38.29296875 60.05069623494174, 38.29296875 196.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M85.96484375 -160.875 C85.96484375 -69.01288693900814, 85.96484375 22.84922612198372, 85.96484375 196.625 M85.96484375 -160.875 C85.96484375 -50.99494755829694, 85.96484375 58.885104883406115, 85.96484375 196.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M-246.01953125 -160.875 C-140.00036555173395 -160.875, -33.9811998534679 -160.875, 246.01953125 -160.875 M-246.01953125 -160.875 C-91.5202949771647 -160.875, 62.97894129567061 -160.875, 246.01953125 -160.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+        </g>
+        <g class="node default" id="entity-blog_categories-1" transform="translate(341.23307291666663, 585.625)">
+            <g style="">
+                <path d="M-249.640625 -89.375 L249.640625 -89.375 L249.640625 89.375 L-249.640625 89.375" stroke="none"
+                      stroke-width="0" fill="#eee"></path>
+                <path d="M-249.640625 -89.375 C-67.57905792310629 -89.375, 114.48250915378742 -89.375, 249.640625 -89.375 M-249.640625 -89.375 C-124.42566258653603 -89.375, 0.7892998269279303 -89.375, 249.640625 -89.375 M249.640625 -89.375 C249.640625 -53.408079441173165, 249.640625 -17.44115888234633, 249.640625 89.375 M249.640625 -89.375 C249.640625 -22.325214850939503, 249.640625 44.724570298120994, 249.640625 89.375 M249.640625 89.375 C119.75782720243964 89.375, -10.124970595120715 89.375, -249.640625 89.375 M249.640625 89.375 C129.8826653921824 89.375, 10.124705784364807 89.375, -249.640625 89.375 M-249.640625 89.375 C-249.640625 42.432152892925835, -249.640625 -4.51069421414833, -249.640625 -89.375 M-249.640625 89.375 C-249.640625 47.549817954870335, -249.640625 5.72463590974067, -249.640625 -89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-249.640625 -53.625 L249.640625 -53.625 L249.640625 -17.875 L-249.640625 -17.875"
+                      stroke="none" stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-249.640625 -53.625 C-102.47040300505367 -53.625, 44.69981898989266 -53.625, 249.640625 -53.625 M-249.640625 -53.625 C-129.12580720405225 -53.625, -8.610989408104473 -53.625, 249.640625 -53.625 M249.640625 -53.625 C249.640625 -46.03375963720887, 249.640625 -38.442519274417734, 249.640625 -17.875 M249.640625 -53.625 C249.640625 -41.35186164886581, 249.640625 -29.07872329773161, 249.640625 -17.875 M249.640625 -17.875 C125.11452289400741 -17.875, 0.5884207880148153 -17.875, -249.640625 -17.875 M249.640625 -17.875 C83.80126830401852 -17.875, -82.03808839196296 -17.875, -249.640625 -17.875 M-249.640625 -17.875 C-249.640625 -30.577823436889226, -249.640625 -43.28064687377845, -249.640625 -53.625 M-249.640625 -17.875 C-249.640625 -25.97041454390429, -249.640625 -34.06582908780858, -249.640625 -53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-249.640625 -17.875 L249.640625 -17.875 L249.640625 17.875 L-249.640625 17.875" stroke="none"
+                      stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-249.640625 -17.875 C-110.0247813246479 -17.875, 29.591062350704192 -17.875, 249.640625 -17.875 M-249.640625 -17.875 C-50.726106943777125 -17.875, 148.18841111244575 -17.875, 249.640625 -17.875 M249.640625 -17.875 C249.640625 -7.72503624306057, 249.640625 2.4249275138788597, 249.640625 17.875 M249.640625 -17.875 C249.640625 -3.711675662208961, 249.640625 10.451648675582078, 249.640625 17.875 M249.640625 17.875 C117.66318127108889 17.875, -14.314262457822224 17.875, -249.640625 17.875 M249.640625 17.875 C129.08542127876157 17.875, 8.530217557523144 17.875, -249.640625 17.875 M-249.640625 17.875 C-249.640625 7.865388349110905, -249.640625 -2.14422330177819, -249.640625 -17.875 M-249.640625 17.875 C-249.640625 7.755849339686957, -249.640625 -2.3633013206260856, -249.640625 -17.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-249.640625 17.875 L249.640625 17.875 L249.640625 53.625 L-249.640625 53.625" stroke="none"
+                      stroke-width="0" fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-249.640625 17.875 C-91.24319295337872 17.875, 67.15423909324255 17.875, 249.640625 17.875 M-249.640625 17.875 C-70.97005484820355 17.875, 107.70051530359291 17.875, 249.640625 17.875 M249.640625 17.875 C249.640625 30.76745108874954, 249.640625 43.65990217749908, 249.640625 53.625 M249.640625 17.875 C249.640625 29.862780959489374, 249.640625 41.85056191897875, 249.640625 53.625 M249.640625 53.625 C100.52337465731486 53.625, -48.59387568537028 53.625, -249.640625 53.625 M249.640625 53.625 C117.67725009793455 53.625, -14.286124804130907 53.625, -249.640625 53.625 M-249.640625 53.625 C-249.640625 42.110831425270916, -249.640625 30.596662850541826, -249.640625 17.875 M-249.640625 53.625 C-249.640625 44.76218842428123, -249.640625 35.899376848562454, -249.640625 17.875"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-249.640625 53.625 L249.640625 53.625 L249.640625 89.375 L-249.640625 89.375" stroke="none"
+                      stroke-width="0" fill="#f4f4f4"></path>
+                <path d="M-249.640625 53.625 C-58.27399746621995 53.625, 133.0926300675601 53.625, 249.640625 53.625 M-249.640625 53.625 C-134.59449318595537 53.625, -19.548361371910744 53.625, 249.640625 53.625 M249.640625 53.625 C249.640625 66.71382124867142, 249.640625 79.80264249734283, 249.640625 89.375 M249.640625 53.625 C249.640625 67.20859483839082, 249.640625 80.79218967678165, 249.640625 89.375 M249.640625 89.375 C112.17844296129653 89.375, -25.28373907740695 89.375, -249.640625 89.375 M249.640625 89.375 C82.23257770386405 89.375, -85.1754695922719 89.375, -249.640625 89.375 M-249.640625 89.375 C-249.640625 81.26549423285758, -249.640625 73.15598846571515, -249.640625 53.625 M-249.640625 89.375 C-249.640625 75.17166375535729, -249.640625 60.96832751071457, -249.640625 53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="label name" transform="translate(-56.484375, -80)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blog_categories</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-237.140625, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-113.8671875, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">blog_id</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(29.5234375, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK,FK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(102.0859375, -44.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-237.140625, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-113.8671875, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">category_id</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(29.5234375, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK,FK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(102.0859375, -8.5)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-237.140625, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(6)</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-113.8671875, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">category_source</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(29.5234375, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(102.0859375, 27.25)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">AUTO</tspan>
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">or</tspan>
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">MANUAL</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-237.140625, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">DOUBLE</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(-113.8671875, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">confidence</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(29.5234375, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(102.0859375, 63)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">nullable;</tspan>
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">0..1</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="divider">
+                <path d="M-249.640625 -53.625 C-132.17939334739873 -53.625, -14.718161694797459 -53.625, 249.640625 -53.625 M-249.640625 -53.625 C-149.22796177747216 -53.625, -48.81529855494435 -53.625, 249.640625 -53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M-126.3671875 -53.625 C-126.3671875 3.1882601528528127, -126.3671875 60.001520305705625, -126.3671875 89.375 M-126.3671875 -53.625 C-126.3671875 -20.991884473800518, -126.3671875 11.641231052398965, -126.3671875 89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M17.0234375 -53.625 C17.0234375 -2.9937708140169192, 17.0234375 47.63745837196616, 17.0234375 89.375 M17.0234375 -53.625 C17.0234375 -12.289267722018003, 17.0234375 29.046464555963993, 17.0234375 89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M89.5859375 -53.625 C89.5859375 -23.042266296985968, 89.5859375 7.540467406028064, 89.5859375 89.375 M89.5859375 -53.625 C89.5859375 -0.8395300507003753, 89.5859375 51.94593989859925, 89.5859375 89.375"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M-249.640625 -53.625 C-95.85928716608365 -53.625, 57.92205066783271 -53.625, 249.640625 -53.625 M-249.640625 -53.625 C-88.73137514526832 -53.625, 72.17787470946337 -53.625, 249.640625 -53.625"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+        </g>
+        <g class="node default" id="entity-categories-2" transform="translate(672.6640625, 333.75)">
+            <g style="">
+                <path d="M-127.375 -71.5 L127.375 -71.5 L127.375 71.5 L-127.375 71.5" stroke="none" stroke-width="0"
+                      fill="#eee"></path>
+                <path d="M-127.375 -71.5 C-59.81011351156093 -71.5, 7.754772976878144 -71.5, 127.375 -71.5 M-127.375 -71.5 C-63.40210268189421 -71.5, 0.5707946362115734 -71.5, 127.375 -71.5 M127.375 -71.5 C127.375 -32.20787009101733, 127.375 7.084259817965346, 127.375 71.5 M127.375 -71.5 C127.375 -16.527199908208615, 127.375 38.44560018358277, 127.375 71.5 M127.375 71.5 C55.29687673144538 71.5, -16.78124653710924 71.5, -127.375 71.5 M127.375 71.5 C31.46517730696334 71.5, -64.44464538607332 71.5, -127.375 71.5 M-127.375 71.5 C-127.375 25.521499288632583, -127.375 -20.457001422734834, -127.375 -71.5 M-127.375 71.5 C-127.375 35.79437883607404, -127.375 0.08875767214807695, -127.375 -71.5"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-127.375 -35.75 L127.375 -35.75 L127.375 0 L-127.375 0" stroke="none" stroke-width="0"
+                      fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-127.375 -35.75 C-26.939074092075288 -35.75, 73.49685181584942 -35.75, 127.375 -35.75 M-127.375 -35.75 C-75.43063593752717 -35.75, -23.486271875054342 -35.75, 127.375 -35.75 M127.375 -35.75 C127.375 -27.761178510204047, 127.375 -19.772357020408094, 127.375 0 M127.375 -35.75 C127.375 -27.10649207638557, 127.375 -18.462984152771146, 127.375 0 M127.375 0 C30.727713601148636 0, -65.91957279770273 0, -127.375 0 M127.375 0 C72.4094036994307 0, 17.44380739886138 0, -127.375 0 M-127.375 0 C-127.375 -10.206781050793403, -127.375 -20.413562101586805, -127.375 -35.75 M-127.375 0 C-127.375 -10.654081276919518, -127.375 -21.308162553839036, -127.375 -35.75"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-even">
+                <path d="M-127.375 0 L127.375 0 L127.375 35.75 L-127.375 35.75" stroke="none" stroke-width="0"
+                      fill="#f4f4f4"></path>
+                <path d="M-127.375 0 C-56.91705344225649 0, 13.540893115487023 0, 127.375 0 M-127.375 0 C-56.064861266672736 0, 15.245277466654528 0, 127.375 0 M127.375 0 C127.375 13.630294072157618, 127.375 27.260588144315236, 127.375 35.75 M127.375 0 C127.375 7.855866797580992, 127.375 15.711733595161984, 127.375 35.75 M127.375 35.75 C29.493111708365646 35.75, -68.38877658326871 35.75, -127.375 35.75 M127.375 35.75 C52.96471895958132 35.75, -21.445562080837362 35.75, -127.375 35.75 M-127.375 35.75 C-127.375 24.054677365352735, -127.375 12.35935473070547, -127.375 0 M-127.375 35.75 C-127.375 22.412557130948446, -127.375 9.075114261896893, -127.375 0"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g style="" class="row-rect-odd">
+                <path d="M-127.375 35.75 L127.375 35.75 L127.375 71.5 L-127.375 71.5" stroke="none" stroke-width="0"
+                      fill="hsl(0, 0%, 100%)"></path>
+                <path d="M-127.375 35.75 C-56.23256494405139 35.75, 14.90987011189722 35.75, 127.375 35.75 M-127.375 35.75 C-75.9705882507138 35.75, -24.566176501427606 35.75, 127.375 35.75 M127.375 35.75 C127.375 46.94746304411274, 127.375 58.14492608822547, 127.375 71.5 M127.375 35.75 C127.375 49.127059642258395, 127.375 62.50411928451679, 127.375 71.5 M127.375 71.5 C44.998081690682525 71.5, -37.37883661863495 71.5, -127.375 71.5 M127.375 71.5 C76.228529394682 71.5, 25.082058789363998 71.5, -127.375 71.5 M-127.375 71.5 C-127.375 63.69182879437064, -127.375 55.883657588741286, -127.375 35.75 M-127.375 71.5 C-127.375 60.447312734211955, -127.375 49.39462546842391, -127.375 35.75"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="label name" transform="translate(-36.9140625, -62.125)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">categories</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-114.875, -26.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UUID</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(26.1953125, -26.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">id</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(91.3203125, -26.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">PK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(139.875, -26.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-114.875, 9.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(100)</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(26.1953125, 9.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">name</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(91.3203125, 9.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(139.875, 9.375)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="label attribute-type" transform="translate(-114.875, 45.125)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">VARCHAR(100)</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-name" transform="translate(26.1953125, 45.125)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">slug</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-keys" transform="translate(91.3203125, 45.125)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em">
+                        <tspan font-style="normal" class="text-inner-tspan" font-weight="normal">UK</tspan>
+                    </tspan>
+                </text>
+            </g>
+            <g class="label attribute-comment" transform="translate(139.875, 45.125)" style="">
+                <g>
+                    <rect class="background" style="stroke: none"></rect>
+                </g>
+                <text y="-10.1" style="">
+                    <tspan class="text-outer-tspan" x="0" y="-0.1em" dy="1.1em"></tspan>
+                </text>
+            </g>
+            <g class="divider">
+                <path d="M-127.375 -35.75 C-74.30721938899926 -35.75, -21.239438777998515 -35.75, 127.375 -35.75 M-127.375 -35.75 C-67.692994809775 -35.75, -8.010989619550003 -35.75, 127.375 -35.75"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M13.6953125 -35.75 C13.6953125 4.274372935300114, 13.6953125 44.29874587060023, 13.6953125 71.5 M13.6953125 -35.75 C13.6953125 6.350991432703083, 13.6953125 48.451982865406166, 13.6953125 71.5"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M78.8203125 -35.75 C78.8203125 -10.557589184062028, 78.8203125 14.634821631875944, 78.8203125 71.5 M78.8203125 -35.75 C78.8203125 -9.649313517955587, 78.8203125 16.451372964088826, 78.8203125 71.5"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+            <g class="divider">
+                <path d="M-127.375 -35.75 C-38.91215020147962 -35.75, 49.55069959704076 -35.75, 127.375 -35.75 M-127.375 -35.75 C-53.56756521274468 -35.75, 20.239869574510635 -35.75, 127.375 -35.75"
+                      stroke="#999" stroke-width="1.3" fill="none" stroke-dasharray="0 0"></path>
+            </g>
+        </g>
+    </g>
+    <g class="edgeLabels">
+        <g class="edgeLabel" transform="translate(257.80859375, 450.75)">
+            <g class="label" data-id="id_entity-blogs-0_entity-blog_categories-1_0_0"
+               transform="translate(-11.2890625, -10.5)">
+                <g>
+                    <rect x="0" y="0" width="22.578125" height="21" fill="white"></rect>
+                    <text x="11.2890625" y="10.5" dy=".35em" text-anchor="middle" font-family="Arial, sans-serif"
+                          font-size="14" fill="#333">has
+                    </text>
+                </g>
+            </g>
+        </g>
+        <g class="edgeLabel" transform="translate(672.5625, 450.75)">
+            <g class="label" data-id="id_entity-categories-2_entity-blog_categories-1_1_0"
+               transform="translate(-28.3984375, -10.5)">
+                <g>
+                    <rect x="0" y="0" width="56.796875" height="21" fill="white"></rect>
+                    <text x="28.3984375" y="10.5" dy=".35em" text-anchor="middle" font-family="Arial, sans-serif"
+                          font-size="14" fill="#333">classifies
+                    </text>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

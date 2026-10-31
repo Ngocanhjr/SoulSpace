@@ -78,7 +78,8 @@ GRANT EXECUTE ON PROCEDURE sp_set_blog_like(UUID, UUID, BOOLEAN),
     sp_set_comment_like(UUID, UUID, UUID, BOOLEAN), sp_share_blog(UUID, UUID),
     sp_unshare_blog(UUID, UUID) TO soulspace_runtime;
 GRANT SELECT, INSERT, UPDATE, DELETE ON users, blogs, comments, blog_likes,
-    comment_likes, blog_shares, media_assets, blog_images, media_cleanup_jobs TO soulspace_runtime;
+    comment_likes, blog_shares, media_assets, blog_images, media_cleanup_jobs,
+    categories, blog_categories TO soulspace_runtime;
 DO $$
 BEGIN
     IF to_regclass('public.flyway_schema_history') IS NOT NULL THEN

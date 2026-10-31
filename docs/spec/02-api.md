@@ -1,6 +1,9 @@
 # Hợp đồng API và tích hợp frontend
 
-Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH /api/v1/blogs/{blogId}/categories và categories/categorySource trên BlogDTO/SharedBlogDTO theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng sau mở rộng là 37 endpoint; chưa triển khai các bổ sung này.
+Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH
+/api/v1/blogs/{blogId}/categories và categories/categoryMode trên BlogDTO/SharedBlogDTO
+theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng sau mở rộng là 37 endpoint; chưa
+triển khai các bổ sung này.
 
 ## Quy ước chung
 

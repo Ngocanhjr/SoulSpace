@@ -117,16 +117,37 @@ Chạy query đối soát cả bốn loại counter sau các ca trên khi không
 
 DB01–DB07 kiểm các invariant có thể thực thi bằng constraint/trigger; ownership/visibility và xác nhận claim còn phải kiểm qua các luồng service/procedure đã khóa. Không coi FK đơn là bằng chứng bảo vệ mọi phép ghi SQL quản trị.
 
-## Bốn nhóm bằng chứng SQL
+## View bài công khai
 
-Mỗi bằng chứng phải chỉ ra nghiệp vụ/hàm legacy trong [bảng ánh xạ SQL](03-postgresql.md), service/query mới, migration V1–V4 liên quan, mã kịch bản kiểm chứng và file kết quả thực tế. Với index, lưu query cùng tham số; với trigger/procedure/transaction, lưu trạng thái trước/sau và kết quả đối soát. Đây là yêu cầu cho báo cáo tương lai, không phải kết quả đã chạy.
+| Mã     | Kịch bản                                         | Điều kiện đạt                                                                                                                                                           |
+|--------|--------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| VIEW01 | Tạo bài public/private; lọc author_id            | Chỉ bài public xuất hiện, đúng tác giả, một hàng/blog.                                                                                                                  |
+| VIEW02 | Sửa content, username/fullname/avatar ở bảng gốc | SELECT lại lấy thông tin mới, không refresh view.                                                                                                                       |
+| VIEW03 | Public -> private -> public                      | Ẩn rồi xuất hiện lại; blogs/blog_shares không bị xóa do đổi visibility.                                                                                                 |
+| VIEW04 | Share/unshare bài public                         | Không sinh thêm hàng feed hay đổi tác giả; shares_count phản ánh trigger.                                                                                               |
+| VIEW05 | Xóa bài                                          | View không còn trả hàng tương ứng.                                                                                                                                      |
+| VIEW06 | Runtime đọc/ghi view, kiểm cột                   | SELECT được; không có INSERT/UPDATE/DELETE, không có password_hash/dob/provider IDs.                                                                                    |
+| VIEW07 | Tích hợp API feed/trang công khai với repository | Repository thật đọc v_public_blog_feed, giữ contract BlogDTO, sort/phân trang và batch ảnh/trạng thái viewer; trang riêng tư của chính mình dùng query kiểm quyền khác. |
 
-| Nhóm | Cách chứng minh | Điều kiện đạt |
-| --- | --- | --- |
-| Index | EXPLAIN (ANALYZE,BUFFERS) trước/sau tạo index bổ sung trên cùng dataset/query | Kết quả logic như nhau; lưu plan và số đo thật, giải thích planner; không tạo index thừa chỉ để có ảnh. |
-| Trigger | Insert/delete/duplicate/cascade và chuyển deleted_at trên comments | Counters khớp COUNT hoạt động; không có đoạn Java cùng tăng counter hoặc giảm placeholder lần hai. |
-| Stored Procedure | CALL bốn procedure với desired/actor hợp lệ và không hợp lệ | Quyền và trạng thái đúng; idempotency/duplicate/unshare theo contract. |
-| Transaction | Gây lỗi sau bước đầu trong share, edit hoặc delete; chạy ROLLBACK | Không có thay đổi DB một phần và không có job cleanup được commit nhầm. |
+VIEW01–VIEW06 có smoke SQL tại [public_blog_feed.sql](../../infra/postgres/tests/public_blog_feed.sql); VIEW07 chưa
+triển khai Java. Bằng chứng view phải có định nghĩa, query sử dụng thật và kết quả trước/sau thay đổi dữ liệu, không chỉ
+ảnh chụp CREATE VIEW thành công. Schema V1 có 11 bảng/65 cột và thêm 1 view/11 cột; view không được tính là bảng lưu trữ
+thứ 12.
+
+## Năm nhóm bằng chứng SQL
+
+Mỗi bằng chứng phải chỉ ra nghiệp vụ/hàm legacy trong [bảng ánh xạ SQL](03-postgresql.md), service/query mới, migration
+V1–V5 liên quan, mã kịch bản kiểm chứng và file kết quả thực tế. Với index, lưu query cùng tham số; với
+view/trigger/procedure/transaction, lưu trạng thái trước/sau và kết quả đối soát. Đây là yêu cầu cho báo cáo tương lai,
+không phải kết quả đã chạy.
+
+| Nhóm             | Cách chứng minh                                                               | Điều kiện đạt                                                                                                     |
+|------------------|-------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------|
+| Index            | EXPLAIN (ANALYZE,BUFFERS) trước/sau tạo index bổ sung trên cùng dataset/query | Kết quả logic như nhau; lưu plan và số đo thật, giải thích planner; không tạo index thừa chỉ để có ảnh.           |
+| Trigger          | Insert/delete/duplicate/cascade và chuyển deleted_at trên comments            | Counters khớp COUNT hoạt động; không có đoạn Java cùng tăng counter hoặc giảm placeholder lần hai.                |
+| Stored Procedure | CALL bốn procedure với desired/actor hợp lệ và không hợp lệ                   | Quyền và trạng thái đúng; idempotency/duplicate/unshare theo contract.                                            |
+| Transaction      | Gây lỗi sau bước đầu trong share, edit hoặc delete; chạy ROLLBACK             | Không có thay đổi DB một phần và không có job cleanup được commit nhầm.                                           |
+| View             | Chạy VIEW01–VIEW07 với V5, đọc public feed và bài công khai theo tác giả      | Cùng định nghĩa JOIN/filter, phản ánh dữ liệu hiện tại, không nhân bản bài khi share, repository thực sự sử dụng. |
 
 Benchmark index dùng database local riêng, tạo dữ liệu 1.000 users, 10.000 blogs, 10.000 comments và 50.000 blog likes, có seed tái lập và độ chọn lọc public/author rõ. Đây là kích thước thiết kế, không phải số liệu đã chạy. Giữ PK/unique/constraint ở baseline; đo trước/sau thêm index nghiệp vụ trên bản dữ liệu benchmark, không gỡ index ở database đang demo/dùng chung. Chạy ANALYZE, warmup và nhiều lượt đo; ghi CPU/RAM/Postgres/image/commit/query/parameters/row count.
 
@@ -154,7 +175,10 @@ Thực hiện lần lượt signup, login, reload, xem feed/profile/search hiệ
 
 ## Bằng chứng và điều kiện bàn giao
 
-Giai đoạn AI có các ca TOP-T01–TOP-T12 tại [nghiệm thu phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng), gồm model lỗi không chặn đăng bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 11 bảng/63 cột và tổng 37 endpoint; Definition of Done bên dưới vẫn dành cho migration core.
+Giai đoạn AI có các ca TOP-T01–TOP-T13
+tại [nghiệm thu phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng), gồm model lỗi không chặn đăng
+bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 11 bảng/65
+cột và tổng 37 endpoint; Definition of Done bên dưới vẫn dành cho migration core.
 
 Lưu báo cáo tương lai dưới `docs/verification/<run-id>/` với commit, thời gian UTC, môi trường, version, lệnh thực chạy, PASS/FAIL/chưa kiểm, test report, query plan và ảnh/video demo khi cần. Các đường dẫn này là đầu ra dự kiến, chưa có báo cáo ở thời điểm lập spec.
 
@@ -163,7 +187,7 @@ Definition of Done:
 1. Đủ 35 endpoint theo hợp đồng (29 legacy + 6 bổ sung), DTO/caller đã cập nhật thống nhất.
 2. Cả Docker và Neon sạch chạy cùng migration và core smoke; không cần Mongo cũ.
 3. Session/CSRF/owner/privacy/upload/cleanup, schema DB01–DB07 và các ca comment/version/claim đồng thời có kiểm chứng; không dùng chốt thiết kế thay bằng chứng thực thi.
-4. Có bằng chứng cho Index, Trigger, Procedure, Transaction và đối soát 0 sai lệch.
+4. Có bằng chứng cho Index, View (VIEW01–VIEW07), Trigger, Procedure, Transaction và đối soát 0 sai lệch.
 5. Media thật và LAN HTTPS được ghi nhận riêng, không suy từ mock hoặc localhost.
 6. Runbook dùng đường dẫn tương đối, env rõ ràng, không lộ secret; giới hạn session, pagination và media proxy được ghi lại.
 7. Source legacy và dữ liệu ngoài môi trường kiểm thử được giữ nguyên; không gộp công việc AI vào mốc nghiệm thu này.

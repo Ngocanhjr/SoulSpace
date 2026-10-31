@@ -2,16 +2,16 @@
 
 ## Hai môi trường database
 
-| Hạng mục | Local Docker | Neon dùng chung/online |
-| --- | --- | --- |
-| PostgreSQL | Container chính thức, volume riêng, cổng bind loopback | Project/database/branch Neon do người dùng quản lý |
-| Backend/frontend | Chạy trên máy | Tiếp tục chạy trên máy, kết nối Neon qua mạng |
-| Schema | Flyway V1–V4 | Cùng Flyway V1–V4 |
-| Dữ liệu | Seed demo riêng | Seed demo riêng trong database/branch sạch |
-| Credentials | Admin bootstrap, migrator và runtime riêng | Owner provision, migrator và runtime riêng |
-| TLS database | Có thể tắt trên loopback local | Bắt buộc xác minh certificate và hostname |
-| Media namespace | soulspace-local | soulspace-neon-demo; branch kiểm thử dùng namespace khác |
-| Khi mạng Internet mất | Core text vẫn hoạt động; media Cloudinary có thể lỗi | Không coi backend là sẵn sàng khi không truy cập Neon |
+| Hạng mục              | Local Docker                                           | Neon dùng chung/online                                   |
+|-----------------------|--------------------------------------------------------|----------------------------------------------------------|
+| PostgreSQL            | Container chính thức, volume riêng, cổng bind loopback | Project/database/branch Neon do người dùng quản lý       |
+| Backend/frontend      | Chạy trên máy                                          | Tiếp tục chạy trên máy, kết nối Neon qua mạng            |
+| Schema                | Flyway V1–V5                                           | Cùng Flyway V1–V5                                        |
+| Dữ liệu               | Seed demo riêng                                        | Seed demo riêng trong database/branch sạch               |
+| Credentials           | Admin bootstrap, migrator và runtime riêng             | Owner provision, migrator và runtime riêng               |
+| TLS database          | Có thể tắt trên loopback local                         | Bắt buộc xác minh certificate và hostname                |
+| Media namespace       | soulspace-local                                        | soulspace-neon-demo; branch kiểm thử dùng namespace khác |
+| Khi mạng Internet mất | Core text vẫn hoạt động; media Cloudinary có thể lỗi   | Không coi backend là sẵn sàng khi không truy cập Neon    |
 
 Mỗi lần backend chạy chỉ kết nối một database. Đổi môi trường là đổi profile/cấu hình và restart, cần đăng nhập lại. Không tự chuyển ghi sang Docker khi Neon mất mạng, không duy trì dual-write. Neon chỉ thay nơi chạy PostgreSQL, không thay session Spring Security bằng Neon Auth hoặc cho browser truy cập database trực tiếp.
 
@@ -38,7 +38,9 @@ Dependency bổ sung được yêu cầu là Cloudinary SDK tương thích, Boun
 
 ## File dự kiến khi triển khai
 
-Nền database/config đã được tạo: Compose, env examples, provision roles, các profile và Flyway V1–V4. Xem [hướng dẫn và giới hạn kiểm chứng](../../infra/postgres/README.md). Các thành phần Java nghiệp vụ, seed, media worker và tích hợp frontend bên dưới vẫn thuộc phạm vi triển khai tiếp theo:
+Nền database/config đã được tạo: Compose, env examples, provision roles, các profile và Flyway V1–V5.
+Xem [hướng dẫn và giới hạn kiểm chứng](../../infra/postgres/README.md). Các thành phần Java nghiệp vụ, seed, media
+worker và tích hợp frontend bên dưới vẫn thuộc phạm vi triển khai tiếp theo:
 
 ```text
 compose.yaml
@@ -56,6 +58,7 @@ soulspace/src/main/resources/
   db/migration/V2__query_indexes.sql
   db/migration/V3__counters_and_invariants.sql
   db/migration/V4__interaction_procedures.sql
+  db/migration/V5__read_views.sql
 soulspace/src/main/java/ctu/soulspace/
   config/ controller/ dto/ entities/ exception/ mapper/ repository/ service/
 soulspace/src/test/java/ctu/soulspace/
@@ -109,16 +112,19 @@ Neon có thể có thời gian mở compute/kết nối lại tùy cấu hình p
 
 ## Mốc triển khai và điều kiện chuyển mốc
 
-Sau các mốc migration core bên dưới, thực hiện giai đoạn phân loại chủ đề theo [thứ tự triển khai riêng](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng). Giai đoạn đó thêm Flyway mới cho categories, blog_categories và cột blogs.category_source, nâng tổng thiết kế lên 11 bảng/63 cột; các số 9 bảng/57 cột trong mốc core vẫn chỉ phạm vi core. Không sửa migration đã áp dụng hoặc cài dependency model trong lượt cập nhật tài liệu này.
+Sau các mốc migration core, triển khai model/API
+theo [thứ tự phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng). Schema chủ đề/confidence đã có
+trong V1, tổng 11 bảng/65 cột; không tạo thêm migration lặp các bảng này. V1 được bổ sung trước lần chạy Flyway đầu tiên
+theo xác nhận của người dùng; migration đã áp dụng phải được giữ nguyên.
 
-| Mốc | Công việc | Điều kiện hoàn tất |
-| --- | --- | --- |
-| M0 | Xác minh Boot/JDK/dependency; inventory 29 legacy routes, 6 route bổ sung, frontend callers và baseline Git. | Build nền được ghi nhận, hợp đồng 35 routes được dùng làm checklist; chưa kết nối nhầm Mongo hoặc Neon dùng chung. |
-| M1 | Docker PostgreSQL, Neon profile, roles, Flyway/schema, index/trigger/procedures, seed text. | Cùng migration chạy trên local và Neon sạch; counters và rollback đúng; runtime không có DDL. |
-| M2 | Spring Security, session/CSRF, users, validation và HTTP client frontend. | Signup/login/reload/logout/ownership/password change chạy; cookie/token/lỗi đúng hợp đồng. |
-| M3 | Media receipts/worker/proxy, avatar, blog CRUD/public-private, khóa attach/cleanup và xác nhận lượt claim. | Cleanup sau commit; asset DELETE_PENDING không được attach, worker cũ không ghi kết quả sau mất lease; ảnh private không bị bypass. |
-| M4 | Comments/replies 5 cấp không lưu depth, PATCH/DELETE với version, placeholder giữ replies, desired-state likes, share reference và xóa tài khoản. | Chỉ tác giả sửa/xóa; version cũ 409; chặn reply trực tiếp vào node đã xóa; xóa tài khoản giữ replies ở bài còn sống; counters đúng. |
-| M5 | Nghiệm thu, đo SQL, local/LAN và Neon smoke, runbook. | Từng tiêu chí có PASS/FAIL/chưa kiểm và bằng chứng; chưa đạt media/live Neon được ghi riêng. |
+| Mốc | Công việc                                                                                                                                         | Điều kiện hoàn tất                                                                                                                  |
+|-----|---------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------|
+| M0  | Xác minh Boot/JDK/dependency; inventory 29 legacy routes, 6 route bổ sung, frontend callers và baseline Git.                                      | Build nền được ghi nhận, hợp đồng 35 routes được dùng làm checklist; chưa kết nối nhầm Mongo hoặc Neon dùng chung.                  |
+| M1  | Docker PostgreSQL, Neon profile, roles, Flyway/schema, index/view/trigger/procedures, seed text.                                                  | Cùng migration chạy trên local và Neon sạch; counters và rollback đúng; runtime không có DDL, view chỉ SELECT.                      |
+| M2  | Spring Security, session/CSRF, users, validation và HTTP client frontend.                                                                         | Signup/login/reload/logout/ownership/password change chạy; cookie/token/lỗi đúng hợp đồng.                                          |
+| M3  | Media receipts/worker/proxy, avatar, blog CRUD/public-private, khóa attach/cleanup và xác nhận lượt claim.                                        | Cleanup sau commit; asset DELETE_PENDING không được attach, worker cũ không ghi kết quả sau mất lease; ảnh private không bị bypass. |
+| M4  | Comments/replies 5 cấp không lưu depth, PATCH/DELETE với version, placeholder giữ replies, desired-state likes, share reference và xóa tài khoản. | Chỉ tác giả sửa/xóa; version cũ 409; chặn reply trực tiếp vào node đã xóa; xóa tài khoản giữ replies ở bài còn sống; counters đúng. |
+| M5  | Nghiệm thu, đo SQL, local/LAN và Neon smoke, runbook.                                                                                             | Từng tiêu chí có PASS/FAIL/chưa kiểm và bằng chứng; chưa đạt media/live Neon được ghi riêng.                                        |
 
 Không ấn định số tuần khi người dùng chưa đưa deadline. Mỗi mốc phải bàn giao phần hoàn chỉnh gồm backend, caller frontend và fixture liên quan. Không chỉ port controller rồi để frontend bị lỗi auth hoặc schema khác DTO.
 
@@ -168,4 +174,7 @@ Compose bind cổng database vào `127.0.0.1`, có healthcheck, volume lưu dữ
 
 Cần source, secret examples, Flyway, seed runner, ERD/API cập nhật, bộ test và báo cáo kết quả riêng cho Docker, Neon, media thật và LAN. Runbook phải nêu đúng cách nạp env, xem job DEAD và requeue ID cụ thể, đổi database, phục hồi kết nối và giới hạn session sau restart. Không đưa credential, bản dump dữ liệu cá nhân hoặc URL ký media vào báo cáo.
 
-Schema chốt 9 bảng/57 cột theo 03-postgresql.md. Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng buộc lease/status và các invariant comment/media đã chốt. Chốt thiết kế không thay thế bằng chứng chạy migration. Requeue DEAD cần theo transaction và cặp claim trong tài liệu bảo mật/media; không reset một job RUNNING hoặc bỏ điều kiện xác nhận lượt xử lý.
+Schema chốt 11 bảng/65 cột theo 03-postgresql.md. Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
+buộc lease/status và các invariant comment/media đã chốt. Chốt thiết kế không thay thế bằng chứng chạy migration.
+Requeue DEAD cần theo transaction và cặp claim trong tài liệu bảo mật/media; không reset một job RUNNING hoặc bỏ điều
+kiện xác nhận lượt xử lý.

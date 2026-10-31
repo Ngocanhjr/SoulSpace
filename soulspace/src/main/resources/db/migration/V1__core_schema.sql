@@ -45,7 +45,27 @@ CREATE TABLE blogs (
     comments_count BIGINT NOT NULL DEFAULT 0 CHECK (comments_count >= 0),
     shares_count BIGINT NOT NULL DEFAULT 0 CHECK (shares_count >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    category_mode VARCHAR(6)  NOT NULL DEFAULT 'AUTO' CHECK (category_mode IN ('AUTO', 'MANUAL'))
+);
+CREATE TABLE categories
+(
+    id   UUID PRIMARY KEY,
+    name VARCHAR(100) NOT NULL CHECK (char_length(btrim(name)) BETWEEN 1 AND 100),
+    slug VARCHAR(100) NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'
+)
+    );
+CREATE TABLE blog_categories
+(
+    blog_id         UUID       NOT NULL REFERENCES blogs (id) ON DELETE CASCADE,
+    category_id     UUID       NOT NULL REFERENCES categories (id) ON DELETE RESTRICT,
+    category_source VARCHAR(6) NOT NULL CHECK (category_source IN ('AUTO', 'MANUAL')),
+    confidence      DOUBLE PRECISION CHECK (confidence >= 0 AND confidence <= 1),
+    PRIMARY KEY (blog_id, category_id, category_source),
+    CONSTRAINT category_confidence_source CHECK (
+            (category_source = 'AUTO' AND confidence IS NOT NULL)
+            OR (category_source = 'MANUAL' AND confidence IS NULL)
+        )
 );
 CREATE TABLE comments (
     id UUID PRIMARY KEY,

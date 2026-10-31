@@ -1,8 +1,11 @@
 # ERD PostgreSQL — SoulSpace
 
-Cập nhật 30/10/2026: cả năm hình đã đồng bộ với **thiết kế đầy đủ: 11 bảng/63 cột**, gồm core và chủ đề giai đoạn AI. [Mục 5](#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai) bổ sung ERD chủ đề; sau giai đoạn AI, toàn schema có **11 bảng/63 cột**. Đây là thiết kế, chưa phải schema đã triển khai.
+Cập nhật 31/10/2026: cả năm hình đã đồng bộ với **thiết kế đầy đủ: 11 bảng/65 cột**, gồm core và chủ đề giai đoạn
+AI. [Mục 5](#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai) bổ sung ERD chủ đề; toàn schema có **11 bảng/65 cột**. Đây là
+thiết kế, chưa phải schema đã triển khai.
 
-Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-postgresql.md), xuất lại ngày 30/10/2026. Mở file này bằng Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cần plugin Mermaid để dựng lại sơ đồ.
+Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-postgresql.md), xuất lại ngày 31/10/2026. Mở file này bằng
+Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cần plugin Mermaid để dựng lại sơ đồ.
 
 Ảnh dùng nền sáng, nhãn SVG thuần và bố cục được lưu sẵn trong file. Khi thay đổi mô hình ở tài liệu nguồn, cần render lại các ảnh SVG tương ứng để bản này phản ánh thiết kế mới.
 
@@ -17,22 +20,25 @@ Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-p
 | Vòng tròn và một vạch | Không hoặc một. |
 | Vòng tròn và chân quạ | Không hoặc nhiều. |
 
-Các hình hiển thị đầy đủ cột của từng bảng theo [đặc tả PostgreSQL](03-postgresql.md), gồm kiểu dữ liệu, khóa và ghi chú nullable. Sơ đồ tổng quan có **11 bảng, 63 cột**; các sơ đồ theo nhóm cũng giữ đầy đủ cột của các bảng xuất hiện trong hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại tài liệu nguồn. Xem [báo cáo chốt thiết kế](erd-review.md) để phân biệt kết quả rà soát với phần PostgreSQL còn phải triển khai/kiểm chứng.
+Các hình hiển thị đầy đủ cột của từng bảng theo [đặc tả PostgreSQL](03-postgresql.md), gồm kiểu dữ liệu, khóa và ghi chú
+nullable. Sơ đồ tổng quan có **11 bảng, 65 cột**; các sơ đồ theo nhóm cũng giữ đầy đủ cột của các bảng xuất hiện trong
+hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại tài liệu nguồn. Xem [báo cáo chốt thiết kế](erd-review.md)
+để phân biệt kết quả rà soát với phần PostgreSQL còn phải triển khai/kiểm chứng.
 
-| Bảng | Số cột |
-| --- | --- |
-| users | 8 |
-| blogs | 10 |
-| categories | 3 |
-| blog_categories | 2 |
-| comments | 10 |
-| blog_likes | 3 |
-| comment_likes | 3 |
-| blog_shares | 3 |
-| media_assets | 10 |
-| blog_images | 3 |
-| media_cleanup_jobs | 8 |
-| **Tổng** | **63** |
+| Bảng               | Số cột |
+|--------------------|--------|
+| users              | 8      |
+| blogs              | 10     |
+| categories         | 3      |
+| blog_categories    | 4      |
+| comments           | 10     |
+| blog_likes         | 3      |
+| comment_likes      | 3      |
+| blog_shares        | 3      |
+| media_assets       | 10     |
+| blog_images        | 3      |
+| media_cleanup_jobs | 8      |
+| **Tổng**           | **65** |
 
 Hình tổng quan chứa nhiều thông tin; dùng liên kết mở SVG bên dưới mỗi ảnh và phóng to để đọc rõ từng cột.
 
@@ -50,7 +56,8 @@ Gồm `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes
 
 [Mở SVG bài viết và bình luận](assets/erd/bai-viet-binh-luan.svg).
 
-- categories, bảng nối blog_categories và blogs.category_source được hiển thị đầy đủ trong cả bốn sơ đồ có blogs. Mỗi bài có 0..n chủ đề; mỗi chủ đề có 0..n bài. PK ghép (blog_id, category_id) ngăn trùng liên kết.
+- categories, bảng nối blog_categories và blogs.category_mode được hiển thị đầy đủ trong cả bốn sơ đồ có blogs. Mỗi bài
+  có 0..n chủ đề; mỗi chủ đề có 0..n bài. PK ghép (blog_id, category_id, category_source) ngăn trùng liên kết.
 - Một user có nhiều bài viết và bình luận; mỗi bài có nhiều bình luận, bao gồm replies.
 - Bình luận gốc có `parent_id = NULL`. FK ghép `(parent_id, blog_id)` tham chiếu `comments(id, blog_id)` giữ reply trong cùng bài; độ sâu tối đa là 5.
 - Không lưu depth; trigger đếm chuỗi cha khi thêm reply. blog_id và parent_id cố định sau tạo; placeholder cũng tính một cấp trong cây.
@@ -89,7 +96,13 @@ Gồm `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes
 
 [Mở SVG chủ đề ở kích thước đầy đủ](assets/erd/phan-loai-chu-de.svg). Nguồn Mermaid, kiểu dữ liệu, CHECK, API và nghiệm thu nằm trong [07 phân loại chủ đề](07-phan-loai-chu-de.md).
 
-Thêm categories(id, name, slug), blog_categories(blog_id, category_id) với PK ghép và blogs.category_source=AUTO/MANUAL. Không đặt category_id trên blogs. Mỗi bài có 0..n chủ đề và mỗi chủ đề có 0..n bài qua bảng nối; MANUAL kể cả tập rỗng giữ quyền chọn của tác giả. Model đa nhãn chỉ ghi khi vẫn AUTO và nội dung chưa đổi; thay cả tập trong một transaction. Slug là tên URL không dấu, duy nhất và ổn định. FK blog_categories.blog_id dùng ON DELETE CASCADE; FK category_id dùng ON DELETE RESTRICT. Tổng sau mở rộng: categories 3 cột, blog_categories 2 cột, blogs 10 cột, các bảng còn lại 48 cột, thành 11 bảng/63 cột.
+Thêm categories(id, name, slug), blog_categories(blog_id, category_id, category_source, confidence) với PK ghép và
+blogs.category_mode=AUTO/MANUAL. Không đặt category_id trên blogs. Mỗi bài có 0..n chủ đề và mỗi chủ đề có 0..n bài qua
+bảng nối; MANUAL kể cả tập rỗng giữ quyền chọn của tác giả. Model đa nhãn chỉ ghi tập AUTO khi nội dung chưa đổi; giữ
+tập MANUAL để đối chiếu, blogs.category_mode chọn nguồn hiển thị. AUTO bắt buộc có confidence trong [0,1]; MANUAL bắt
+buộc NULL. PK ghép giữ riêng hai nguồn cho cùng bài/chủ đề. Slug là tên URL không dấu, duy nhất và ổn định. FK
+blog_categories.blog_id dùng ON DELETE CASCADE; FK category_id dùng ON DELETE RESTRICT. Tổng cấu trúc: categories 3 cột,
+blog_categories 4 cột, blogs 10 cột, các bảng còn lại 48 cột, thành 11 bảng/65 cột.
 
 ## Nguồn chỉnh sửa
 

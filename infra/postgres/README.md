@@ -1,6 +1,7 @@
 # PostgreSQL foundation
 
-Phạm vi: cấu hình Docker/Neon và Flyway V1–V4. Chưa có entity/service/API, seed runner hoặc media worker; tạo schema không đồng nghĩa các luồng ứng dụng đã hoạt động. Không dùng dữ liệu Mongo.
+Phạm vi: cấu hình Docker/Neon và Flyway V1–V5, gồm view public feed. Chưa có entity/service/API, seed runner hoặc media
+worker; tạo schema/view không đồng nghĩa các luồng ứng dụng đã hoạt động. Không dùng dữ liệu Mongo.
 
 ## Docker local
 
@@ -35,7 +36,10 @@ Provision chỉ dành cho database sạch, không tiếp quản schema đang có
 
 ## Schema và sử dụng
 
-- V1: 9 bảng/57 cột, FK avatar bổ sung sau tạo media, CHECK nội dung/metadata/lease, vị trí ảnh 0–9. Media có ba trạng thái PENDING/ATTACHED/DELETE_PENDING; PENDING dùng cả trước xác nhận upload và sau upload khi chưa gắn, phân biệt bằng bộ metadata provider_asset_id/format/size_bytes.
+- V1: 11 bảng/65 cột, gồm categories, blog_categories(category_source,confidence) và blogs.category_mode. Được bổ sung
+  trước lần migrate đầu theo xác nhận người dùng. FK avatar bổ sung sau tạo media, CHECK nội dung/metadata/lease, vị trí
+  ảnh 0–9. Media có ba trạng thái PENDING/ATTACHED/DELETE_PENDING; PENDING phân biệt xác nhận upload bằng bộ
+  provider_asset_id/format/size_bytes.
 - V2: 14 index bổ sung cho feed, cây comment, cascade và queue.
 - V3: counters, cây tối đa 5 cấp, cấu trúc bất biến, version comment, bài không rỗng ở cuối transaction; metadata media đã xác nhận bất biến và state ATTACHED không quay về PENDING. `blog_image_position` có thể được trì hoãn bằng `SET CONSTRAINTS blog_image_position DEFERRED` khi hoán đổi thứ tự ảnh; mặc định kiểm ngay.
 - V4: bốn procedure SECURITY INVOKER, quyền runtime và chặn truy cập Flyway history. Chúng không tự COMMIT; service phải mở transaction, lấy actor từ session và đọc response sau cập nhật.
@@ -44,7 +48,15 @@ Content edit/delete tự tăng `comments.version` và `updated_at` trong trigger
 
 Attach ảnh, enqueue/claim/lease guard, quyền sở hữu và xóa tài khoản đầy đủ vẫn là trách nhiệm service theo [spec](../../docs/spec/03-postgresql.md). Không gọi Cloudinary trong SQL. Runtime không có DDL hoặc quyền TRUNCATE; credentials runtime vẫn là dữ liệu tin cậy chỉ backend giữ, không là bảo vệ khỏi một backend bị chiếm quyền.
 
-`ddl-auto=validate`, Flyway clean bị tắt. Không sửa nội dung migration sau khi đã áp dụng; thay đổi tiếp theo tạo V5. Role runtime có lock timeout 2 giây và statement timeout 5 giây; migration dùng role riêng.
+V5 tạo `v_public_blog_feed`: một hàng cho mỗi bài public kèm username/fullname/avatar hiện tại của tác giả và counters.
+Feed và trang công khai theo author_id dùng chung JOIN/filter. Public/private, sửa nội dung và hồ sơ được phản ánh khi
+SELECT lại; không cần REFRESH. Share không thêm hàng feed, tác giả vẫn là người viết bài gốc. Trang của mình có private
+và danh sách bài đã share cần query riêng. View không có password hash/dob/provider IDs, runtime chỉ SELECT; ảnh bài và
+trạng thái like của viewer vẫn lấy batch bên ngoài view. Đây là tiện ích bảo trì query, không phải cam kết tăng tốc.
+Xem [thiết kế chi tiết](../../docs/spec/03-postgresql.md#view-đọc-bài-công-khai-v_public_blog_feed).
+
+`ddl-auto=validate`, Flyway clean bị tắt. Không sửa nội dung migration sau khi đã áp dụng; thay đổi tiếp theo dùng
+version sau V5. Role runtime có lock timeout 2 giây và statement timeout 5 giây; migration dùng role riêng.
 
 ## Smoke test SQL
 
@@ -52,9 +64,27 @@ Trên database kiểm thử riêng đã migrate, dùng psql với role runtime:
 
 ```powershell
 psql "host=127.0.0.1 dbname=<test-database> user=soulspace_runtime" -W -f infra/postgres/tests/invariants.sql
+psql "host=127.0.0.1 dbname=<test-database> user=soulspace_runtime" -W -f infra/postgres/tests/public_blog_feed.sql
+psql "host=127.0.0.1 dbname=<test-database> user=soulspace_runtime" -W -f infra/postgres/tests/blog_categories.sql
 ```
 
 Fixture nằm trong transaction và luôn ROLLBACK khi thành công; ON_ERROR_STOP làm process thoát khi có lỗi. Không chạy trên database dùng chung. Test kiểm like lặp, privacy, share, counters, 5 cấp, version, xóa mềm/tài khoản, metadata, lease và constraint bài rỗng. Chưa kiểm deadlock/nhiều connection, JDBC/Flyway, Neon, media hoặc API; phải nghiệm thu riêng theo [06](../../docs/spec/06-nghiem-thu.md).
+
+## Kết quả kiểm tra bổ sung view — 30/10/2026
+
+V1–V5 chạy tuần tự trên PostgreSQL WASM 17.5 bằng role migrator, có mô phỏng default privileges DML để kiểm V5 thu hồi
+quyền ghi view. Cả invariants.sql và public_blog_feed.sql chạy với runtime role và ROLLBACK fixture. Các ca
+public/private, sửa bài/hồ sơ, share/unshare không nhân bản bài, xóa, trường nhạy cảm và quyền SELECT-only đạt. Kiểm
+quyền SELECT từ role không được cấp quyền cũng được thực hiện riêng. Đây chưa phải Flyway/JDBC/Docker/Neon hoặc
+repository/API thật.
+
+## Schema chủ đề và đối chiếu nhãn — 31/10/2026
+
+V1 hiện có 11 bảng/65 cột. blog_categories gồm blog_id, category_id, category_source và confidence; PK ghép ba cột cho
+phép AUTO/MANUAL cùng chủ đề, AUTO có điểm trong [0,1], MANUAL để NULL. blogs.category_mode chỉ chọn nguồn hiển thị và
+giữ được lựa chọn MANUAL rỗng. Worker/tác giả phải thay đúng tập theo nguồn, không xóa tập còn lại. V4 cấp quyền cho hai
+bảng chủ đề; V2 vẫn giữ 14 index đã chốt. Chạy cả ba file smoke SQL bên trên để kiểm schema đầy đủ. Lịch sử 9 bảng/57
+cột phía dưới ghi nhận bản trước khi bổ sung chủ đề.
 
 ## Kết quả kiểm tra khi tạo file — 27/10/2026
 
