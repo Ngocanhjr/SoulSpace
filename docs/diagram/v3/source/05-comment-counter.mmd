@@ -1,0 +1,27 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bài có 3 bình luận chưa xóa.
+%% Tình huống A: Thêm bình luận hợp lệ làm tổng tăng lên 4.
+%% Tình huống B: Xóa một bình luận đang sống làm tổng còn 2.
+%% Chỉ sửa nội dung hoặc xóa lặp không làm đổi tổng.
+flowchart TD
+    START(["Bắt đầu: update_comment_counter"]) --> INPUT[/"Nhận TG_OP, OLD và NEW;<br>còn sống nghĩa là deleted_at IS NULL"/]
+    INPUT --> OP{"TG_OP là gì?"}
+    OP -->|"INSERT"|INS["target = NEW.blog_id;<br>NEW còn sống: delta = +1;<br>đã xóa: delta = 0"]
+    OP -->|"DELETE"|DEL["target = OLD.blog_id;<br>OLD còn sống: delta = -1;<br>đã xóa: delta = 0"]
+    OP -->|"UPDATE deleted_at"|UPD["target = NEW.blog_id;<br>delta = trạng thái sống NEW<br>trừ trạng thái sống OLD; sống = 1, đã xóa = 0"]
+    INS --> ZERO{"delta bằng 0?"}
+    DEL --> ZERO
+    UPD --> ZERO
+    ZERO -->|"Có"|RETURN[/"RETURN NULL"/]
+    ZERO -->|"Không"|COUNT["UPDATE blogs tại target:<br>comments_count = comments_count + delta"]
+    COUNT --> RETURN
+    RETURN --> FINISH(["Kết thúc"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INS,DEL,UPD,COUNT process;
+    class OP,ZERO decision;
+    class INPUT,RETURN io;

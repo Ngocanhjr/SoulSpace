@@ -54,7 +54,7 @@ V1 được bổ sung trực tiếp vì người dùng xác nhận mới chạy 
 
 Một user có nhiều bài. Comments dùng chung một bảng cho node gốc và replies: parent_id=NULL là gốc; parent_id có giá trị
 là reply. blog_id giữ trực tiếp để truy vấn toàn cây theo bài; FK ghép giữ parent và child trong cùng bài. Xóa mềm giữ
-node và replies, bỏ nội dung; giới hạn 5 cấp được xử lý ở trigger.
+node và replies, bỏ nội dung. Không giới hạn cứng độ sâu; UI chỉ thụt lề tối đa 3 tầng và vẫn giữ đúng quan hệ trả lời.
 
 ### 2.3. Likes và shares
 
@@ -117,7 +117,15 @@ REFERENCES comments(id, blog_id) ON DELETE CASCADE
 ```
 
 FK ghép ngăn reply sang bài khác; UNIQUE(id,blog_id) là đích tham chiếu. CHECK parent_id IS DISTINCT FROM id chặn tự
-trỏ. Cây không vòng và tối đa 5 cấp được bảo vệ thêm ở V3.
+trỏ. V3 theo thiết kế mới yêu cầu parent tồn tại trước child và khóa cấu trúc ID/blog_id/parent_id sau tạo. Với dữ liệu
+ban đầu không vòng, node mới chỉ gắn vào cây đã có nên không tạo vòng; không cần đếm ancestor để chặn độ sâu.
+
+Quyết định ngày 31/10/2026: cho phép trả lời liên tục, kể cả cấp 6 trở đi. Giữ một bảng và parent_id giúp sửa/xóa một
+node không phải cập nhật depth của cả nhánh; không cần thêm bảng root/reply hoặc sửa cột/index. So với chặn 5 cấp,
+cuộc hội thoại không bị ngắt vì số lần trả lời nối tiếp; UI thụt lề tối đa 3 tầng để tránh nội dung bị ép hẹp. Reply
+sâu vẫn chỉ rõ đang trả lời ai và lưu đúng parent, không chuyển liên kết sang ancestor để làm phẳng hình thức.
+Đánh đổi là cần kiểm soát khối lượng đọc và tránh phụ thuộc call stack khi dựng/duyệt cây. API core giữ DTO hiện tại;
+phân trang/tải từng nhóm phải có hợp đồng riêng trước khi phục vụ bài có nhiều bình luận.
 
 ```sql
 CHECK (
@@ -369,7 +377,6 @@ FROM public.blogs b
 JOIN public.users u ON u.id = b.author_id
 WHERE b.published = true;
 ```
-
 View có 11 cột; không tăng số bảng/cột lưu trữ. Mục đích là tái sử dụng JOIN và điều kiện public cho feed/trang tác giả,
 giảm việc lặp quy tắc ở repository. Bài viết lấy tên/avatar hiện tại, không phải cập nhật snapshot khi sửa hồ sơ. Query
 JOIN trực tiếp cũng đạt kết quả này; lợi ích riêng của view là đóng gói và dùng chung định nghĩa, không tự tăng tốc.
@@ -411,11 +418,14 @@ lặp, share trùng và rollback; không chỉ chứng minh CALL chạy được
 ## 7. Trigger — khung phân tích V3
 
 Nguồn: [V3__counters_and_invariants.sql](../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql).
-Ghi nhận mục đích; review chi tiết V3 sẽ bổ sung tình huống sai, thứ tự khóa và kiểm chứng đồng thời.
+Giải thích từng khối code, ví dụ và đánh đổi trong [09 — giải thích V3](09-giai-thich-v3.md); sơ đồ tình huống/SQL ở [bộ diagram V3](../diagram/README.md).
+Ghi nhận mục đích; review chi tiết V3 sẽ bổ sung tình huống sai, thứ tự khóa và kiểm chứng đồng thời. Bảng dưới mô tả
+thiết kế không giới hạn cứng độ sâu. V3 và invariants.sql đã đồng bộ ngày 01/11/2026 theo
+[đặc tả cây reply](03-postgresql.md#cây-reply-và-cách-hiển-thị): bỏ CTE đếm cấp, giữ parent đã tồn tại và cấu trúc bất biến để ngăn vòng; không thêm bảng/cột depth.
 
 | Nhóm trigger                                                   | Mục đích nghiệp vụ                                                                                     |
 |----------------------------------------------------------------|--------------------------------------------------------------------------------------------------------|
-| comments_validate                                              | Giữ cấu trúc bất biến, kiểm parent/cây 5 cấp; cập nhật version/updated_at khi nội dung/xóa/tác giả đổi |
+| comments_validate                                              | Giữ cấu trúc bất biến, kiểm parent tồn tại/cùng bài/chưa xóa; cây không vòng và không giới hạn cứng độ sâu; cập nhật version/updated_at khi nội dung/xóa/tác giả đổi |
 | blog_likes_counter, comment_likes_counter, blog_shares_counter | Cộng/trừ counter khi quan hệ thật sự được thêm/xóa                                                     |
 | comments_counter                                               | Chỉ tính node hoạt động; placeholder không giảm lần hai                                                |
 | *_immutable trên likes/shares                                  | Quan hệ thay bằng INSERT/DELETE, không đổi khóa qua UPDATE                                             |
@@ -426,6 +436,14 @@ Ghi nhận mục đích; review chi tiết V3 sẽ bổ sung tình huống sai, 
 Lợi ích là ràng buộc chạy theo thay đổi dữ liệu, bao gồm cascade. Đánh đổi là logic ghi không chỉ nằm trong Java; phải
 có test insert/delete/update/cascade/rollback và refresh dữ liệu sau trigger. Không gọi model/Cloudinary trong trigger,
 không giữ hai nơi cùng sửa counter.
+
+Tối ưu phạm vi hai constraint trigger trong V3:
+
+- `blogs_nonempty AFTER INSERT OR UPDATE OF content ON blogs`: like/share và cập nhật published không xếp lịch kiểm bài rỗng; thay content vẫn kiểm. `SET content=content` vẫn là UPDATE nhắm tới cột content.
+- `deleted_comment_no_likes ... FOR EACH ROW WHEN (NEW.deleted_at IS NOT NULL)`: WHEN được xét ngay sau khi ghi hàng; chỉ comment đã xóa mới xếp lịch deferred. Hàm vẫn SELECT lại trạng thái cuối, không kiểm một bản NEW cũ thay cho dữ liệu hiện tại.
+- `blog_images_nonempty` giữ INSERT/UPDATE/DELETE. Có thể tạo bài rỗng rồi thêm ảnh, hoặc đặt placeholder rồi gỡ likes trong cùng transaction; trạng thái không hợp lệ vẫn bị chặn khi ép kiểm/commit.
+
+Kiểm chứng sau thay đổi bằng PostgreSQL WASM 17.5: V1–V5 và ba bộ smoke test đạt; phép đếm lần gọi hàm deferred xác nhận like bài/comment, đổi published và sửa comment còn hoạt động không gọi hai hàm kiểm này. Sửa content và xóa comment vẫn được kiểm. Chuỗi 100 cấp và reply cấp 101 dưới ancestor đã xóa được chấp nhận; parent sai bài/không tồn tại, tự trỏ, vòng trong INSERT và đổi cấu trúc qua UPDATE đều bị chặn. Bộ test mới tái hiện lỗi giới hạn khi chạy V3 cũ, chạy đạt sau sửa. Đây chưa phải Docker/Flyway/JDBC/Neon hoặc kiểm thử đồng thời.
 
 ## 8. Transaction — ranh giới nghiệp vụ
 

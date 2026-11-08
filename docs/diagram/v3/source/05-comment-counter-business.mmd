@@ -1,0 +1,25 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bài có 3 bình luận chưa xóa.
+%% Tình huống A: Thêm bình luận hợp lệ làm tổng tăng lên 4.
+%% Tình huống B: Xóa một bình luận đang sống làm tổng còn 2.
+%% Chỉ sửa nội dung hoặc xóa lặp không làm đổi tổng.
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"Nhận thay đổi bình luận;<br>giả sử bài đang có 3 bình luận chưa xóa"/]
+    INPUT --> ADD{"Thêm một bình luận chưa xóa?"}
+    ADD -->|"Có"|PLUS["Tăng tổng thêm 1:<br>ví dụ 3 thành 4"]
+    ADD -->|"Không"|DELETE{"Một bình luận còn sống vừa bị xóa?"}
+    DELETE -->|"Có"|MINUS["Giảm tổng đi 1:<br>ví dụ 3 còn 2"]
+    DELETE -->|"Không"|KEEP["Giữ nguyên tổng;<br>ví dụ sửa nội dung hoặc xóa lặp"]
+    PLUS --> OUTPUT[/"Tổng phản ánh số bình luận chưa xóa"/]
+    MINUS --> OUTPUT
+    KEEP --> OUTPUT
+    OUTPUT --> FINISH(["Kết thúc"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,OUTPUT io;
+    class PLUS,MINUS,KEEP process;
+    class ADD,DELETE decision;

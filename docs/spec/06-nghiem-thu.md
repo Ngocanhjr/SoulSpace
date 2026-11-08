@@ -10,7 +10,7 @@ Seed runner chạy khi được gọi rõ bằng `app.seed-demo=true`, sau Flywa
 | --- | --- | --- |
 | users | 8 | demo01–demo08; UUID cố định của fixture, profile khác nhau, avatar mặc định. |
 | blogs | 24 | 18 public, 6 private; phân bố nhiều tác giả, mỗi bài có text. |
-| comments | 48 | 24 roots, 24 replies; có chuỗi đủ 5 cấp, nhiều người tham gia. |
+| comments | 48 | 24 roots, 24 replies; có chuỗi ít nhất 10 cấp để kiểm bỏ giới hạn cũ, nhiều người tham gia. |
 | blog_likes | 40 | Cặp user/blog khác nhau; private chỉ có like của chủ bài. |
 | comment_likes | 24 | Có root và reply; chỉ actor hợp lệ đối với bài. |
 | blog_shares | 12 | Cặp user/blog khác nhau, chỉ bài public lúc seed. |
@@ -45,14 +45,15 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | BLOG02 | B14 sửa text/ảnh/published cùng một request | Cùng commit hoặc cùng rollback; published false không bị nhầm với absent. |
 | BLOG03 | removeImagesUrl của bài khác/URL lạ | 400, DB và media bài khác không đổi. |
 | BLOG04 | Upload thành công một phần/toàn bộ lỗi | Response arrays đúng; không tạo bài rỗng; receipt không bị thất lạc. |
-| CMT01 | Root/reply đủ 5 cấp, reply cấp 6, parent khác blog | Tree/count đúng; cấp 6 và parent sai bị chặn. |
+| CMT01 | Root/reply tạo thành chuỗi ít nhất 10 cấp; parent khác blog hoặc không tồn tại | Reply cấp 6 trở đi hợp lệ, tree/count đúng; parent sai bài hoặc không tồn tại bị chặn. |
 | CMT02 | Hai bản sửa cùng comment với cùng expectedVersion | Một bản thành công, bản cũ 409 CONCURRENT_MODIFICATION; không ghi đè nội dung mới. |
 | CMT03 | Xóa riêng comment có replies và likes | Node giữ nguyên ID/parent; content=NULL/isDeleted=true, likes của node bị xóa, replies và likes của con còn sống được giữ; count giảm đúng 1. |
 | CMT04 | Xóa lặp với body hợp lệ và expectedVersion cũ | 200 sau kiểm tác giả/quyền xem bài; version/updatedAt/count không đổi lần nữa. |
 | CMT05 | Người khác hoặc chủ bài sửa/xóa comment không do mình viết trên bài public | 403; chỉ tác giả được thao tác. |
-| CMT06 | Reply/like vào node đã xóa; reply vào con chưa xóa của node đó | Node đã xóa trả 409 COMMENT_DELETED; con còn sống được reply nếu không vượt 5 cấp. |
+| CMT06 | Reply/like vào node đã xóa; reply vào con chưa xóa của node đó ở nhánh sâu | Node đã xóa trả 409 COMMENT_DELETED; con còn sống được reply không phụ thuộc độ sâu, kể cả có ancestor là placeholder. |
 | CMT07 | Thiếu/sai kiểu/âm expectedVersion, content không hợp lệ, gửi field cấu trúc | 400, không thay dữ liệu; PATCH node đã xóa với body hợp lệ trả 409 COMMENT_DELETED. |
 | CMT08 | Like rồi đọc lại comment; sửa content rồi đọc lại | Like không đổi version/updatedAt; sửa content tăng version, giữ createdAt/parent và replies. |
+| CMT09 | Hiển thị chuỗi ít nhất 10 cấp trên desktop/mobile và trả lời node sâu | UI thụt lề tối đa 3 tầng, chỉ rõ người được trả lời, không cắt/mất node; request vẫn gửi ID của parent thật, không ép về root/ancestor. |
 | LIKE01 | true hai lần, false hai lần cho bài/comment | Tối đa một row; counter không tăng thừa hoặc âm; response phản ánh trạng thái cuối. |
 | SHR01 | Share một lần, share trùng, unshare lặp | Row/count đúng; duplicate 409; unshare lặp 200. |
 | DEL01 | Xóa blog có comments nhiều cấp, cả placeholder, likes, shares, ảnh | Cascade toàn bộ dữ liệu thuộc bài; placeholder không làm giảm counter lần hai; enqueue ảnh trong cùng commit. |
@@ -90,7 +91,7 @@ Các ca đồng thời chạy bằng nhiều connection/transaction thực, dùn
 | CON02 | 20 user khác nhau like cùng bài; sau đó unlike | Tăng đúng 20 rồi về baseline. |
 | CON03 | Cùng desired=false nhiều lần trên bài/comment | Không còn quan hệ, counter không âm. |
 | CON04 | true/false trộn đồng thời | Không ép kết quả cuối không xác định; quan hệ và count phải khớp sau quiescence. |
-| CON05 | 20 request tạo comment/reply cùng bài | Không mất node, count tăng đủ, depth/cây hợp lệ. |
+| CON05 | 20 request tạo comment/reply cùng bài, gồm parent ở cấp 5 hoặc sâu hơn | Không mất node, count tăng đủ; parent/cây hợp lệ, không vòng và không từ chối do độ sâu. |
 | CON06 | Share đồng thời cùng một cặp | Một 200, các request còn lại 409; shares_count tăng 1. |
 | CON07 | Ghi tương tác đồng thời xóa user/blog hoặc đổi private | Không có orphan, không ghi trái quyền sau điểm kiểm soát; counter đúng; lỗi được map rõ. |
 | CON08 | Deadlock/serialization failure được gây có kiểm soát | Retry chỉ transaction đã rollback, tối đa 2 lần; không lặp upload và không áp dụng tác dụng DB hai lần. |
@@ -99,7 +100,7 @@ Các ca đồng thời chạy bằng nhiều connection/transaction thực, dùn
 | CON11 | Xóa user đồng thời tài khoản đó tạo comment/like hoặc finalize upload | Khóa actor tuần tự hóa thu thập dữ liệu; không có comment mới bị SET NULL nhưng còn content, orphan hoặc receipt bị attach sau xóa. |
 | CON12 | Attach asset đồng thời scanner enqueue hoặc worker cleanup | Một phía thắng theo khóa/state; ATTACHED không bị destroy, DELETE_PENDING không được attach; không có vòng khóa job -> asset xuyên transaction claim. |
 
-Chạy query đối soát cả bốn loại counter sau các ca trên khi không còn request đang chạy. Bắt buộc 0 sai lệch và không có duplicate cặp khóa, parent khác blog, node vượt độ sâu hoặc ảnh ATTACHED không còn liên kết. Log mã SQLSTATE khi cần điều tra, không log nội dung riêng tư.
+Chạy query đối soát cả bốn loại counter sau các ca trên khi không còn request đang chạy. Bắt buộc 0 sai lệch và không có duplicate cặp khóa, parent khác blog/không tồn tại, vòng trong cây hoặc ảnh ATTACHED không còn liên kết. Không dùng độ sâu làm điều kiện loại node. Log mã SQLSTATE khi cần điều tra, không log nội dung riêng tư.
 
 Đối soát comments_count chỉ COUNT comments.deleted_at IS NULL. Comment placeholder có thể còn trong cây nhưng phải có content=NULL, không còn like, không bị INNER JOIN users làm mất node. Các ca trên kiểm cả version cũ từ client và SQL trigger/native query, tránh chỉ thử hai transaction cùng đọc bản mới trên server.
 
@@ -111,9 +112,10 @@ Chạy query đối soát cả bốn loại counter sau các ca trên khi không
 | DB02 | Bỏ qua timestamp khi insert like/share; explicit NULL | Database đặt now() khi thiếu; NULL bị NOT NULL từ chối. |
 | DB03 | RUNNING không lease; PENDING/DEAD có lease; attempts âm hoặc >5 | CHECK từ chối; claim và chuyển trạng thái hợp lệ được ghi. |
 | DB04 | Trùng vị trí ảnh, position=NULL/ngoài 0–9, gắn cùng asset hai bài | NOT NULL/PK/UNIQUE/CHECK từ chối; không gỡ index/constraint để chạy demo. |
-| DB05 | Sửa ID/blog_id/parent_id comment, đổi author sang người khác, tạo vòng hoặc cấp 6 | Trigger/FK từ chối; đổi author sang NULL chỉ hợp lệ khi nội dung đã xóa. |
+| DB05 | Sửa ID/blog_id/parent_id comment, đổi author sang người khác, tự tham chiếu hoặc cố tạo vòng | Trigger/FK/CHECK từ chối; đổi author sang NULL chỉ hợp lệ khi nội dung đã xóa. |
 | DB06 | Metadata PENDING thiếu một phần; ATTACHED thiếu xác nhận; format ngoài jpeg/png hoặc size <= 0 | CHECK từ chối metadata một phần/sai; receipt PENDING chưa xác nhận được phép để cả ba trường NULL; ATTACHED phải có đủ metadata. |
 | DB07 | Xóa trực tiếp user còn comment hoạt động ở bài người khác, chưa xóa nội dung | Không để tồn tại comment author=NULL nhưng còn nội dung; transaction thiếu bước chuẩn bị thất bại, service đúng quy trình DEL02 thành công. |
+| DB08 | INSERT tuần tự chuỗi ít nhất 10 cấp bằng SQL với parent đúng bài và còn hoạt động | Commit thành công, parent_id đúng, comments_count khớp số node hoạt động; không phát sinh lỗi giới hạn độ sâu. |
 
 DB01–DB07 kiểm các invariant có thể thực thi bằng constraint/trigger; ownership/visibility và xác nhận claim còn phải kiểm qua các luồng service/procedure đã khóa. Không coi FK đơn là bằng chứng bảo vệ mọi phép ghi SQL quản trị.
 

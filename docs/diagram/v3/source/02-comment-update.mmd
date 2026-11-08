@@ -1,0 +1,33 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bình luận của Bình có phiên bản 3.
+%% Tình huống A: Bình sửa nội dung, phiên bản tăng từ 3 lên 4.
+%% Tình huống B: Chỉ số lượt thích thay đổi, phiên bản vẫn là 3.
+%% Chuyển bình luận hiện có sang bài khác bị từ chối.
+flowchart TD
+    START(["Bắt đầu: validate_comment UPDATE"]) --> INPUT[/"Nhận OLD và NEW của comment"/]
+    INPUT --> STRUCTURE{"id, blog_id hoặc parent_id<br>có thay đổi?"}
+    STRUCTURE -->|"Có"|BAD_STRUCTURE["RAISE COMMENT_STRUCTURE_IMMUTABLE"]
+    BAD_STRUCTURE --> ERROR[/"Lỗi SQLSTATE 23514"/]
+    STRUCTURE -->|"Không"|AUTHOR{"author_id thay đổi<br>và NEW.author_id khác NULL?"}
+    AUTHOR -->|"Có"|BAD_AUTHOR["RAISE COMMENT_AUTHOR_IMMUTABLE"]
+    BAD_AUTHOR --> ERROR
+    AUTHOR -->|"Không"|DELETION{"OLD.deleted_at khác NULL<br>và NEW.deleted_at khác OLD?"}
+    DELETION -->|"Có"|BAD_DELETION["RAISE COMMENT_DELETION_IMMUTABLE"]
+    BAD_DELETION --> ERROR
+    DELETION -->|"Không"|CHANGED{"content, deleted_at hoặc author_id<br>có thay đổi?"}
+    CHANGED -->|"Có"|INCREMENT["NEW.version = OLD.version + 1;<br>NEW.updated_at = clock_timestamp()"]
+    CHANGED -->|"Không"|PRESERVE["Giữ OLD.version và OLD.updated_at;<br>like counter và xóa lặp không làm cũ bản sửa"]
+    INCREMENT --> RETURN[/"RETURN NEW"/]
+    PRESERVE --> RETURN
+    RETURN --> FINISH(["Kết thúc bình thường"])
+    ERROR --> ERROR_END(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH,ERROR_END terminal;
+    class INCREMENT,PRESERVE process;
+    class STRUCTURE,AUTHOR,DELETION,CHANGED decision;
+    class INPUT,RETURN io;
+    class BAD_STRUCTURE,BAD_AUTHOR,BAD_DELETION,ERROR error;

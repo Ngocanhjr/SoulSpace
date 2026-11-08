@@ -1,0 +1,18 @@
+flowchart TD
+    START(["Cuối lần xử lý chung"]) --> INPUT[/"Bình luận đã được sửa/xóa;<br>ví dụ trước đó có 2 lượt thích"/]
+    INPUT --> EXISTS{"Bình luận còn được lưu<br>và đã bị xóa nội dung?"}
+    EXISTS -->|"Không"|OK[/"Quy tắc này đã đạt"/]
+    EXISTS -->|"Có"|LIKES{"Còn lượt thích nào<br>hoặc bộ đếm chưa về 0?"}
+    LIKES -->|"Có"|DENY[/"Không cho lưu trạng thái cuối;<br>phải gỡ đủ 2 lượt thích trong cùng lần xử lý"/]
+    LIKES -->|"Không"|OK
+    OK --> FINISH(["Kết thúc"])
+    DENY --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,OK io;
+    class EXISTS,LIKES decision;
+    class DENY error;

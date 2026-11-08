@@ -1,10 +1,14 @@
 # Rà soát và chốt thiết kế database SoulSpace
 
 Ghi chú 31/10/2026: báo cáo dưới đây giữ nguyên phạm vi core phiên bản 1.1 (9 bảng/57 cột, 35 endpoint). Spec hiện tại
-phiên bản 1.3 có [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md), [ERD đầy đủ](erd.md), tổng 11 bảng/65 cột và 37
+phiên bản 1.4 có [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md), [ERD đầy đủ](erd.md), tổng 11 bảng/65 cột và 37
 endpoint theo thiết kế. Phần chủ đề thêm 2 bảng/8 cột so với core lịch sử, gồm category_mode, category_source và
 confidence; các kết luận rà soát cũ không thay việc review phần bổ sung. Quyết định V1/V2 và view được tổng hợp
 tại [báo cáo thiết kế SQL](08-bao-cao-tong-ket-sql.md).
+
+Quy tắc mô tả comments bên dưới đã cập nhật theo quyết định ngày 31/10/2026: bỏ giới hạn cứng độ sâu,
+UI thụt lề tối đa 3 tầng nhưng vẫn gửi đúng parent. Các kết quả kiểm tra phiên bản 1.1 được giữ như lịch sử,
+không chứng minh V3/test SQL hiện có đã đáp ứng quyết định mới; xem [phần cần đồng bộ](03-postgresql.md#cây-reply-và-cách-hiển-thị).
 
 Ngày rà soát/chốt: 27/10/2026. Phiên bản spec: 1.1. Phạm vi: toàn bộ bộ spec, thiết kế dữ liệu trong [03-postgresql.md](03-postgresql.md), bốn sơ đồ nguồn, SVG và [erd.md](erd.md). Người dùng đã chọn chính sách comment, timestamp, attach/cleanup và lease. Đây là rà soát tài liệu, không phải xác nhận schema hoặc trigger đã chạy trên PostgreSQL.
 
@@ -16,7 +20,7 @@ Các mục R01–R06 đã được chốt và đồng bộ ở mức tài liệu
 
 ## Thay đổi ERD đã áp dụng
 
-1. Comments bỏ depth; giữ blog_id và parent_id. Trigger duyệt chuỗi cha khi insert để kiểm tối đa 5 cấp, tính cả placeholder; cấm đổi ID/blog/parent sau tạo.
+1. Comments không lưu depth; giữ blog_id và parent_id, không giới hạn cứng độ sâu. Parent phải tồn tại/cùng bài/chưa xóa, không tự trỏ; cấm đổi ID/blog/parent sau tạo để giữ cây không vòng.
 2. Comments thêm updated_at, deleted_at và version. Tổng 10 cột thay cho 8 cột cũ.
 3. Comments.author_id nullable, FK users ON DELETE SET NULL; cạnh ERD đổi thành tác giả tùy chọn. Comment không có tác giả phải đã xóa nội dung.
 4. CHECK trạng thái yêu cầu comment hoạt động có content hợp lệ, comment đã xóa có content=NULL. Xóa tài khoản phải xóa nội dung/gỡ tác giả trong cùng transaction; không chỉ dựa vào FK SET NULL.
@@ -71,7 +75,7 @@ FK đơn vẫn chỉ kiểm tồn tại, không tự kiểm ownership/visibility
 
 ### R05 — Đã chốt: Reply vào placeholder; tìm kiếm ngoài phạm vi
 
-Người dùng đã chọn không reply mới trực tiếp vào node đã xóa. Parent được khóa/kiểm chưa xóa; thao tác xóa và reply tuần tự hóa. Comment con chưa xóa vẫn được trả lời nếu trong giới hạn 5 cấp; kiểm CMT06 và CON10.
+Người dùng đã chọn không reply mới trực tiếp vào node đã xóa. Parent được khóa/kiểm chưa xóa; thao tác xóa và reply tuần tự hóa. Comment con chưa xóa vẫn được trả lời không phụ thuộc độ sâu; kiểm CMT06 và CON10. CMT01/DB08 yêu cầu chuỗi ít nhất 10 cấp được ghi, CMT09 kiểm thụt lề và parent thật trên UI; đây là tiêu chí mới chưa được xác nhận PASS.
 
 Người dùng đưa tìm kiếm nâng cao theo comment ra khỏi phạm vi chốt database lần này. Không thêm bảng/cột/index search hoặc giữ câu hỏi đó làm blocker thiết kế. Tính năng tìm kiếm sẽ có hợp đồng và truy vấn riêng khi được yêu cầu.
 

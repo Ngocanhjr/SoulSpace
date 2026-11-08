@@ -16,7 +16,7 @@ Nguồn đối chiếu: [BlogService](../../old/Blog_api/src/main/java/ctu/edu/b
 | Đăng ký/đăng nhập: `UserService.createUser`, `AuthenticationService.authentication`, `UserRepository.existsByUsername/findByUsername` | Giữ luồng nhập username/password và response an toàn đã chốt; dùng PasswordEncoder/session mới. Chuyển truy vấn username sang JPA. | UNIQUE username tạo index phục vụ tra cứu; transaction insert user và xử lý xung đột đăng ký đồng thời. Kiểm tồn tại trước insert chỉ phục vụ thông báo, UNIQUE là ràng buộc cuối. |
 | Feed/trang tác giả: `BlogService.getAllPublishedBlogs`, `getAllBlogsByUser`, `getAllPublicBlogByUserId` | Giữ bộ lọc public/author và BlogDTO; thay `findByPublishedTrue/findByUserId/findByUserIdAndPublishedTrue` bằng query quan hệ, thứ tự thời gian và ID ổn định. | Composite/partial index theo public, author và thời gian; đối chiếu EXPLAIN trên chính các query này. |
 | Like bài: `BlogService.toggleLike` | Giữ route/response; request có `liked` bắt buộc. Thay danh sách embedded và phép tăng/giảm Java bằng quan hệ `blog_likes`. | `sp_set_blog_like` trong transaction service; PK cặp blog/user chống trùng, trigger duy nhất cập nhật likes_count. |
-| Đọc/thêm comment và reply: `BlogService.getCommentsByBlog`, `addComment`, `addReply` | Giữ DTO cây và luồng trả lời; lưu mỗi node thành một row rồi dựng cây từ kết quả phẳng. Bổ sung sửa/xóa riêng comment với version và placeholder giữ replies. | Index blog/parent; FK cùng blog, trigger duyệt chuỗi cha để chặn quá 5 cấp, counter tính comment chưa xóa; transaction khóa blog rồi comment. |
+| Đọc/thêm comment và reply: `BlogService.getCommentsByBlog`, `addComment`, `addReply` | Giữ DTO cây và luồng trả lời; lưu mỗi node thành một row rồi dựng cây từ kết quả phẳng. Bổ sung sửa/xóa riêng comment với version và placeholder giữ replies. | Index blog/parent; FK cùng blog, parent đã tồn tại và cấu trúc bất biến giữ cây không vòng; không giới hạn cứng độ sâu; counter tính comment chưa xóa; transaction khóa blog rồi comment. |
 | Like comment: `BlogService.toggleCommentLike` | Giữ route/response và dùng `liked` bắt buộc; chuyển danh sách liked users thành `comment_likes`. | `sp_set_comment_like`, PK cặp comment/user, trigger likes_count và transaction service. |
 | Share/unshare: `BlogService.shareBlog`, `removeSharedBlog` | Giữ luồng share và response; thay snapshot trong user và hai lần save user/blog bằng quan hệ `blog_shares`. | `sp_share_blog/sp_unshare_blog` và trigger shares_count cùng transaction; PK chống share trùng. |
 | Danh sách share: `BlogService.getSharedBlogsByUser` | Giữ SharedBlogDTO; lấy nội dung/tác giả hiện tại qua JOIN bài gốc, lọc public. | Index danh sách share theo user/thời gian; FK cascade khi bài gốc bị xóa. |
@@ -285,7 +285,7 @@ erDiagram
     }
 ```
 
-`comments.parent_id` có thể null với bình luận gốc. Khóa ngoại ghép `(parent_id, blog_id)` tham chiếu `comments(id, blog_id)` bảo đảm reply thuộc cùng bài; độ sâu tối đa là 5.
+`comments.parent_id` có thể null với bình luận gốc. Khóa ngoại ghép `(parent_id, blog_id)` tham chiếu `comments(id, blog_id)` bảo đảm reply thuộc cùng bài; không giới hạn cứng độ sâu.
 
 ### Lượt thích và chia sẻ
 
@@ -555,6 +555,8 @@ Một blog còn tồn tại phải có ít nhất một trong hai thành phần:
 
 Điều kiện này liên quan hai bảng và phải xét sau khi hoàn tất các bước ghi trong cùng transaction. Constraint trigger được trì hoãn đến cuối transaction trên thay đổi blogs/blog_images để kiểm trạng thái cuối cùng.
 
+`blogs_nonempty` chỉ bắt `INSERT OR UPDATE OF content ON blogs`; cập nhật counters, published hoặc hồ sơ không xếp lịch kiểm này. `UPDATE OF content` xét cột xuất hiện trong SET, nên `SET content=content` vẫn kích hoạt. `blog_images_nonempty` giữ `INSERT OR UPDATE OR DELETE` để kiểm trạng thái cuối khi ghi liên kết ảnh.
+
 Ví dụ tạo bài chỉ có ảnh:
 
 ```text
@@ -593,15 +595,21 @@ Comment gốc và reply dùng chung một bảng. blog_id phục vụ lấy tấ
 | deleted_at | TIMESTAMPTZ, nullable; đã đặt thì không phục hồi về NULL trong giai đoạn này |
 | version | BIGINT, NOT NULL DEFAULT 0, CHECK version >= 0; tăng khi sửa nội dung/xóa/gỡ tác giả |
 
-### Cây reply và giới hạn 5 cấp
+### Cây reply và cách hiển thị
 
-Không lưu cột depth. BEFORE INSERT trigger dùng recursive CTE đi từ parent lên root, tính root là cấp 1, từ chối comment mới vượt cấp 5, chuỗi bị đứt hoặc có vòng. Đếm cả placeholder trong chuỗi cha. Parent phải tồn tại trước khi insert child; FK không deferred.
+Không lưu cột depth và không giới hạn cứng độ sâu. Reply ở cấp 6 hoặc sâu hơn vẫn hợp lệ nếu đáp ứng quyền và các ràng buộc của comment. Parent phải tồn tại trước khi insert child; trigger kiểm parent cùng blog, CHECK chặn tự tham chiếu và FK không deferred giữ liên kết hợp lệ.
 
-Khi thêm reply, khóa blog rồi parent FOR UPDATE, yêu cầu parent.deleted_at IS NULL trước khi insert. Parent đã xóa trả 409 COMMENT_DELETED; vẫn được reply vào comment con còn hoạt động. Service và trigger kiểm điều kiện parent còn hoạt động theo cùng quy tắc khóa, để thao tác xóa parent và thêm reply được tuần tự hóa. Ancestor là placeholder vẫn được giữ và tính vào giới hạn 5 cấp; chỉ parent trực tiếp bắt buộc chưa xóa.
+Khi thêm reply, khóa blog rồi parent FOR UPDATE, yêu cầu parent.deleted_at IS NULL trước khi insert. Parent đã xóa trả 409 COMMENT_DELETED; vẫn được reply vào comment con còn hoạt động. Service và trigger kiểm điều kiện parent còn hoạt động theo cùng quy tắc khóa, để thao tác xóa parent và thêm reply được tuần tự hóa. Ancestor là placeholder vẫn được giữ; chỉ parent trực tiếp bắt buộc chưa xóa.
 
 ID, blog_id và parent_id bất biến sau tạo nên sửa nội dung không chuyển vị trí của node trong cây. author_id chỉ được giữ nguyên hoặc chuyển sang NULL khi đã xóa nội dung, không được gán tác giả khác. Service kiểm tra để trả lỗi rõ; trigger bảo vệ invariant ở database.
 
-Ví dụ parent đang ở cấp 4 thì reply mới ở cấp 5 và được tạo; parent ở cấp 5 thì reply mới sẽ ở cấp 6 và bị từ chối. FK ghép giữ reply trong cùng bài với parent.
+Cây không vòng được duy trì từ database sạch bằng ba điều kiện: comment mới có ID mới, parent đã tồn tại và không được thay ID/blog_id/parent_id sau tạo. Node mới chỉ gắn vào cây đã có nên không thể trở thành ancestor của chính mình. Không cần recursive CTE duyệt toàn bộ ancestor trên mỗi lần insert chỉ để đếm cấp. Dữ liệu nhập hoặc sửa bằng quyền quản trị vượt qua các guard phải được kiểm tra riêng, không dùng đường ghi đó thay cho API hợp lệ.
+
+Ví dụ parent ở cấp 5 thì reply cấp 6 vẫn được tạo; tiếp tục trả lời ở các cấp sâu hơn không bị từ chối do độ sâu. UI chỉ thụt lề tối đa 3 tầng; reply sâu hơn hiển thị cùng mức thụt lề cuối và chỉ rõ người được trả lời. parent_id vẫn trỏ đúng comment được chọn, không đổi sang root/ancestor để ép phẳng dữ liệu. Bảng/cột và quan hệ ERD không thay đổi.
+
+Đọc dữ liệu theo blog_id/parent_id và dựng cây từ các hàng phẳng bằng cấu trúc tra cứu/duyệt lặp, tránh phụ thuộc call stack theo độ sâu. Migration core giữ DTO cây hiện tại; trước khi phục vụ thảo luận lớn cần chốt thêm hợp đồng phân trang/tải từng nhóm, không mặc định trả toàn bộ cây trong mọi request. Bỏ giới hạn nghiệp vụ không loại bỏ giới hạn tài nguyên của API, JSON và trình duyệt.
+
+Đã đồng bộ SQL ngày 01/11/2026: [V3](../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql) bỏ CTE đếm tổ tiên và toàn bộ điều kiện giới hạn độ sâu; giữ các guard parent/cấu trúc/version. [invariants.sql](../../infra/postgres/tests/invariants.sql) kiểm chuỗi đến cấp 100, reply cấp 101 dưới ancestor đã xóa, counters và các trường hợp parent/cấu trúc không hợp lệ. V1–V5 và các smoke test chạy đạt trên PostgreSQL WASM; chưa áp dụng Flyway vào Docker/Neon. Nếu một database đã áp dụng V3 cũ, cần migration mới thay thế hàm thay vì sửa checksum lịch sử.
 
 ### Trạng thái nội dung
 
@@ -619,6 +627,8 @@ CHECK (author_id IS NOT NULL OR deleted_at IS NOT NULL)
 ### Xóa riêng comment và xóa tài khoản
 
 Xóa riêng comment là UPDATE: xóa mọi comment_likes của chính node đó, đặt content=NULL và deleted_at, cập nhật updated_at/version trong cùng transaction; giữ author_id và toàn bộ replies. Client dựng placeholder từ trạng thái, không lưu chuỗi "Bình luận đã xóa" vào content. Xóa lặp không tiếp tục giảm counter; comment đã xóa không được sửa nội dung hoặc nhận like mới.
+
+Constraint trigger `deleted_comment_no_likes` chỉ xếp lịch khi `WHEN (NEW.deleted_at IS NOT NULL)` đúng ngay sau INSERT/UPDATE. Hàm deferred đọc lại trạng thái cuối và đòi likes_count=0 cùng không còn comment_likes; không tự xóa likes. Comment hoạt động được cập nhật likes_count không xếp lịch phép kiểm này. Có thể đặt placeholder rồi gỡ likes trong cùng transaction trước khi kiểm cuối.
 
 Khi xóa tài khoản: khóa các blog bị ảnh hưởng theo thứ tự ID; với comments của user ở bài người khác, xóa likes của các node đó, đặt content=NULL/deleted_at nếu chưa xóa, gỡ author_id và tăng version một lần cho mỗi hàng thay đổi. Thu thập assets và lập cleanup jobs trước khi xóa các bài của user, rồi xóa user trong cùng transaction. FK author SET NULL chỉ là hành vi cuối, không thay bước xóa nội dung; CHECK trạng thái làm thao tác xóa user thiếu bước chuẩn bị thất bại. Replies của người khác trong bài còn sống được giữ; toàn bộ cây của bài bị xóa vẫn bị cascade. Xóa vật lý comment độc lập không thuộc API runtime.
 
@@ -800,7 +810,7 @@ Không thêm GIN/trigram/vector index khi giai đoạn đầu chưa có truy v�
 | comment counter | AFTER INSERT/DELETE và UPDATE deleted_at trên comments | INSERT hoạt động tăng 1; lần đầu đặt deleted_at giảm 1; DELETE chỉ giảm nếu OLD.deleted_at IS NULL. Placeholder, sửa text và xóa lặp không tăng/giảm. |
 | comment like counter | AFTER INSERT/DELETE comment_likes | Cộng/trừ đúng một trên comments.likes_count. |
 | share counter | AFTER INSERT/DELETE blog_shares | Cộng/trừ đúng một trên blogs.shares_count. |
-| comment tree validation | BEFORE INSERT comments; BEFORE UPDATE các field cấu trúc | Duyệt chuỗi cha tối đa 5 cấp; chặn vòng, đổi ID/blog/parent và đổi tác giả trái quy tắc. Không lưu depth. |
+| comment tree validation | BEFORE INSERT comments; BEFORE UPDATE các field cấu trúc | Kiểm parent tồn tại/cùng blog/chưa xóa; chặn tự trỏ, đổi ID/blog/parent và đổi tác giả trái quy tắc. Parent tồn tại và cấu trúc bất biến giữ cây không vòng; không lưu depth hoặc giới hạn cứng độ sâu. |
 | nonempty blog constraint | Deferred constraint trigger blogs/blog_images | Kiểm bài còn tồn tại có text hoặc ảnh ở cuối transaction. |
 
 Database là nơi duy nhất sửa counters. Java và seed không tự tăng/giảm hoặc set lại bộ đếm. Mỗi trigger dùng `SET counter=counter+1` hoặc `counter-1`; không read-modify-write ngoài lock, không clamp số âm để che lỗi. FK cascade có thể kích hoạt trigger; nếu parent đã không còn thì UPDATE parent tác động 0 hàng là hợp lệ. [Tài liệu hành vi trigger PostgreSQL](https://www.postgresql.org/docs/17/sql-createtrigger.html).
@@ -936,7 +946,7 @@ repository/service đọc view trong backend; nghiệm thu sử dụng thật đ
 |---------------------------------|---------------------------------------------------------------------------------------------------------------------------|
 | V1__core_schema.sql             | Mười một bảng/65 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
 | V2__query_indexes.sql           | Các index bổ sung có mục đích ở trên.                                                                                     |
-| V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, kiểm cây 5 cấp không lưu depth, field bất biến và nonempty blog deferred constraint. |
+| V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, parent hợp lệ/cây không vòng không lưu depth hoặc giới hạn cứng độ sâu, field bất biến và nonempty blog deferred constraint. |
 | V4__interaction_procedures.sql  | Bốn stored procedure và quyền EXECUTE.                                                                                    |
 | V5__read_views.sql              | View bài public kèm tác giả hiện tại; runtime chỉ SELECT.                                                                 |
 

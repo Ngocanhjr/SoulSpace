@@ -1,0 +1,19 @@
+flowchart TD
+    START(["Cuối lần xử lý chung"]) --> INPUT[/"Kiểm tra bài của An sau khi<br>thêm/sửa bài hoặc thay đổi ảnh"/]
+    INPUT --> EXISTS{"Bài còn tồn tại?"}
+    EXISTS -->|"Không"|SKIP[/"Bỏ qua: bài đã bị xóa"/]
+    EXISTS -->|"Có"|CONTENT{"Bài có chữ sau khi bỏ khoảng trắng<br>hoặc có ít nhất một ảnh?"}
+    CONTENT -->|"Có"|OK[/"Đạt điều kiện nội dung;<br>bài chỉ có ảnh cũng được phép"/]
+    CONTENT -->|"Không"|DENY[/"Không cho lưu bài rỗng;<br>cần thêm chữ hoặc ảnh trước khi hoàn tất"/]
+    SKIP --> FINISH(["Kết thúc"])
+    OK --> FINISH
+    DENY --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,SKIP,OK io;
+    class EXISTS,CONTENT decision;
+    class DENY error;

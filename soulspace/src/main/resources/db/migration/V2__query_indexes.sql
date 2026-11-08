@@ -5,6 +5,7 @@ CREATE INDEX blogs_public_author_idx ON blogs (author_id, created_at DESC, id DE
 CREATE INDEX comments_blog_idx ON comments (blog_id, created_at, id);
 CREATE INDEX comments_parent_idx ON comments (parent_id, blog_id) WHERE parent_id IS NOT NULL;
 CREATE INDEX comments_author_idx ON comments (author_id);
+--đánh thêm thời gian
 CREATE INDEX blog_likes_user_idx ON blog_likes (user_id, blog_id);
 CREATE INDEX comment_likes_user_idx ON comment_likes (user_id, comment_id);
 CREATE INDEX blog_shares_blog_idx ON blog_shares (blog_id);

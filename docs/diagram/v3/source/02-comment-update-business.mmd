@@ -1,0 +1,21 @@
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"Nhận thay đổi trên bình luận<br>đang có phiên bản 3"/]
+    INPUT --> MOVED{"Đổi mã bình luận, bài hoặc cha;<br>đổi sang tác giả khác;<br>hoặc sửa lại thời điểm xóa đã có?"}
+    MOVED -->|"Có"|DENY[/"Từ chối thay đổi cấu trúc<br>hoặc trạng thái bất biến"/]
+    MOVED -->|"Không"|EDIT{"Nội dung, trạng thái xóa<br>hoặc liên kết tác giả có đổi?"}
+    EDIT -->|"Có"|BUMP["Tăng phiên bản từ 3 lên 4;<br>ghi lại thời điểm thay đổi"]
+    EDIT -->|"Không"|KEEP["Giữ phiên bản 3 và thời điểm sửa;<br>ví dụ chỉ tổng lượt thích đổi"]
+    BUMP --> OK[/"Cho phép tiếp tục cập nhật bình luận"/]
+    KEEP --> OK
+    OK --> FINISH(["Kết thúc"])
+    DENY --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,OK io;
+    class BUMP,KEEP process;
+    class MOVED,EDIT decision;
+    class DENY error;

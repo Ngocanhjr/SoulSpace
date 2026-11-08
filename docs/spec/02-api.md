@@ -112,7 +112,7 @@ U07 không đổi password; field vắng mặt giữ nguyên. Username/fullname 
 | B04 | GET | `/api/v1/blogs/{blogId}` | UUID path | `BlogDTO`, public hoặc chủ bài. |
 | B05 | GET | `/api/v1/blogs/{blogId}/comments` | UUID path | `CommentDTO[]`, cùng quyền xem bài. |
 | B06 | POST | `/api/v1/blogs/{blogId}/comments` | JSON `{content,userId?}` | `CommentCreateResponse`, đăng nhập và xem được bài. |
-| B07 | POST | `/api/v1/blogs/{blogId}/comments/{commentId}/reply` | JSON `{content,userId?}` | `CommentReplyResponse`, parent đúng bài và còn trong giới hạn độ sâu. |
+| B07 | POST | `/api/v1/blogs/{blogId}/comments/{commentId}/reply` | JSON `{content,userId?}` | `CommentReplyResponse`, parent đúng bài và chưa xóa; không giới hạn cứng độ sâu. |
 | B08 | POST | `/api/v1/blogs/{blogId}/comments/{commentId}/like` | JSON `{liked:boolean,userId?}` | `CommentLikeResponse`, đăng nhập và xem được bài. |
 | B09 | POST | `/api/v1/blogs/{blogId}/like` | JSON `{liked:boolean,userId?}` | `BlogLikeResponse`, đăng nhập và xem được bài. |
 | B10 | POST | `/api/v1/blogs` | Multipart tạo bài | `BlogCreateResponse`, đăng nhập. |
@@ -147,7 +147,9 @@ B15/B16 là hai endpoint mới, cùng HTTP 200 khi thành công; tổng hợp đ
 
 Thứ tự xử lý B15/B16: xác thực/CSRF, kiểm quyền xem bài và comment thuộc bài, kiểm tác giả, kiểm body hợp lệ; khóa blog rồi comment. B16 nếu node đã xóa thì trả thành công với trạng thái hiện tại sau kiểm quyền/body, không kiểm khớp version nữa. B15 trên node đã xóa trả 409 COMMENT_DELETED; B15 và lần xóa đầu B16 có version cũ trả 409 CONCURRENT_MODIFICATION. Không tự retry HTTP bằng version mới. Xóa tài khoản đã gỡ tác giả làm tài khoản/session đó không còn quyền thực hiện B15/B16.
 
-B07 phải khóa parent, kiểm deleted_at IS NULL rồi mới insert reply; parent đã xóa trả 409 COMMENT_DELETED. B08 cũng từ chối node đã xóa bằng mã này. Các replies cũ vẫn được đọc và comment con chưa xóa vẫn có thể được trả lời. Body sai parent/blog hoặc vượt 5 cấp xử lý như hợp đồng validation, không lưu depth vào database.
+B07 khóa blog rồi parent, kiểm deleted_at IS NULL rồi mới insert reply; parent đã xóa trả 409 COMMENT_DELETED. B08 cũng từ chối node đã xóa bằng mã này. Các replies cũ vẫn được đọc và comment con chưa xóa vẫn có thể được trả lời, kể cả khi ancestor là placeholder. Parent/blog sai xử lý theo hợp đồng validation. Không lưu depth hoặc trả lỗi chỉ vì reply ở cấp 6 hay sâu hơn; bỏ COMMENT_DEPTH_EXCEEDED khỏi hợp đồng lỗi.
+
+Giữ `CommentDTO.replies` và response array hiện tại trong migration core; quyết định bỏ giới hạn độ sâu không thêm route hoặc đổi response sang wrapper. UI chỉ thụt lề tối đa 3 tầng, chỉ rõ người được trả lời cho reply sâu hơn và luôn gửi commentId của node thật được chọn. Không gắn reply vào ancestor chỉ để khớp mức thụt lề. Phân trang/tải từng nhóm comments là hợp đồng mở rộng cần chốt riêng trước khi phục vụ thảo luận lớn.
 
 B10 nhận các part `content?`, `published?` mặc định true, `files` lặp lại, `userId?` để đối chiếu. Chấp nhận và bỏ qua `username` legacy do PostPage đang append field này; author luôn từ session. B14 nhận `blogId`, `content?`, `published?`, `newImages` lặp lại, `removeImagesUrl` lặp lại. Giữ phân biệt field absent với false/rỗng; `published` không có không được bind thành false.
 
@@ -183,7 +185,7 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 
 | HTTP | Code tiêu biểu | Tình huống |
 | --- | --- | --- |
-| 400 | `VALIDATION_FAILED`, `INVALID_ID`, `INVALID_MEDIA_REFERENCE`, `COMMENT_DEPTH_EXCEEDED` | Input hoặc liên kết không hợp lệ. |
+| 400 | `VALIDATION_FAILED`, `INVALID_ID`, `INVALID_MEDIA_REFERENCE` | Input hoặc liên kết không hợp lệ; độ sâu reply không phải lỗi validation. |
 | 401 | `AUTH_REQUIRED`, `INVALID_CREDENTIALS` | Hết session, chưa đăng nhập, hoặc sai password xác nhận lại. |
 | 403 | `FORBIDDEN`, `ACTOR_MISMATCH`, `CSRF_INVALID` | Không có quyền ghi/owner, giả userId, hoặc CSRF không hợp lệ. |
 | 404 | `RESOURCE_NOT_FOUND` | Không tồn tại hoặc tài nguyên bị che do privacy. |
@@ -207,7 +209,7 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 | `SignUpPage/SignUp.jsx` | Gửi `dob` canonical; API vẫn nhận birthday; cập nhật policy password và bỏ log password/form. |
 | `Navigation`, `UserPage`, mọi nơi logout | Gọi A04 rồi clear state; không chỉ xóa localStorage. |
 | `ListPost`, `PostDetailPage` | Optimistic UI; gửi `liked` mong muốn và gộp lần bấm nhanh theo blog, tối đa một request đang chạy/mục; response không ghi đè ý định mới hơn. Counter chuẩn lấy từ response. |
-| `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Like comment dùng cùng quy tắc optimistic/coalescing; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. |
+| `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Like comment dùng cùng quy tắc optimistic/coalescing; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. Thụt lề tối đa 3 tầng, chỉ rõ người được trả lời ở nhánh sâu; gửi đúng parent comment, không chặn reply theo độ sâu. |
 | `UserPage` sửa bài | Gộp published vào B14; giữ các tên multipart hiện có. |
 | `UserPage` xóa tài khoản | Dialog xác nhận lại password và gửi U08 body; lỗi không xóa state trước khi server xác nhận. |
 | `EditProfile`, `EditAvatar`, `PostPage`, `SearchPage`, `PublicProfilePage` | Dùng chung HTTP client; UUID là string, ảnh API relative URL; xử lý privacy/expired session. |

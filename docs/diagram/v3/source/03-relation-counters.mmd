@@ -1,0 +1,28 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bài của An có 20 lượt thích; Bình chưa thích bài.
+%% Thêm lượt thích của Bình làm tổng tăng lên 21.
+%% Gỡ lượt thích đó làm tổng giảm về 20.
+%% Cùng cơ chế cộng/trừ được dùng cho lượt chia sẻ và thích bình luận.
+flowchart TD
+    START(["Bắt đầu: update_relation_counter"]) --> INPUT[/"Nhận TG_TABLE_NAME, TG_OP,<br>OLD và NEW từ trigger"/]
+    INPUT --> INSERT{"TG_OP là INSERT?"}
+    INSERT -->|"Có"|PLUS["delta = +1;<br>lấy ID cha từ NEW"]
+    INSERT -->|"Không: DELETE"|MINUS["delta = -1;<br>lấy ID cha từ OLD"]
+    PLUS --> TABLE{"Bảng kích hoạt là gì?"}
+    MINUS --> TABLE
+    TABLE -->|"blog_likes"|BLOG_LIKES["UPDATE blogs:<br>likes_count = likes_count + delta"]
+    TABLE -->|"blog_shares"|BLOG_SHARES["UPDATE blogs:<br>shares_count = shares_count + delta"]
+    TABLE -->|"comment_likes"|COMMENT_LIKES["UPDATE comments:<br>likes_count = likes_count + delta"]
+    BLOG_LIKES --> RETURN[/"RETURN NULL<br>AFTER trigger bỏ qua giá trị trả về"/]
+    BLOG_SHARES --> RETURN
+    COMMENT_LIKES --> RETURN
+    RETURN --> FINISH(["Kết thúc"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class PLUS,MINUS,BLOG_LIKES,BLOG_SHARES,COMMENT_LIKES process;
+    class INSERT,TABLE decision;
+    class INPUT,RETURN io;

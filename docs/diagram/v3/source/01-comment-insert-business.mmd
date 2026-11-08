@@ -1,0 +1,21 @@
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"Bình nhập bình luận mới<br>hoặc trả lời một bình luận đã có"/]
+    INPUT --> REPLY{"Đây là trả lời bình luận?"}
+    REPLY -->|"Không"|CREATE["Tạo bình luận gốc ở cấp 1"]
+    REPLY -->|"Có"|PARENT{"Bình luận cha tồn tại<br>trong cùng bài và chưa bị xóa?"}
+    PARENT -->|"Không"|DENY[/"Không tạo trả lời;<br>báo cha không tồn tại hoặc đã xóa"/]
+    PARENT -->|"Có"|ADD_REPLY["Thêm trả lời vào đúng bài<br>và đúng bình luận cha"]
+    CREATE --> OK[/"Cho phép tiếp tục lưu bình luận"/]
+    ADD_REPLY --> OK
+    OK --> FINISH(["Kết thúc"])
+    DENY --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,OK io;
+    class CREATE,ADD_REPLY process;
+    class REPLY,PARENT decision;
+    class DENY error;

@@ -1,0 +1,30 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bài A gắn ảnh M ở vị trí 0; vị trí 1 còn trống.
+%% Đổi vị trí M từ 0 sang 1 được phép.
+%% Đổi trực tiếp liên kết để M thuộc bài B bị từ chối.
+%% Quyền sở hữu và trạng thái ảnh còn được luồng nghiệp vụ kiểm tra.
+flowchart TD
+    START(["Bắt đầu: lock_image_blog"]) --> INPUT[/"Nhận TG_OP, OLD và NEW của blog_images"/]
+    INPUT --> UPDATE{"TG_OP là UPDATE?"}
+    UPDATE -->|"Có"|CHANGED{"blog_id hoặc asset_id thay đổi?"}
+    CHANGED -->|"Có"|RAISE["RAISE IMAGE_LINK_IMMUTABLE"]
+    RAISE --> ERROR[/"Lỗi SQLSTATE 23514"/]
+    CHANGED -->|"Không"|DELETE{"TG_OP là DELETE?"}
+    UPDATE -->|"Không"|DELETE
+    DELETE -->|"Có"|OLD_LOCK["Khóa OLD.blog_id bằng FOR UPDATE"]
+    OLD_LOCK --> OLD_RETURN[/"RETURN OLD"/]
+    DELETE -->|"Không: INSERT hoặc UPDATE"|NEW_LOCK["Khóa NEW.blog_id bằng FOR UPDATE"]
+    NEW_LOCK --> NEW_RETURN[/"RETURN NEW"/]
+    OLD_RETURN --> FINISH(["Kết thúc bình thường"])
+    NEW_RETURN --> FINISH
+    ERROR --> ERROR_END(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH,ERROR_END terminal;
+    class OLD_LOCK,NEW_LOCK process;
+    class UPDATE,CHANGED,DELETE decision;
+    class INPUT,OLD_RETURN,NEW_RETURN io;
+    class RAISE,ERROR error;

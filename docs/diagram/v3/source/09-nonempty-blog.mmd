@@ -1,0 +1,32 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: An muốn đăng một bài chỉ có ảnh, không có chữ.
+%% Thao tác: Tạo bài rỗng rồi gắn ảnh trong cùng một giao dịch.
+%% Kết quả: Cho phép lưu vì trạng thái cuối đã có ảnh.
+%% Xóa ảnh cuối cùng mà không thêm chữ hoặc ảnh thay thế bị từ chối.
+flowchart TD
+    START(["Bắt đầu: check_nonempty_blog"]) --> INPUT[/"blogs: INSERT hoặc UPDATE OF content;<br>blog_images: INSERT, UPDATE, DELETE;<br>nhận TG_TABLE_NAME, TG_OP, OLD và NEW"/]
+    INPUT --> TABLE{"Bảng kích hoạt là blogs?"}
+    TABLE -->|"Có"|BLOG_TARGET["target = OLD.id nếu DELETE;<br>ngược lại lấy NEW.id"]
+    TABLE -->|"Không: blog_images"|IMAGE_TARGET["target = OLD.blog_id nếu DELETE;<br>ngược lại lấy NEW.blog_id"]
+    BLOG_TARGET --> LOCK["SELECT blog tại target FOR UPDATE;<br>lấy content hiện tại"]
+    IMAGE_TARGET --> LOCK
+    LOCK --> FOUND{"Blog còn tồn tại?"}
+    FOUND -->|"Không: đã xóa"|RETURN[/"RETURN NULL: kiểm tra đạt"/]
+    FOUND -->|"Có"|EMPTY{"length của btrim(content) bằng 0?"}
+    EMPTY -->|"Không: có chữ"|RETURN
+    EMPTY -->|"Có"|IMAGES{"Có ít nhất một blog_images<br>của blog này?"}
+    IMAGES -->|"Có"|RETURN
+    IMAGES -->|"Không"|RAISE["RAISE BLOG_REQUIRES_TEXT_OR_IMAGE"]
+    RAISE --> ERROR[/"Lỗi SQLSTATE 23514;<br>không cho commit bài rỗng"/]
+    RETURN --> FINISH(["Kết thúc bình thường"])
+    ERROR --> ERROR_END(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH,ERROR_END terminal;
+    class BLOG_TARGET,IMAGE_TARGET,LOCK process;
+    class TABLE,FOUND,EMPTY,IMAGES decision;
+    class INPUT,RETURN io;
+    class RAISE,ERROR error;

@@ -1,0 +1,18 @@
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"Nhận việc thêm hoặc bỏ lượt thích/chia sẻ"/]
+    INPUT --> ADD{"Đây là thêm tương tác?"}
+    ADD -->|"Có"|INCREASE["Tăng đúng tổng tương tác lên 1"]
+    ADD -->|"Không: bỏ tương tác"|DECREASE["Giảm đúng tổng tương tác đi 1"]
+    INCREASE --> MORE[/"Ví dụ: thêm lượt thích của Bình,<br>tổng từ 20 thành 21"/]
+    DECREASE --> LESS[/"Ví dụ: bỏ lượt thích vừa có,<br>tổng từ 21 về 20"/]
+    MORE --> FINISH(["Kết thúc"])
+    LESS --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,MORE,LESS io;
+    class INCREASE,DECREASE process;
+    class ADD decision;

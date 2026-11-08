@@ -2,9 +2,6 @@ CREATE FUNCTION validate_comment() RETURNS trigger
 LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
 DECLARE
     parent_deleted TIMESTAMPTZ;
-    ancestor_count INTEGER;
-    has_root BOOLEAN;
-    has_cycle BOOLEAN;
 BEGIN
     IF TG_OP = 'UPDATE' THEN
         IF NEW.id IS DISTINCT FROM OLD.id OR NEW.blog_id IS DISTINCT FROM OLD.blog_id
@@ -38,19 +35,6 @@ BEGIN
         END IF;
         IF parent_deleted IS NOT NULL THEN
             RAISE EXCEPTION 'COMMENT_DELETED' USING ERRCODE = '23514';
-        END IF;
-        WITH RECURSIVE ancestors AS (
-            SELECT id, parent_id, ARRAY[id] AS path, false AS cycle, 1 AS level
-            FROM comments WHERE id = NEW.parent_id AND blog_id = NEW.blog_id
-            UNION ALL
-            SELECT c.id, c.parent_id, a.path || c.id, c.id = ANY(a.path), a.level + 1
-            FROM ancestors a JOIN comments c ON c.id = a.parent_id AND c.blog_id = NEW.blog_id
-            WHERE NOT a.cycle AND a.level < 6
-        )
-        SELECT count(*), bool_or(parent_id IS NULL), bool_or(cycle)
-        INTO ancestor_count, has_root, has_cycle FROM ancestors;
-        IF ancestor_count >= 5 OR NOT coalesce(has_root, false) OR coalesce(has_cycle, false) THEN
-            RAISE EXCEPTION 'COMMENT_MAX_DEPTH_OR_INVALID_TREE' USING ERRCODE = '23514';
         END IF;
     END IF;
     RETURN NEW;
@@ -157,7 +141,7 @@ END;
 $$;
 CREATE CONSTRAINT TRIGGER deleted_comment_no_likes
 AFTER INSERT OR UPDATE ON comments DEFERRABLE INITIALLY DEFERRED
-FOR EACH ROW EXECUTE FUNCTION check_deleted_comment_likes();
+FOR EACH ROW WHEN (NEW.deleted_at IS NOT NULL) EXECUTE FUNCTION check_deleted_comment_likes();
 
 CREATE FUNCTION lock_image_blog() RETURNS trigger
 LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
@@ -194,7 +178,7 @@ BEGIN
     RETURN NULL;
 END;
 $$;
-CREATE CONSTRAINT TRIGGER blogs_nonempty AFTER INSERT OR UPDATE ON blogs
+CREATE CONSTRAINT TRIGGER blogs_nonempty AFTER INSERT OR UPDATE OF content ON blogs
 DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_nonempty_blog();
 CREATE CONSTRAINT TRIGGER blog_images_nonempty AFTER INSERT OR UPDATE OR DELETE ON blog_images
 DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_nonempty_blog();

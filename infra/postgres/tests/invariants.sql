@@ -32,7 +32,10 @@ DECLARE
     root_id UUID := gen_random_uuid();
     child_id UUID := gen_random_uuid();
     parent UUID;
+    deep_parent UUID;
     node UUID;
+    cycle_a UUID := gen_random_uuid();
+    cycle_b UUID := gen_random_uuid();
     unconfirmed_asset UUID := gen_random_uuid();
     partial_asset UUID := gen_random_uuid();
     unconfirmed_attached_asset UUID := gen_random_uuid();
@@ -72,14 +75,29 @@ BEGIN
     INSERT INTO comments(id, blog_id, author_id, content) VALUES(root_id, post_id, viewer_id, 'Root');
     INSERT INTO comments(id, blog_id, author_id, parent_id, content) VALUES(child_id, post_id, owner_id, root_id, 'Reply');
     parent := child_id;
-    FOR level IN 3..5 LOOP
+    FOR level IN 3..100 LOOP
         node := gen_random_uuid();
+        deep_parent := parent;
         INSERT INTO comments(id, blog_id, author_id, parent_id, content) VALUES(node, post_id, owner_id, parent, 'Nested');
         parent := node;
     END LOOP;
+    PERFORM pg_temp.assert_true((SELECT comments_count = 100 FROM blogs WHERE id = post_id),
+                               'replies through levels 6 and 100 are accepted and counted');
+    PERFORM pg_temp.assert_true((SELECT parent_id = deep_parent FROM comments WHERE id = node),
+                               'deepest reply retains its actual parent');
+    PERFORM pg_temp.expect_error(format('UPDATE comments SET parent_id = %L WHERE id = %L', parent, root_id), '23514');
+    PERFORM pg_temp.expect_error(format('UPDATE comments SET parent_id = id WHERE id = %L', root_id), '23514');
+    PERFORM pg_temp.expect_error(format('UPDATE comments SET id = %L WHERE id = %L', gen_random_uuid(), child_id), '23514');
+    PERFORM pg_temp.expect_error(format('UPDATE comments SET blog_id = %L WHERE id = %L', private_id, child_id), '23514');
     PERFORM pg_temp.expect_error(format(
-        'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Sixth'')',
-        gen_random_uuid(), post_id, owner_id, parent), '23514');
+        'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Missing parent'')',
+        gen_random_uuid(), post_id, owner_id, gen_random_uuid()), '23503');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Self parent'')',
+        cycle_a, post_id, owner_id, cycle_a), '23503');
+    PERFORM pg_temp.expect_error(format(
+        'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Cycle A''),(%L,%L,%L,%L,''Cycle B'')',
+        cycle_a, post_id, owner_id, cycle_b, cycle_b, post_id, owner_id, cycle_a), '23503');
     PERFORM pg_temp.expect_error(format('UPDATE comments SET parent_id = NULL WHERE id = %L', child_id), '23514');
     PERFORM pg_temp.expect_error(format(
         'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Wrong blog'')',
@@ -97,15 +115,38 @@ BEGIN
     UPDATE comments SET content = NULL, deleted_at = clock_timestamp() WHERE id = root_id;
     UPDATE comments SET content = NULL, deleted_at = deleted_at WHERE id = root_id;
     PERFORM pg_temp.assert_true((SELECT version = 2 AND likes_count = 0 FROM comments WHERE id = root_id), 'repeated soft deletion stable');
-    PERFORM pg_temp.assert_true((SELECT comments_count = 4 FROM blogs WHERE id = post_id), 'only active comments counted');
+    PERFORM pg_temp.assert_true((SELECT comments_count = 99 FROM blogs WHERE id = post_id), 'only active comments counted');
     PERFORM pg_temp.assert_true(EXISTS(SELECT FROM comments WHERE id = child_id), 'reply retained');
     PERFORM pg_temp.expect_error(format('CALL sp_set_comment_like(%L,%L,%L,true)', owner_id, post_id, root_id), '23514');
     PERFORM pg_temp.expect_error(format(
         'INSERT INTO comments(id,blog_id,author_id,parent_id,content) VALUES(%L,%L,%L,%L,''Deleted parent'')',
         gen_random_uuid(), post_id, owner_id, root_id), '23514');
+    node := gen_random_uuid();
+    INSERT INTO comments(id, blog_id, author_id, parent_id, content)
+    VALUES(node, post_id, owner_id, parent, 'Reply below a deleted ancestor');
+    PERFORM pg_temp.assert_true((SELECT parent_id = parent FROM comments WHERE id = node),
+                               'live descendant accepts a reply despite a deleted ancestor');
+    PERFORM pg_temp.assert_true((SELECT comments_count = 100 FROM blogs WHERE id = post_id),
+                               'new deep reply is counted while its deleted ancestor is excluded');
     DELETE FROM users WHERE id = viewer_id;
     PERFORM pg_temp.assert_true((SELECT author_id IS NULL AND version = 3 FROM comments WHERE id = root_id), 'anonymized tombstone');
     PERFORM pg_temp.assert_true(EXISTS(SELECT FROM comments WHERE id = child_id), 'other author reply survives account deletion');
+
+    node := gen_random_uuid();
+    INSERT INTO comments(id, blog_id, author_id, content) VALUES(node, post_id, owner_id, 'Deferred deletion');
+    CALL sp_set_comment_like(owner_id, post_id, node, true);
+    UPDATE comments SET content = NULL, deleted_at = clock_timestamp() WHERE id = node;
+    PERFORM pg_temp.expect_error('SET CONSTRAINTS deleted_comment_no_likes IMMEDIATE', '23514');
+    DELETE FROM comment_likes WHERE comment_id = node;
+    SET CONSTRAINTS deleted_comment_no_likes IMMEDIATE;
+    PERFORM pg_temp.assert_true((SELECT likes_count = 0 AND version = 1 FROM comments WHERE id = node),
+                               'delete then remove likes is valid at the deferred boundary');
+    SET CONSTRAINTS deleted_comment_no_likes DEFERRED;
+
+    PERFORM pg_temp.expect_error(format(
+        'UPDATE blogs SET content = '''' WHERE id = %L; SET CONSTRAINTS blogs_nonempty IMMEDIATE', post_id), '23514');
+    PERFORM pg_temp.assert_true((SELECT content = 'Public text' FROM blogs WHERE id = post_id),
+                               'empty content update and its deferred failure roll back together');
 
     INSERT INTO media_assets(id,owner_id,purpose,state,provider_public_id)
     VALUES(unconfirmed_asset, owner_id, 'BLOG', 'PENDING', 'test/' || unconfirmed_asset);

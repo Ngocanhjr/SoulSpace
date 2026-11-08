@@ -1,6 +1,6 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 31/10/2026. Phiên bản: 1.3. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+Ngày lập: 24/10/2026. Cập nhật: 31/10/2026. Phiên bản: 1.4. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
 giai đoạn AI; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
 
@@ -19,7 +19,7 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | D07 | Like bài và bình luận nhận `liked=true/false`; request lặp cùng giá trị cho cùng kết quả. Frontend cập nhật lạc quan, gộp các lần bấm nhanh theo từng mục và chỉ giữ một request đang chạy cho mỗi mục.                                                                                                                                  |
 | D08 | Share tham chiếu bài gốc hiện tại; ẩn khi bài gốc riêng tư, xóa share khi bài gốc bị xóa.                                                                                                                                                                                                                                                |
 | D09 | Xóa bài vĩnh viễn cùng dữ liệu thuộc bài; xóa riêng comment giữ node/replies, xóa nội dung. Xóa tài khoản xóa bài của user, còn comment ở bài người khác được xóa nội dung/gỡ tác giả và giữ replies. Dọn ảnh sau DB commit.                                                                                                             |
-| D10 | Comments giữ blog_id/parent_id, không lưu depth; giới hạn 5 cấp tính từ chuỗi cha. Không tạo reply mới trực tiếp vào comment đã xóa.                                                                                                                                                                                                     |
+| D10 | Comments giữ blog_id/parent_id, không lưu depth và không giới hạn cứng độ sâu. UI chỉ thụt lề tối đa 3 tầng, vẫn trả lời đúng parent; không tạo reply mới trực tiếp vào comment đã xóa. |
 | D11 | Chỉ tác giả sửa/xóa comment qua hai endpoint bổ sung; expectedVersion chống ghi đè, bản cũ trả 409, xóa lặp trả thành công.                                                                                                                                                                                                              |
 | D12 | Timestamp like/share dùng NOT NULL DEFAULT now(). Media giữ format jpeg/png, không lưu mime_type.                                                                                                                                                                                                                                        |
 | D13 | Media có ba trạng thái PENDING, ATTACHED, DELETE_PENDING. Chỉ PENDING đã xác nhận metadata và đúng owner/purpose mới được gắn; DELETE_PENDING không được gắn lại. Cloudinary ngoài transaction.                                                                                                                                          |
@@ -38,6 +38,7 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | [06 nghiệm thu](06-nghiem-thu.md)                     | Seed, kiểm thử chức năng, concurrency, SQL, bảo mật và bằng chứng bàn giao.                                                                   |
 | [07 phân loại chủ đề](07-phan-loai-chu-de.md)         | Nghiệp vụ AI, dữ liệu/API bổ sung, xử lý nền, quyền sửa nhãn và nghiệm thu riêng.                                                             |
 | [08 báo cáo tổng kết SQL](08-bao-cao-tong-ket-sql.md) | ERD và cơ sở thiết kế V1/V2, view, khung báo cáo procedure/trigger/transaction/AI in SQL; lưu quyết định đã chốt để dùng cho báo cáo cuối kỳ. |
+| [09 giải thích V3](09-giai-thich-v3.md) | Toàn bộ code V3 theo 9 nhóm, giải thích từng nhánh, ví dụ, lý do dùng và đánh đổi; hai tối ưu constraint trigger và kết quả kiểm SQL. |
 | [ERD dạng SVG](erd.md)                                | Năm hình SVG đã đồng bộ: tổng quan 11 bảng/65 cột, ba nhóm nghiệp vụ và chủ đề riêng; chưa triển khai phần AI.                                |
 | [Rà soát và chốt database](erd-review.md)             | Các quyết định đã đóng, kiểm tra tài liệu và những bước thực thi còn phải kiểm chứng.                                                         |
 
@@ -54,10 +55,16 @@ Các giá trị dưới đây là lựa chọn thiết kế cho demo, có thể 
 | Hash mật khẩu mới | Argon2id; tham số và giới hạn trong tài liệu bảo mật. |
 | Quyền | Guest, người đăng nhập và chủ tài nguyên; chưa thêm nghiệp vụ admin. |
 | Riêng tư | Giữ `published` boolean; chưa thêm quyền FOLLOWERS. |
-| Bình luận | Cây tối đa 5 cấp, gốc là cấp 1; counter tính comment/reply chưa xóa, không tính placeholder. |
+| Bình luận | Không giới hạn cứng độ sâu; UI thụt lề tối đa 3 tầng và chỉ rõ người được trả lời. Counter tính comment/reply chưa xóa, không tính placeholder. |
 | Ảnh | JPEG/PNG; tối đa 10 ảnh/bài, 10 MiB/file, 100 MiB/request. Chọn định dạng giải mã được bằng JDK để không thêm decoder chưa cần. |
 | Session | Idle 30 phút, tuổi tối đa 8 giờ, lưu trong bộ nhớ của một backend. |
 | Seed chức năng | 8 users, 24 blogs, 48 comments gồm replies, 40 blog likes, 24 comment likes, 12 shares. |
+
+Quyết định ngày 31/10/2026 bỏ giới hạn độ sâu không đổi bảng/cột hoặc các hình ERD. Đã đồng bộ V3,
+`infra/postgres/tests/invariants.sql` và sơ đồ ngày 01/11/2026 theo
+[thiết kế cây reply](03-postgresql.md#cây-reply-và-cách-hiển-thị): bỏ CTE đếm cấp, giữ parent hợp lệ và cấu trúc bất biến.
+Kiểm SQL trên PostgreSQL WASM đạt với chuỗi 100 cấp và reply cấp 101 dưới ancestor đã xóa;
+đây chưa phải xác nhận toàn bộ backend/frontend hoặc Flyway trên Docker/Neon đạt đặc tả 1.4.
 
 ## Hiện trạng đã đọc từ checkout
 

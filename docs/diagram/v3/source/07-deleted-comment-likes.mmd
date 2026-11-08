@@ -1,0 +1,27 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Một bình luận có 2 lượt thích.
+%% Thao tác: Xóa nội dung bình luận và gỡ cả 2 lượt thích trong cùng giao dịch.
+%% Kết quả: Cho phép lưu khi cuối cùng không còn lượt thích nào.
+%% Nếu đã xóa bình luận nhưng vẫn còn lượt thích, không cho commit.
+flowchart TD
+    START(["Bắt đầu: check_deleted_comment_likes"]) --> INPUT[/"Nhận NEW.id của comment đã xóa;<br>WHEN lọc ngay sau INSERT/UPDATE;<br>hàm chạy deferred hoặc khi ép kiểm constraint"/]
+    INPUT --> READ[/"Đọc lại comment hiện tại<br>và các quan hệ comment_likes"/]
+    READ --> EXISTS{"Comment còn tồn tại?"}
+    EXISTS -->|"Không"|RETURN[/"RETURN NULL: kiểm tra đạt"/]
+    EXISTS -->|"Có"|DELETED{"Comment đã bị xóa<br>với deleted_at khác NULL?"}
+    DELETED -->|"Không"|RETURN
+    DELETED -->|"Có"|LIKES{"likes_count khác 0<br>HOẶC vẫn có comment_likes?"}
+    LIKES -->|"Không"|RETURN
+    LIKES -->|"Có"|RAISE["RAISE DELETED_COMMENT_HAS_LIKES"]
+    RAISE --> ERROR[/"Lỗi SQLSTATE 23514;<br>không cho commit trạng thái này"/]
+    RETURN --> FINISH(["Kết thúc bình thường"])
+    ERROR --> ERROR_END(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH,ERROR_END terminal;
+    class EXISTS,DELETED,LIKES decision;
+    class INPUT,READ,RETURN io;
+    class RAISE,ERROR error;

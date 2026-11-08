@@ -1,0 +1,36 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bài của An có 20 lượt thích; Bình chưa thích bài.
+%% Thao tác: Bình bấm Thích.
+%% Kết quả: Ghi lượt thích và tăng tổng lên 21 trong cùng một lần xử lý.
+%% Nếu lần xử lý bị hủy trước khi hoàn tất, cả hai thay đổi đều bị hủy.
+flowchart TD
+    START(["Bắt đầu transaction"]) --> INPUT[/"Nhận một lệnh INSERT, UPDATE hoặc DELETE"/]
+    INPUT --> BEFORE["Chạy các BEFORE trigger khớp bảng và sự kiện"]
+    BEFORE --> BEFORE_OK{"BEFORE trigger thành công?"}
+    BEFORE_OK -->|"Không"|ABORT["Hủy câu SQL và thay đổi của trigger;<br>transaction không được commit nếu lỗi chưa được xử lý"]
+    BEFORE_OK -->|"Có"|DML["Thực hiện thay đổi dữ liệu;<br>kiểm tra các ràng buộc tức thời"]
+    DML --> DML_OK{"Câu DML đạt các ràng buộc tức thời?"}
+    DML_OK -->|"Không"|ABORT
+    DML_OK -->|"Có"|AFTER["Chạy AFTER trigger cập nhật counter;<br>chỉ lên lịch deferred khi khớp sự kiện và WHEN"]
+    AFTER --> SQL_OK{"SQL và AFTER trigger thành công?"}
+    SQL_OK -->|"Không"|ABORT
+    SQL_OK -->|"Có"|MORE{"Còn lệnh ghi trong transaction?"}
+    MORE -->|"Có"|INPUT
+    MORE -->|"Không"|DEFERRED["Chạy các constraint đã được lên lịch:<br>deleted_comment_no_likes;<br>blogs_nonempty; blog_images_nonempty"]
+    DEFERRED --> FINAL_OK{"Trạng thái cuối hợp lệ?"}
+    FINAL_OK -->|"Không"|ABORT
+    FINAL_OK -->|"Có"|COMMIT["COMMIT: lưu toàn bộ thay đổi và nhả khóa"]
+    COMMIT --> SUCCESS[/"Kết quả: dữ liệu nghiệp vụ và counter cùng được lưu"/]
+    ABORT --> FAILURE[/"Kết quả lỗi: chưa có COMMIT thành công"/]
+    SUCCESS --> FINISH(["Kết thúc"])
+    FAILURE --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class BEFORE,DML,AFTER,DEFERRED,COMMIT process;
+    class BEFORE_OK,DML_OK,SQL_OK,MORE,FINAL_OK decision;
+    class INPUT,SUCCESS io;
+    class ABORT,FAILURE error;

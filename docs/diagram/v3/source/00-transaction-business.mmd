@@ -1,0 +1,27 @@
+%% Ví dụ thực tế:
+%% Ban đầu: Bài có 20 lượt thích, A chưa thích; chỉ xét lượt thích của A.
+%% Thao tác: A bấm Thích.
+%% Kết quả: Lưu lượt thích và tăng tổng lên 21 trong cùng một lần xử lý.
+%% Nếu lần xử lý bị hủy trước khi hoàn tất, cả hai thay đổi đều bị hủy.
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"A bấm Thích;<br>bài đang có 20 lượt thích, A chưa thích"/]
+    INPUT --> PENDING["Ghi nhận lượt thích của A;<br>tổng tạm tính tăng từ 20 lên 21"]
+    PENDING --> WHEN{"Mất kết nối vào lúc nào?"}
+    WHEN -->|"Chưa gửi yêu cầu lưu"|UNDO["Khi phiên xử lý kết thúc,<br>hủy cả lượt thích và phần tăng tổng"]
+    WHEN -->|"Đã lưu thành công"|SAVED[/"A đã thích bài;<br>tổng là 21"/]
+    WHEN -->|"Đã gửi lưu, chưa nhận xác nhận"|CHECK["Khi có kết nối trở lại và lần xử lý cũ đã kết thúc,<br>kiểm tra kết quả đã lưu"]
+    CHECK --> EXISTS{"Lượt thích của A đã được lưu?"}
+    EXISTS -->|"Có"|SAVED
+    EXISTS -->|"Không"|NOT_SAVED[/"A chưa thích bài;<br>tổng vẫn là 20"/]
+    UNDO --> NOT_SAVED
+    SAVED --> FINISH(["Kết thúc"])
+    NOT_SAVED --> FINISH
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,SAVED,NOT_SAVED io;
+    class PENDING,UNDO,CHECK process;
+    class WHEN,EXISTS decision;

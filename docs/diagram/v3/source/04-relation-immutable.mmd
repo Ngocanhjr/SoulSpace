@@ -1,0 +1,18 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Bình đã thích bài A.
+%% Thao tác không hợp lệ: Sửa bản ghi đó để chuyển lượt thích sang bài B.
+%% Kết quả: Bị từ chối, không âm thầm chuyển lượt thích.
+%% Muốn đổi, phải bỏ lượt thích ở A rồi thêm lượt thích ở B.
+flowchart TD
+    START(["Bắt đầu: reject_relation_update"]) --> INPUT[/"Nhận một UPDATE trên blog_likes,<br>comment_likes hoặc blog_shares;<br>kể cả UPDATE không đổi giá trị"/]
+    INPUT --> RAISE["RAISE RELATION_IMMUTABLE_USE_INSERT_DELETE;<br>quan hệ chỉ được INSERT hoặc DELETE"]
+    RAISE --> ERROR[/"Trả lỗi SQLSTATE 23514;<br>không cho phép UPDATE quan hệ"/]
+    ERROR --> FINISH(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT io;
+    class RAISE,ERROR error;

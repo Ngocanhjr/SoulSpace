@@ -1,0 +1,50 @@
+{
+  "output": "../data/collected/comments.csv",
+  "user_agent": "SoulSpaceResearch/1.0 (configure your project contact)",
+  "delay_seconds": 1.0,
+  "max_requests": 400,
+  "sources": [
+    {
+      "name": "youtube",
+      "type": "youtube",
+      "enabled": false,
+      "video_ids": [],
+      "include_replies": true,
+      "max_comments": 250,
+      "max_pages": 20
+    },
+    {
+      "name": "facebook",
+      "type": "facebook",
+      "enabled": false,
+      "post_ids": [],
+      "include_replies": true,
+      "max_comments": 250,
+      "max_pages": 20
+    },
+    {
+      "name": "baomoi",
+      "type": "news",
+      "enabled": false,
+      "access_basis": "",
+      "start_urls": [],
+      "comment_selector": "",
+      "text_selector": "",
+      "context_selector": "h1",
+      "max_comments": 250,
+      "max_pages": 20
+    },
+    {
+      "name": "kenh14",
+      "type": "news",
+      "enabled": false,
+      "access_basis": "",
+      "start_urls": [],
+      "comment_selector": "",
+      "text_selector": "",
+      "context_selector": "h1",
+      "max_comments": 250,
+      "max_pages": 20
+    }
+  ]
+}

@@ -59,9 +59,9 @@ Gồm `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes
 - categories, bảng nối blog_categories và blogs.category_mode được hiển thị đầy đủ trong cả bốn sơ đồ có blogs. Mỗi bài
   có 0..n chủ đề; mỗi chủ đề có 0..n bài. PK ghép (blog_id, category_id, category_source) ngăn trùng liên kết.
 - Một user có nhiều bài viết và bình luận; mỗi bài có nhiều bình luận, bao gồm replies.
-- Bình luận gốc có `parent_id = NULL`. FK ghép `(parent_id, blog_id)` tham chiếu `comments(id, blog_id)` giữ reply trong cùng bài; độ sâu tối đa là 5.
-- Không lưu depth; trigger đếm chuỗi cha khi thêm reply. blog_id và parent_id cố định sau tạo; placeholder cũng tính một cấp trong cây.
-- Không tạo reply mới trực tiếp vào placeholder; parent được khóa và kiểm chưa xóa. Replies cũ và thao tác trả lời comment con chưa xóa vẫn được giữ theo giới hạn 5 cấp.
+- Bình luận gốc có `parent_id = NULL`. FK ghép `(parent_id, blog_id)` tham chiếu `comments(id, blog_id)` giữ reply trong cùng bài; không giới hạn cứng độ sâu.
+- Không lưu depth; parent phải tồn tại, không tự trỏ; ID/blog_id/parent_id cố định sau tạo để giữ cây không vòng. UI chỉ thụt lề tối đa 3 tầng, vẫn giữ đúng parent và chỉ rõ người được trả lời ở nhánh sâu.
+- Không tạo reply mới trực tiếp vào placeholder; parent được khóa và kiểm chưa xóa. Replies cũ vẫn được giữ, comment con chưa xóa vẫn được trả lời ở mọi độ sâu.
 - Xóa riêng comment đặt content=NULL/deleted_at, gỡ likes và giữ replies. comments_count chỉ đếm các node chưa xóa; UI dựng dòng "Bình luận đã xóa" từ trạng thái.
 - author_id nullable phục vụ xóa tài khoản: xóa nội dung và gỡ tác giả của các comment ở bài người khác trong cùng transaction, giữ replies. Bài của tài khoản bị xóa vẫn bị xóa vĩnh viễn cùng toàn bộ cây.
 - version dùng cho sửa/xóa comment, không tạo record lịch sử: client gửi expectedVersion, bản cũ bị từ chối 409. updated_at/version không thay đổi khi chỉ like.

@@ -41,7 +41,7 @@ Provision chỉ dành cho database sạch, không tiếp quản schema đang có
   ảnh 0–9. Media có ba trạng thái PENDING/ATTACHED/DELETE_PENDING; PENDING phân biệt xác nhận upload bằng bộ
   provider_asset_id/format/size_bytes.
 - V2: 14 index bổ sung cho feed, cây comment, cascade và queue.
-- V3: counters, cây tối đa 5 cấp, cấu trúc bất biến, version comment, bài không rỗng ở cuối transaction; metadata media đã xác nhận bất biến và state ATTACHED không quay về PENDING. `blog_image_position` có thể được trì hoãn bằng `SET CONSTRAINTS blog_image_position DEFERRED` khi hoán đổi thứ tự ảnh; mặc định kiểm ngay.
+- V3: counters, cây không giới hạn cứng độ sâu, parent hợp lệ/cấu trúc bất biến, version comment, bài không rỗng ở cuối transaction; metadata media đã xác nhận bất biến và state ATTACHED không quay về PENDING. `blog_image_position` có thể được trì hoãn bằng `SET CONSTRAINTS blog_image_position DEFERRED` khi hoán đổi thứ tự ảnh; mặc định kiểm ngay.
 - V4: bốn procedure SECURITY INVOKER, quyền runtime và chặn truy cập Flyway history. Chúng không tự COMMIT; service phải mở transaction, lấy actor từ session và đọc response sau cập nhật.
 
 Content edit/delete tự tăng `comments.version` và `updated_at` trong trigger. Service vẫn bắt buộc `WHERE version=:expectedVersion`, kiểm affected rows; JPA không merge toàn entity để tránh ghi đè counters. Counter updates không tăng version. Xóa mềm phải xóa likes của node trong cùng transaction; constraint deferred chặn placeholder còn likes.
@@ -68,7 +68,27 @@ psql "host=127.0.0.1 dbname=<test-database> user=soulspace_runtime" -W -f infra/
 psql "host=127.0.0.1 dbname=<test-database> user=soulspace_runtime" -W -f infra/postgres/tests/blog_categories.sql
 ```
 
-Fixture nằm trong transaction và luôn ROLLBACK khi thành công; ON_ERROR_STOP làm process thoát khi có lỗi. Không chạy trên database dùng chung. Test kiểm like lặp, privacy, share, counters, 5 cấp, version, xóa mềm/tài khoản, metadata, lease và constraint bài rỗng. Chưa kiểm deadlock/nhiều connection, JDBC/Flyway, Neon, media hoặc API; phải nghiệm thu riêng theo [06](../../docs/spec/06-nghiem-thu.md).
+Fixture nằm trong transaction và luôn ROLLBACK khi thành công; ON_ERROR_STOP làm process thoát khi có lỗi. Không chạy trên database dùng chung. Test kiểm like lặp, privacy, share, counters, chuỗi 100 cấp/reply cấp 101 dưới ancestor đã xóa, chặn parent sai/tự trỏ/vòng/đổi cấu trúc, version, xóa mềm/tài khoản, metadata, lease và constraint bài rỗng. Chưa kiểm deadlock/nhiều connection, JDBC/Flyway, Neon, media hoặc API; phải nghiệm thu riêng theo [06](../../docs/spec/06-nghiem-thu.md).
+
+## Kiểm tra phạm vi trigger V3 — 01/11/2026
+
+Phép kiểm V3 bằng PostgreSQL WASM có thể chạy lại từ root với [verify-v3.cjs](tests/verify-v3.cjs).
+Script dùng PGlite đã cài riêng, không thêm dependency cho ứng dụng, tạo database trong bộ nhớ rồi đóng khi xong.
+Đặt `SOULSPACE_PGLITE_MODULE` trỏ tới thư mục package `@electric-sql/pglite` đã có; cấu hình đường dẫn ở môi trường,
+không ghi cứng đường dẫn máy vào script. Bản kiểm ngày 01/11/2026 dùng PGlite 0.3.14/PostgreSQL 17.5:
+
+```powershell
+$env:SOULSPACE_PGLITE_MODULE = (Resolve-Path '<thu-muc-package-pglite-da-cai>').Path
+node infra/postgres/tests/verify-v3.cjs
+```
+
+Ngoài ba smoke suite, helper đếm lần gọi hai hàm constraint trong transaction kiểm thử rồi rollback để khôi phục hàm.
+Nó xác nhận lọc sự kiện/WHEN của V3; không kết nối Docker, Neon hoặc chạy Flyway/JDBC.
+
+V3 đã bỏ toàn bộ CTE đếm tổ tiên và giới hạn độ sâu. Suite invariants kiểm chuỗi 100 cấp, reply cấp 101
+dưới ancestor đã xóa và các guard parent/cấu trúc; test mới thất bại với V3 cũ do giới hạn cấp, chạy đạt sau sửa.
+Không đổi V1/V2/V4/V5 hoặc thêm bảng/cột. Sửa trực tiếp V3 dành cho database chưa áp dụng migration này;
+nếu đã áp dụng V3 cũ thì phải thêm migration thay thế hàm, không sửa checksum trong lịch sử Flyway.
 
 ## Kết quả kiểm tra bổ sung view — 30/10/2026
 

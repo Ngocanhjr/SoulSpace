@@ -1,0 +1,13 @@
+flowchart TD
+    START(["Bắt đầu"]) --> INPUT[/"Bình muốn sửa lượt thích đã có<br>để chuyển từ bài A sang bài B"/]
+    INPUT --> REJECT["Giữ nguyên quan hệ đã có;<br>từ chối sửa trực tiếp bản ghi tương tác"]
+    REJECT --> OUTPUT[/"Lượt thích chưa bị chuyển;<br>muốn đổi phải bỏ ở A rồi thêm ở B"/]
+    OUTPUT --> FINISH(["Kết thúc"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH terminal;
+    class INPUT,OUTPUT io;
+    class REJECT error;

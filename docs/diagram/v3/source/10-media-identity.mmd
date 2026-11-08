@@ -1,0 +1,31 @@
+%% Ví dụ thực tế trước luồng SQL:
+%% Ban đầu: Ảnh M đã được xác nhận và gắn vào bài.
+%% Đổi ảnh M về trạng thái chờ gắn bị từ chối.
+%% Đánh dấu ảnh chờ xóa được phép; không được đổi ngược lại.
+%% Mã định danh, định dạng và kích thước đã xác nhận không được đổi.
+flowchart TD
+    START(["Bắt đầu: guard_media_identity"]) --> INPUT[/"Nhận OLD và NEW của media_assets"/]
+    INPUT --> IDENTITY{"id, purpose hoặc provider_public_id đổi;<br>HOẶC provider_asset_id đã xác nhận<br>bị thay đổi?"}
+    IDENTITY -->|"Có"|BAD_ID["RAISE MEDIA_IDENTITY_IMMUTABLE"]
+    BAD_ID --> ERROR[/"Lỗi SQLSTATE 23514"/]
+    IDENTITY -->|"Không"|PENDING{"OLD.state là DELETE_PENDING<br>và NEW.state khác DELETE_PENDING?"}
+    PENDING -->|"Có"|BAD_PENDING["RAISE MEDIA_PENDING_DELETION"]
+    BAD_PENDING --> ERROR
+    PENDING -->|"Không"|ATTACHED{"OLD.state là ATTACHED<br>và NEW.state không thuộc<br>ATTACHED, DELETE_PENDING?"}
+    ATTACHED -->|"Có"|BAD_STATE["RAISE ATTACHED_MEDIA_STATE_CANNOT_REVERT"]
+    BAD_STATE --> ERROR
+    ATTACHED -->|"Không"|METADATA{"OLD.provider_asset_id khác NULL<br>và format hoặc size_bytes thay đổi?"}
+    METADATA -->|"Có"|BAD_META["RAISE CONFIRMED_MEDIA_METADATA_IMMUTABLE"]
+    BAD_META --> ERROR
+    METADATA -->|"Không"|RETURN[/"RETURN NEW: tiếp tục UPDATE"/]
+    RETURN --> FINISH(["Kết thúc bình thường"])
+    ERROR --> ERROR_END(["Thoát bằng lỗi"])
+    classDef terminal fill:#d5e8d4,stroke:#82b366,color:#18351d;
+    classDef process fill:#dae8fc,stroke:#6c8ebf,color:#142d4e;
+    classDef decision fill:#fff2cc,stroke:#d6b656,color:#443511;
+    classDef io fill:#ffe6cc,stroke:#d79b00,color:#482b0d;
+    classDef error fill:#f8cecc,stroke:#b85450,color:#5c1d1a;
+    class START,FINISH,ERROR_END terminal;
+    class IDENTITY,PENDING,ATTACHED,METADATA decision;
+    class INPUT,RETURN io;
+    class BAD_ID,BAD_PENDING,BAD_STATE,BAD_META,ERROR error;
