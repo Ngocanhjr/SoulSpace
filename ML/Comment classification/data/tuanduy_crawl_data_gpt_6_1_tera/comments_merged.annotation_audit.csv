@@ -1,0 +1,616 @@
+data_row,source_id,label_id,label_name,needs_review,review_reason
+1,1498185045533725,0,CLEAN,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+2,29622544690670537,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+3,1156387980278070,1,OFFENSIVE,NO,
+4,968965772566319,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+5,4769349743294817,0,CLEAN,NO,
+6,2292315794833493,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+7,1600378678439570,0,CLEAN,NO,
+8,1966746948024776,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+9,1844339080056803,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+10,1692106709272587,0,CLEAN,NO,
+11,1043115595474911,0,CLEAN,NO,
+12,3753540431459613,0,CLEAN,NO,
+13,1651217843467833,2,HATE,NO,
+14,1705483561587957,0,CLEAN,NO,
+15,29238435335790168,0,CLEAN,NO,
+16,2551150482028514,0,CLEAN,NO,
+17,1446306793695582,0,CLEAN,NO,
+18,1782339362825877,0,CLEAN,NO,
+19,2524980414663825,0,CLEAN,NO,
+20,1672863291131801,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+21,2664194307361990,0,CLEAN,NO,
+22,1795602221707464,0,CLEAN,NO,
+23,1599226294810596,0,CLEAN,NO,
+24,1441428204793399,0,CLEAN,NO,
+25,1106464598662663,0,CLEAN,NO,
+26,1674603200678562,0,CLEAN,NO,
+27,2642210979543510,0,CLEAN,NO,
+28,2606125486527042,1,OFFENSIVE,NO,
+29,1124340643663823,0,CLEAN,NO,
+30,1104106545755678,0,CLEAN,NO,
+31,2046671129371619,0,CLEAN,NO,
+32,1568664105066703,0,CLEAN,NO,
+33,1469651658461499,0,CLEAN,NO,
+34,1112159045060381,0,CLEAN,NO,
+35,1135202115726566,0,CLEAN,NO,
+36,1135448262220772,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+37,2532696500546799,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+38,1649827523485055,0,CLEAN,NO,
+39,4487079314840058,0,CLEAN,NO,
+40,1124880823869048,1,OFFENSIVE,NO,
+41,1112253254742429,0,CLEAN,NO,
+42,1754487678993854,0,CLEAN,NO,
+43,1108625858748922,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+44,1582328710613437,0,CLEAN,NO,
+45,1106164448719349,0,CLEAN,NO,
+46,1628452812341163,0,CLEAN,NO,
+47,1652105646451658,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+48,1658005609106490,1,OFFENSIVE,NO,
+49,2388833294987524,0,CLEAN,NO,
+50,1045556605237667,0,CLEAN,NO,
+51,2520707725105861,0,CLEAN,NO,
+52,962776609966463,2,HATE,NO,
+53,1772455357316861,0,CLEAN,NO,
+54,1847841727341967,0,CLEAN,NO,
+55,1573880118106562,0,CLEAN,NO,
+56,1626828079219190,1,OFFENSIVE,NO,
+57,1078128528605287,0,CLEAN,NO,
+58,29473185848966510,2,HATE,NO,
+59,2656165941486002,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+60,982576001080642,0,CLEAN,NO,
+61,1813642009745214,0,CLEAN,NO,
+62,2940345173012303,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+63,2438918996634495,0,CLEAN,NO,
+64,1008323898245238,1,OFFENSIVE,NO,
+65,1996414754625719,0,CLEAN,NO,
+66,1642780894010139,1,OFFENSIVE,NO,
+67,1829958524718874,0,CLEAN,NO,
+68,1615722319553471,0,CLEAN,NO,
+69,3016384438713863,0,CLEAN,NO,
+70,1137781072283305,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+71,1841603800315778,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+72,2697556197329541,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+73,4558076234338372,0,CLEAN,NO,
+74,1597579721691563,0,CLEAN,NO,
+75,2191829631397670,0,CLEAN,NO,
+76,1965207408008927,2,HATE,NO,
+77,1677111827184344,2,HATE,NO,
+78,1004201408717430,0,CLEAN,NO,
+79,1515313420407683,0,CLEAN,NO,
+80,1378697880810312,0,CLEAN,NO,
+81,1873828710479066,0,CLEAN,NO,
+82,1435859061995990,0,CLEAN,NO,
+83,971695236015734,0,CLEAN,NO,
+84,1799462468050611,0,CLEAN,NO,
+85,2608310229664257,0,CLEAN,NO,
+86,2061555837858527,0,CLEAN,NO,
+87,1690007912724187,0,CLEAN,NO,
+88,2666149997161668,0,CLEAN,NO,
+89,1163491706362375,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+90,2257039004913116,0,CLEAN,NO,
+91,2014445099334636,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+92,2383978165691241,0,CLEAN,NO,
+93,1000346715794588,0,CLEAN,NO,
+94,1176318315076341,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+95,2063469544323070,0,CLEAN,NO,
+96,952413341028938,2,HATE,NO,
+97,1129229276258889,0,CLEAN,NO,
+98,1519027913522502,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+99,3186964488179894,0,CLEAN,NO,
+100,4630521250427713,0,CLEAN,NO,
+101,1783371662722345,0,CLEAN,NO,
+102,1869012747432865,0,CLEAN,NO,
+103,2211049352819876,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+104,1152708957200326,0,CLEAN,NO,
+105,2396107347830803,0,CLEAN,NO,
+106,1133601476316801,0,CLEAN,NO,
+107,2604124883440673,1,OFFENSIVE,NO,
+108,2591849208002316,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+109,1854485372666965,2,HATE,NO,
+110,2705032309942816,0,CLEAN,NO,
+111,1965619927739323,0,CLEAN,NO,
+112,1761692891587680,0,CLEAN,NO,
+113,1184899030732596,0,CLEAN,NO,
+114,2275736969669774,1,OFFENSIVE,NO,
+115,1065671316454002,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+116,1186463750370833,0,CLEAN,NO,
+117,1690566235845803,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+118,1143289831522760,0,CLEAN,NO,
+119,1508183689039420,0,CLEAN,NO,
+120,2425815774618091,0,CLEAN,NO,
+121,1836976003977631,0,CLEAN,NO,
+122,1848260696497571,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+123,4672678879666922,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+124,1431859232491894,1,OFFENSIVE,NO,
+125,4490667171206841,0,CLEAN,NO,
+126,28107690435573393,0,CLEAN,NO,
+127,922023457661053,0,CLEAN,NO,
+128,948215311505950,0,CLEAN,NO,
+129,1586978199849651,0,CLEAN,NO,
+130,1445701464401701,0,CLEAN,NO,
+131,1849843879369847,0,CLEAN,NO,
+132,4775390159347753,1,OFFENSIVE,NO,
+133,1690828299293884,0,CLEAN,NO,
+134,1145299977864774,0,CLEAN,NO,
+135,1826487315160429,0,CLEAN,NO,
+136,1135739635528762,0,CLEAN,NO,
+137,3407796819407960,0,CLEAN,NO,
+138,2709126276171423,1,OFFENSIVE,NO,
+139,2086145242037411,0,CLEAN,NO,
+140,1470519765027374,0,CLEAN,NO,
+141,1759608626174231,0,CLEAN,NO,
+142,1878534793316053,0,CLEAN,NO,
+143,2527439667665670,0,CLEAN,NO,
+144,1161911026791918,1,OFFENSIVE,NO,
+145,29297616909923762,1,OFFENSIVE,NO,
+146,1681632116917464,0,CLEAN,NO,
+147,1092127490319874,0,CLEAN,NO,
+148,1869071214444735,0,CLEAN,NO,
+149,2233686034228780,0,CLEAN,NO,
+150,2078332670220679,0,CLEAN,NO,
+151,1516721796965717,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+152,1042181398893675,0,CLEAN,NO,
+153,4775869302734391,0,CLEAN,NO,
+154,1432734905739612,0,CLEAN,NO,
+155,2346379286212485,1,OFFENSIVE,NO,
+156,1655917799882937,0,CLEAN,NO,
+157,2130533837852156,0,CLEAN,NO,
+158,30245777041677668,0,CLEAN,NO,
+159,29021547930827637,1,OFFENSIVE,YES,Lời tục hoặc xúc phạm ngắn; mục tiêu và sắc thái chưa chắc chắn.
+160,1831898291285060,0,CLEAN,NO,
+161,1140427978353058,0,CLEAN,NO,
+162,2098907434118898,0,CLEAN,NO,
+163,1903561517472782,0,CLEAN,NO,
+164,2062986807844422,1,OFFENSIVE,NO,
+165,1052624244506089,0,CLEAN,NO,
+166,1863268324696855,0,CLEAN,NO,
+167,1457568756321059,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+168,1837077580877099,0,CLEAN,NO,
+169,1866888804308313,0,CLEAN,NO,
+170,2198752504055804,1,OFFENSIVE,NO,
+171,2066845603989063,0,CLEAN,NO,
+172,1479948264275320,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+173,3012065432477165,0,CLEAN,NO,
+174,1498604662135497,0,CLEAN,NO,
+175,1493296752707173,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+176,1833760371220918,0,CLEAN,NO,
+177,1143034148582395,0,CLEAN,NO,
+178,1145193385036080,0,CLEAN,NO,
+179,1131353199799077,0,CLEAN,NO,
+180,1131474395931532,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+181,2636900456828405,1,OFFENSIVE,NO,
+182,1135918365598918,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+183,2110948339561340,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+184,1647240823440707,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+185,1515484560637033,0,CLEAN,NO,
+186,1505714008091213,0,CLEAN,NO,
+187,1648735670137000,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+188,1201721668848744,0,CLEAN,NO,
+189,2057315431595179,0,CLEAN,NO,
+190,1764710577965694,0,CLEAN,NO,
+191,1667872771711572,0,CLEAN,NO,
+192,1136470619278941,0,CLEAN,NO,
+193,2616931585487681,0,CLEAN,NO,
+194,1619082506105226,0,CLEAN,NO,
+195,1745053824290213,1,OFFENSIVE,NO,
+196,1159689606412696,0,CLEAN,NO,
+197,4606778632982363,0,CLEAN,NO,
+198,1651471319692178,0,CLEAN,NO,
+199,1626720825600318,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+200,1171157011934756,2,HATE,NO,
+201,1626477571661875,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+202,1134399952650930,0,CLEAN,NO,
+203,1751419402624257,2,HATE,NO,
+204,1129200966673443,2,HATE,NO,
+205,1147028837863826,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+206,2173447704048861,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+207,4640179662892565,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+208,2098273730893929,0,CLEAN,NO,
+209,1170653059247490,2,HATE,NO,
+210,2132645047340005,2,HATE,NO,
+211,1117349017544936,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+212,1060586540365709,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+213,3633548966798183,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+214,1736143885179898,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+215,1152129150584455,0,CLEAN,NO,
+216,1130112306463274,2,HATE,NO,
+217,1912084299968414,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+218,1817405247057270,0,CLEAN,NO,
+219,2050014792481664,0,CLEAN,NO,
+220,1134290872305746,0,CLEAN,NO,
+221,2285645388950363,2,HATE,NO,
+222,1938132380483414,0,CLEAN,NO,
+223,1079127438489785,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+224,1453669746130412,0,CLEAN,NO,
+225,1145685781442704,2,HATE,NO,
+226,1452424030430934,0,CLEAN,NO,
+227,2941195336258953,2,HATE,NO,
+228,1099220719773274,2,HATE,NO,
+229,2070340347678584,0,CLEAN,NO,
+230,2377336713092391,0,CLEAN,NO,
+231,4766299400282377,0,CLEAN,NO,
+232,2239494626986676,0,CLEAN,NO,
+233,1453302909493577,2,HATE,NO,
+234,2447478419394014,0,CLEAN,NO,
+235,1890966545398087,1,OFFENSIVE,YES,Lời tục hoặc xúc phạm ngắn; mục tiêu và sắc thái chưa chắc chắn.
+236,1658132689318841,0,CLEAN,NO,
+237,1160699542970289,0,CLEAN,NO,
+238,29229482786663029,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+239,3825612364252390,2,HATE,NO,
+240,3074689669565846,0,CLEAN,NO,
+241,29007185888891966,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+242,1101633216035852,0,CLEAN,NO,
+243,4734248896819139,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+244,1816135369427371,0,CLEAN,NO,
+245,2326092831502825,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+246,1790512072243444,2,HATE,NO,
+247,1845039990171681,0,CLEAN,NO,
+248,1655442029267313,2,HATE,NO,
+249,1449586004056310,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+250,1312344927688022,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+251,1866171038134676,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+252,1680842820288354,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+253,2263323301116065,0,CLEAN,NO,
+254,1110001194986263,0,CLEAN,NO,
+255,2353197738810106,2,HATE,NO,
+256,2076194422935153,2,HATE,NO,
+257,2048908713163991,0,CLEAN,NO,
+258,4565537517019472,0,CLEAN,NO,
+259,29253991080905161,2,HATE,NO,
+260,1629595581619232,0,CLEAN,NO,
+261,1159317373462189,2,HATE,NO,
+262,1136411105466577,0,CLEAN,NO,
+263,1135180552291801,1,OFFENSIVE,NO,
+264,1650786456550246,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+265,3861536420651320,2,HATE,NO,
+266,3224647704410880,0,CLEAN,NO,
+267,1403809708632204,0,CLEAN,NO,
+268,1420971543440078,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+269,2419188822189650,2,HATE,NO,
+270,1176200498120909,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+271,2963247064052155,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+272,1808946083587413,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+273,2397597917712477,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+274,1664743221920221,2,HATE,NO,
+275,1844698866873280,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+276,1713519870230434,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+277,4450736555188888,0,CLEAN,NO,
+278,3866995830107345,1,OFFENSIVE,NO,
+279,1868423467434961,2,HATE,NO,
+280,1684634603268676,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+281,874158512425850,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+282,29504748579151177,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+283,2007105739969052,0,CLEAN,NO,
+284,1401556222057606,0,CLEAN,NO,
+285,1067634416334220,0,CLEAN,NO,
+286,2117706068850883,0,CLEAN,NO,
+287,1109163245064500,2,HATE,NO,
+288,1873120340899401,0,CLEAN,NO,
+289,1660234222494809,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+290,1121483890590219,0,CLEAN,NO,
+291,1010143148020172,2,HATE,NO,
+292,1468991762086097,0,CLEAN,NO,
+293,29239977275633857,0,CLEAN,NO,
+294,1506948941302122,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+295,1147550461160612,0,CLEAN,NO,
+296,1800269147903772,0,CLEAN,NO,
+297,1854608949292057,0,CLEAN,NO,
+298,1660007008990097,2,HATE,NO,
+299,1942418483803451,0,CLEAN,NO,
+300,2375317299887984,0,CLEAN,NO,
+301,1111539365101837,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+302,1147267404575672,2,HATE,NO,
+303,3073923182947363,2,HATE,NO,
+304,1835349594267976,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+305,1401617258408833,0,CLEAN,NO,
+306,1676623884051500,0,CLEAN,NO,
+307,1130232182937318,0,CLEAN,NO,
+308,1171305539194941,2,HATE,NO,
+309,1814198736483519,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+310,1537643251524722,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+311,954157864178670,0,CLEAN,NO,
+312,1875239766799687,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+313,2313465736171419,0,CLEAN,NO,
+314,1017255663962962,0,CLEAN,NO,
+315,1604414701703789,0,CLEAN,NO,
+316,1684318449954034,0,CLEAN,NO,
+317,29026322350361421,2,HATE,NO,
+318,1452453320311999,0,CLEAN,NO,
+319,4789173277968868,0,CLEAN,NO,
+320,1820761515740956,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+321,26932708389759645,0,CLEAN,NO,
+322,1062310650201409,0,CLEAN,NO,
+323,1629798802216954,1,OFFENSIVE,NO,
+324,2329471471236192,2,HATE,NO,
+325,1685167546304579,0,CLEAN,NO,
+326,1646481390596788,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+327,1160403206666404,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+328,2313850369175346,1,OFFENSIVE,NO,
+329,1445003604456318,0,CLEAN,NO,
+330,1592788575984045,0,CLEAN,NO,
+331,1803514940800791,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+332,2328825107968998,2,HATE,NO,
+333,2057616134943772,2,HATE,NO,
+334,4100764003559599,2,HATE,NO,
+335,2535638700548293,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+336,2284883968941428,2,HATE,NO,
+337,1157174866842344,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+338,29635425469408984,0,CLEAN,NO,
+339,1805358857399181,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+340,1165520902720723,0,CLEAN,NO,
+341,1597590365001707,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+342,1794593488492444,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+343,1084540164567313,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+344,1436363325273534,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+345,2586757915134893,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+346,1146678771112751,0,CLEAN,NO,
+347,2464735524353477,0,CLEAN,NO,
+348,1136331545693085,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+349,4625371767706643,0,CLEAN,NO,
+350,1509795464298898,1,OFFENSIVE,NO,
+351,1661029992380685,1,OFFENSIVE,NO,
+352,1160747202961246,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+353,1168875582765324,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+354,1464585212409045,0,CLEAN,NO,
+355,4144924599134207,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+356,29008697192084875,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+357,1716874109862827,0,CLEAN,NO,
+358,28896385770031684,1,OFFENSIVE,NO,
+359,1788936945708893,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+360,973975988664879,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+361,1189169283681220,1,OFFENSIVE,NO,
+362,1673289277746765,0,CLEAN,NO,
+363,1171140132268435,1,OFFENSIVE,NO,
+364,1844266026915974,2,HATE,NO,
+365,1799615441089744,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+366,4216095865187285,0,CLEAN,NO,
+367,3564722580368924,2,HATE,NO,
+368,1147587414411244,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+369,2355175868670057,0,CLEAN,NO,
+370,1825077872138767,0,CLEAN,NO,
+371,1950821949216859,1,OFFENSIVE,NO,
+372,28979188988441386,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+373,2725249767931645,0,CLEAN,NO,
+374,1533764501916068,0,CLEAN,NO,
+375,29014267564899129,0,CLEAN,NO,
+376,1853148292533360,2,HATE,NO,
+377,2941690896187279,2,HATE,NO,
+378,1113388898126089,0,CLEAN,NO,
+379,1417963560319038,0,CLEAN,NO,
+380,1574269281051601,0,CLEAN,NO,
+381,1441586014833314,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+382,1881268606364383,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+383,2707564246330003,2,HATE,NO,
+384,1433001362277252,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+385,2102746633756646,0,CLEAN,NO,
+386,1862526681771601,0,CLEAN,NO,
+387,1483965163643457,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+388,2900997453600952,0,CLEAN,NO,
+389,2212332959351363,0,CLEAN,NO,
+390,1355612932975067,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+391,1144797597218449,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+392,4186909064908041,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+393,1340854790873310,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+394,1323765549234672,0,CLEAN,NO,
+395,1525299525172354,0,CLEAN,NO,
+396,778879618478896,0,CLEAN,NO,
+397,1331743818452175,0,CLEAN,NO,
+398,2213904449114778,0,CLEAN,NO,
+399,1486059269106683,0,CLEAN,NO,
+400,2010331729783349,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+401,827437612953991,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+402,2054416285319629,0,CLEAN,NO,
+403,685909527885792,0,CLEAN,NO,
+404,4170181139862853,0,CLEAN,NO,
+405,749691438100963,0,CLEAN,NO,
+406,1095519896065107,0,CLEAN,NO,
+407,783272727805758,0,CLEAN,NO,
+408,2219972355167357,0,CLEAN,NO,
+409,1442270756875616,0,CLEAN,NO,
+410,1316013629572028,0,CLEAN,NO,
+411,1202181201733704,0,CLEAN,NO,
+412,796295733180981,0,CLEAN,NO,
+413,2371185893284609,0,CLEAN,NO,
+414,1442266750193678,0,CLEAN,NO,
+415,769471825913406,0,CLEAN,NO,
+416,24631826723133147,0,CLEAN,NO,
+417,1449288592843207,0,CLEAN,NO,
+418,1751162052250655,0,CLEAN,NO,
+419,1578996946867919,0,CLEAN,NO,
+420,3291938867624401,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+421,1148816510539456,0,CLEAN,NO,
+422,742173635505597,0,CLEAN,NO,
+423,1197918418837673,0,CLEAN,NO,
+424,1547461532928751,0,CLEAN,NO,
+425,2320198211745398,0,CLEAN,NO,
+426,678304104894468,0,CLEAN,NO,
+427,1676487353269478,0,CLEAN,NO,
+428,1172160191467712,0,CLEAN,NO,
+429,1535187024109609,0,CLEAN,NO,
+430,1335614514638620,0,CLEAN,NO,
+431,1512334796651849,0,CLEAN,NO,
+432,1444969726581145,0,CLEAN,NO,
+433,1913729819564383,0,CLEAN,NO,
+434,841197721901292,0,CLEAN,NO,
+435,1556234819065082,0,CLEAN,NO,
+436,3847923752018829,0,CLEAN,NO,
+437,1330447674982767,0,CLEAN,NO,
+438,1488494619127620,0,CLEAN,NO,
+439,1144895691076913,0,CLEAN,NO,
+440,4282150822042537,0,CLEAN,NO,
+441,1330398798746479,0,CLEAN,NO,
+442,1986036745463711,0,CLEAN,NO,
+443,25116768434614299,0,CLEAN,NO,
+444,820047334312089,0,CLEAN,NO,
+445,1112477194203914,0,CLEAN,NO,
+446,1344846630555494,0,CLEAN,NO,
+447,2173451766494880,0,CLEAN,NO,
+448,1444244970202989,0,CLEAN,NO,
+449,1471682127423036,0,CLEAN,NO,
+450,821702020635015,0,CLEAN,NO,
+451,4165267650420722,0,CLEAN,NO,
+452,2171474373336051,0,CLEAN,NO,
+453,819023933829574,0,CLEAN,NO,
+454,1351157453279589,0,CLEAN,NO,
+455,770672332460357,0,CLEAN,NO,
+456,1918683465662416,0,CLEAN,NO,
+457,837347965417432,0,CLEAN,NO,
+458,1299406174725603,0,CLEAN,NO,
+459,827559043101428,0,CLEAN,NO,
+460,1774184379957058,0,CLEAN,NO,
+461,1342322007241955,0,CLEAN,NO,
+462,1706991859983724,0,CLEAN,NO,
+463,1149150576628737,0,CLEAN,NO,
+464,1597833487698410,0,CLEAN,NO,
+465,4136684639939280,0,CLEAN,NO,
+466,1123874436614305,0,CLEAN,NO,
+467,779871861531799,0,CLEAN,NO,
+468,2038137990346299,0,CLEAN,NO,
+469,24937049235930311,0,CLEAN,NO,
+470,801590815929078,0,CLEAN,NO,
+471,1327509125829291,0,CLEAN,NO,
+472,24735740426087092,0,CLEAN,NO,
+473,716485521469093,0,CLEAN,NO,
+474,1345806047201807,0,CLEAN,NO,
+475,1247102947221927,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+476,1330402765161482,0,CLEAN,NO,
+477,1501600567750598,0,CLEAN,NO,
+478,864987486087063,0,CLEAN,NO,
+479,1346193437173471,0,CLEAN,NO,
+480,1876934323201401,0,CLEAN,NO,
+481,1469372860951797,0,CLEAN,NO,
+482,1144266574340899,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+483,24938062929159316,0,CLEAN,NO,
+484,1314929853193785,0,CLEAN,NO,
+485,1148018000763233,0,CLEAN,NO,
+486,1156794296617752,0,CLEAN,NO,
+487,1177062820641394,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+488,1188787569736798,0,CLEAN,NO,
+489,781648378004365,0,CLEAN,NO,
+490,24854752004180745,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+491,1308181810749720,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+492,1808713336432357,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+493,835540725562417,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+494,3807498162886651,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+495,1109314421366502,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+496,1223162639563104,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+497,1537943917628928,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+498,1040551344750846,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+499,1955009898380811,0,CLEAN,NO,
+500,1377248767540866,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+501,812125724930854,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+502,3720148504954512,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+503,1878985499667031,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+504,1546910989799610,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+505,1843898362890253,0,CLEAN,NO,
+506,1436654457623311,0,CLEAN,NO,
+507,785698790710115,0,CLEAN,NO,
+508,2263508687402655,0,CLEAN,NO,
+509,1457944538688643,0,CLEAN,NO,
+510,1334413264914915,0,CLEAN,NO,
+511,1437784567337068,0,CLEAN,NO,
+512,1274636994674782,0,CLEAN,NO,
+513,1455239879044964,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+514,1315758339947713,0,CLEAN,NO,
+515,1348472986795736,1,OFFENSIVE,YES,Lời tục hoặc xúc phạm ngắn; mục tiêu và sắc thái chưa chắc chắn.
+516,1346973813743583,0,CLEAN,NO,
+517,1431469657931987,0,CLEAN,NO,
+518,4235393076775125,0,CLEAN,NO,
+519,733082209725832,0,CLEAN,NO,
+520,838504891839319,0,CLEAN,NO,
+521,1431300618139901,0,CLEAN,NO,
+522,723269177380677,0,CLEAN,NO,
+523,1128728342652666,0,CLEAN,NO,
+524,1050876791311089,0,CLEAN,NO,
+525,1125020460046527,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+526,1869248850921756,0,CLEAN,NO,
+527,1651157896510364,0,CLEAN,YES,"Nội dung ngắn, tên riêng, liên kết hoặc khó hiểu; ít thông tin và có thể cần ngữ cảnh."
+528,1576760213688872,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+529,29171022775838990,0,CLEAN,NO,
+530,1145379334553228,0,CLEAN,NO,
+531,1808264056960967,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+532,2579208452598934,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+533,882253524877203,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+534,2557933041337116,0,CLEAN,NO,
+535,3107443002795146,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+536,1520107029882628,0,CLEAN,NO,
+537,1126668840021885,0,CLEAN,NO,
+538,2285140168918296,0,CLEAN,NO,
+539,1424028089675953,0,CLEAN,NO,
+540,1437418438297538,0,CLEAN,NO,
+541,2566040807196102,0,CLEAN,NO,
+542,1469472575072787,0,CLEAN,NO,
+543,1260590466206491,0,CLEAN,NO,
+544,989742424136038,0,CLEAN,NO,
+545,1440597241289435,0,CLEAN,NO,
+546,1018878054502812,0,CLEAN,NO,
+547,4524668874456379,0,CLEAN,NO,
+548,2157857925126610,0,CLEAN,NO,
+549,1479899283970548,0,CLEAN,NO,
+550,1049027507972969,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+551,1443925097658650,0,CLEAN,NO,
+552,3583714808463984,0,CLEAN,NO,
+553,1412582924158309,0,CLEAN,NO,
+554,1507749134719677,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+555,912748821654404,0,CLEAN,NO,
+556,1093223753199305,0,CLEAN,NO,
+557,2310789143071666,0,CLEAN,NO,
+558,1409141633989501,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+559,1632007345330589,0,CLEAN,NO,
+560,1527587226066142,0,CLEAN,NO,
+561,2243270196452311,0,CLEAN,NO,
+562,3445019195669992,0,CLEAN,NO,
+563,29129830766624408,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+564,1729483611683669,0,CLEAN,NO,
+565,1084852450962935,0,CLEAN,NO,
+566,28671796449083645,0,CLEAN,NO,
+567,1571890290802510,0,CLEAN,NO,
+568,2038954856796518,0,CLEAN,NO,
+569,1622977896227313,0,CLEAN,NO,
+570,1108556464855431,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+571,1746410943322109,0,CLEAN,NO,
+572,1410361281239521,1,OFFENSIVE,NO,
+573,1428525515895930,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+574,1862215534759632,0,CLEAN,NO,
+575,941450622355196,0,CLEAN,NO,
+576,2356591438492373,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+577,990612316818340,0,CLEAN,NO,
+578,1811228060098432,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+579,1905053684198427,0,CLEAN,NO,
+580,28733228813017277,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+581,1853706412748568,0,CLEAN,NO,
+582,2304689303644410,0,CLEAN,NO,
+583,1834110547741987,0,CLEAN,NO,
+584,1863786881462761,0,CLEAN,NO,
+585,1440425117585308,0,CLEAN,NO,
+586,1599064445589209,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+587,1491390016284079,1,OFFENSIVE,NO,
+588,2039751276732352,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+589,1569622261598971,0,CLEAN,NO,
+590,1145659354547517,0,CLEAN,NO,
+591,1624773109663490,0,CLEAN,NO,
+592,1800829607807043,0,CLEAN,NO,
+593,1880552969980828,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+594,2178747996325555,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+595,4606818449569375,0,CLEAN,NO,
+596,1831819778056990,0,CLEAN,NO,
+597,1541940664431670,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+598,1706973460822233,0,CLEAN,NO,
+599,1008983128157774,0,CLEAN,NO,
+600,1139705768442322,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+601,1687113216478402,0,CLEAN,NO,
+602,2138986963371838,0,CLEAN,NO,
+603,1359893032749369,0,CLEAN,NO,
+604,1051464307954630,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+605,2416021772542918,0,CLEAN,NO,
+606,1144261204659409,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+607,3059524907724341,0,CLEAN,NO,
+608,1112626431407773,0,CLEAN,NO,
+609,1108075878764149,0,CLEAN,NO,
+610,1441914378095855,0,CLEAN,NO,
+611,2601399237033182,0,CLEAN,NO,
+612,2175258296397974,0,CLEAN,NO,
+613,1387609799880649,2,HATE,YES,"Ranh giới phê bình/công kích, mỉa mai, biệt danh hoặc mục tiêu ngầm; cần đọc lại với ngữ cảnh gốc."
+614,2423620888168711,0,CLEAN,NO,
+615,1502447865266138,0,CLEAN,NO,
