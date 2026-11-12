@@ -1,8 +1,10 @@
 # Giải thích từng đoạn V3
 
-Đối chiếu code ngày 01/11/2026: [V3__counters_and_invariants.sql](../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql), 9 function và 14 trigger. Mỗi khối SQL dưới đây chép đúng đoạn hiện tại; các khối nối theo thứ tự sẽ khôi phục toàn bộ V3.
+Đối chiếu code ngày 12/11/2026: [V3__counters_and_invariants.sql](../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql), 10 function và 18 trigger. Mỗi khối SQL dưới đây chép đúng đoạn hiện tại; các khối nối theo thứ tự khôi phục phần SQL thực thi của V3, không gồm comment phân nhóm giữa các hàm. Cập nhật cách xuống dòng cho khai báo function/trigger, mệnh đề truy vấn, truy vấn EXISTS lồng nhau và điều kiện dài để dễ đọc; logic giữ nguyên, các mốc dòng trong sơ đồ được đồng bộ theo SQL mới.
 
 SQL đã đồng bộ với [spec cây reply](03-postgresql.md#cây-reply-và-cách-hiển-thị): không giới hạn cứng độ sâu, không lưu depth và không duyệt toàn bộ tổ tiên khi thêm reply. Parent phải tồn tại trong cùng bài, chưa xóa; ID/blog/parent bất biến sau tạo giữ cây không vòng. Hai tối ưu phạm vi blogs_nonempty và deleted_comment_no_likes tiếp tục được giữ.
+
+Bổ sung comment tiếng Việt cho sáu hàm phía sau ngày 12/11/2026: giải thích biến, cách tính delta, thứ tự khóa, kiểm tra cuối transaction và các trạng thái media. Giữ nguyên comment đã có và toàn bộ SQL thực thi; các khối code dưới đây được đồng bộ từ file hiện tại.
 
 ## Cách đọc cú pháp chung
 
@@ -31,38 +33,56 @@ Transaction nghiệp vụ do caller/service quản lý. Hàm, procedure và trig
 ## 1. validate_comment — Kiểm comment trước khi ghi
 
 ```sql
-CREATE FUNCTION validate_comment() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION validate_comment()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
+-- chứa thời điểm xóa của bình luận cha:
+-- NULL: cha chưa bị xóa.
+-- Có thời gian: cha đã bị xóa mềm.
     parent_deleted TIMESTAMPTZ;
 BEGIN
     IF TG_OP = 'UPDATE' THEN
+    -- Không cho đổi cấu trúc bình luận
         IF NEW.id IS DISTINCT FROM OLD.id OR NEW.blog_id IS DISTINCT FROM OLD.blog_id
            OR NEW.parent_id IS DISTINCT FROM OLD.parent_id THEN
             RAISE EXCEPTION 'COMMENT_STRUCTURE_IMMUTABLE' USING ERRCODE = '23514';
         END IF;
+        --Không cho chuyển bình luận sang tác giả khác
         IF NEW.author_id IS DISTINCT FROM OLD.author_id AND NEW.author_id IS NOT NULL THEN
             RAISE EXCEPTION 'COMMENT_AUTHOR_IMMUTABLE' USING ERRCODE = '23514';
         END IF;
+        --Bình luận đã xóa thì không được đổi thời điểm xóa
         IF OLD.deleted_at IS NOT NULL AND NEW.deleted_at IS DISTINCT FROM OLD.deleted_at THEN
             RAISE EXCEPTION 'COMMENT_DELETION_IMMUTABLE' USING ERRCODE = '23514';
         END IF;
+        --Chỉ tăng version khi thay đổi nội dung hoặc trạng thái quan trọng
         IF NEW.content IS DISTINCT FROM OLD.content OR NEW.deleted_at IS DISTINCT FROM OLD.deleted_at
            OR NEW.author_id IS DISTINCT FROM OLD.author_id THEN
+            -- Update the version and updated_at fields when the comment is modified.
             NEW.version := OLD.version + 1;
             NEW.updated_at := clock_timestamp();
         ELSE
+        --Giữ nguyên phiên bản và thời điểm sửa.
             -- Counter updates and repeated deletion must not invalidate an editor's version.
             NEW.version := OLD.version;
             NEW.updated_at := OLD.updated_at;
         END IF;
         RETURN NEW;
     END IF;
-
-    PERFORM 1 FROM blogs WHERE id = NEW.blog_id FOR UPDATE;
+    -- Lock the blog before its parent comment to match the write lock order.
+    --Với INSERT, khóa bài trước
+    PERFORM 1 FROM blogs
+    WHERE id = NEW.blog_id
+    FOR UPDATE;
+    --Chỉ kiểm tra cha khi đang thêm phản hồi
     IF NEW.parent_id IS NOT NULL THEN
         SELECT deleted_at INTO parent_deleted FROM comments
-        WHERE id = NEW.parent_id AND blog_id = NEW.blog_id FOR UPDATE;
+        WHERE id = NEW.parent_id
+          AND blog_id = NEW.blog_id
+        FOR UPDATE;
         IF NOT FOUND THEN
             RAISE EXCEPTION 'COMMENT_PARENT_NOT_FOUND' USING ERRCODE = '23503';
         END IF;
@@ -73,8 +93,11 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER comments_validate BEFORE INSERT OR UPDATE ON comments
-FOR EACH ROW EXECUTE FUNCTION validate_comment();
+
+CREATE TRIGGER comments_validate
+BEFORE INSERT OR UPDATE ON comments
+FOR EACH ROW
+EXECUTE FUNCTION validate_comment();
 ```
 
 Ví dụ: Bình sửa comment phiên bản 3. Nếu nội dung đổi, phiên bản thành 4; một lượt like chỉ đổi counter và vẫn giữ phiên bản 3.
@@ -98,31 +121,56 @@ Dùng trigger giúp các đường ghi cùng chịu quy tắc cấu trúc/versio
 ## 2. update_relation_counter — Đếm likes và shares
 
 ```sql
-CREATE FUNCTION update_relation_counter() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION update_relation_counter()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
     delta INTEGER := CASE WHEN TG_OP = 'INSERT' THEN 1 ELSE -1 END;
 BEGIN
     CASE TG_TABLE_NAME
         WHEN 'blog_likes' THEN
-            UPDATE blogs SET likes_count = likes_count + delta
+            UPDATE blogs
+            SET likes_count = likes_count + delta
             WHERE id = CASE WHEN TG_OP = 'INSERT' THEN NEW.blog_id ELSE OLD.blog_id END;
         WHEN 'blog_shares' THEN
-            UPDATE blogs SET shares_count = shares_count + delta
+            UPDATE blogs
+            SET shares_count = shares_count + delta
             WHERE id = CASE WHEN TG_OP = 'INSERT' THEN NEW.blog_id ELSE OLD.blog_id END;
         WHEN 'comment_likes' THEN
-            UPDATE comments SET likes_count = likes_count + delta
+            UPDATE comments
+            SET likes_count = likes_count + delta
             WHERE id = CASE WHEN TG_OP = 'INSERT' THEN NEW.comment_id ELSE OLD.comment_id END;
     END CASE;
     RETURN NULL;
+    --Hàm này dùng với AFTER trigger. PostgreSQL bỏ qua giá trị trả về của AFTER trigger, nên dùng RETURN NULL là phù hợp.
 END;
 $$;
-CREATE TRIGGER blog_likes_counter AFTER INSERT OR DELETE ON blog_likes
-FOR EACH ROW EXECUTE FUNCTION update_relation_counter();
-CREATE TRIGGER comment_likes_counter AFTER INSERT OR DELETE ON comment_likes
-FOR EACH ROW EXECUTE FUNCTION update_relation_counter();
-CREATE TRIGGER blog_shares_counter AFTER INSERT OR DELETE ON blog_shares
-FOR EACH ROW EXECUTE FUNCTION update_relation_counter();
+
+-- Thực hiện cập nhật số lượt thích, chia sẻ, bình luận khi có INSERT hoặc DELETE trên các bảng liên quan.
+CREATE TRIGGER blog_likes_counter
+AFTER INSERT OR DELETE ON blog_likes --Chạy sau khi thêm hoặc xóa hàng trong blog_likes
+FOR EACH ROW
+EXECUTE FUNCTION update_relation_counter();
+
+/*
+Thêm một hàng vào blog_likes
+→ blog_likes_counter chạy
+→ update_relation_counter() nhận:
+    TG_TABLE_NAME = 'blog_likes'
+    TG_OP = 'INSERT'
+→ Tăng blogs.likes_count của bài A thêm 1
+*/
+CREATE TRIGGER comment_likes_counter
+AFTER INSERT OR DELETE ON comment_likes
+FOR EACH ROW
+EXECUTE FUNCTION update_relation_counter();
+
+CREATE TRIGGER blog_shares_counter
+AFTER INSERT OR DELETE ON blog_shares
+FOR EACH ROW
+EXECUTE FUNCTION update_relation_counter();
 ```
 
 Ví dụ: bài có 20 likes; thêm một quan hệ blog_likes làm tổng thành 21. Gỡ đúng quan hệ đó làm tổng về 20. Nếu INSERT bị ON CONFLICT DO NOTHING và không thêm hàng, AFTER INSERT không tăng tổng.
@@ -140,18 +188,29 @@ Counter lưu sẵn giúp feed đọc trực tiếp số tổng. Nếu không lư
 ## 3. reject_relation_update — Không sửa trực tiếp quan hệ like/share
 
 ```sql
-CREATE FUNCTION reject_relation_update() RETURNS trigger
-LANGUAGE plpgsql AS $$
+CREATE FUNCTION reject_relation_update()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
 BEGIN
     RAISE EXCEPTION 'RELATION_IMMUTABLE_USE_INSERT_DELETE' USING ERRCODE = '23514';
 END;
 $$;
-CREATE TRIGGER blog_likes_immutable BEFORE UPDATE ON blog_likes
-FOR EACH ROW EXECUTE FUNCTION reject_relation_update();
-CREATE TRIGGER comment_likes_immutable BEFORE UPDATE ON comment_likes
-FOR EACH ROW EXECUTE FUNCTION reject_relation_update();
-CREATE TRIGGER blog_shares_immutable BEFORE UPDATE ON blog_shares
-FOR EACH ROW EXECUTE FUNCTION reject_relation_update();
+
+CREATE TRIGGER blog_likes_immutable
+BEFORE UPDATE ON blog_likes
+FOR EACH ROW
+EXECUTE FUNCTION reject_relation_update();
+
+CREATE TRIGGER comment_likes_immutable
+BEFORE UPDATE ON comment_likes
+FOR EACH ROW
+EXECUTE FUNCTION reject_relation_update();
+
+CREATE TRIGGER blog_shares_immutable
+BEFORE UPDATE ON blog_shares
+FOR EACH ROW
+EXECUTE FUNCTION reject_relation_update();
 ```
 
 Ví dụ: Bình đã like bài A. Không được UPDATE bản ghi đó để biến thành like bài B; phải DELETE quan hệ ở A và INSERT quan hệ ở B.
@@ -165,31 +224,45 @@ Quy tắc giúp counter chỉ phải xử lý INSERT/DELETE, không phải tính
 ## 4. update_comment_counter — Chỉ đếm bình luận còn hoạt động
 
 ```sql
-CREATE FUNCTION update_comment_counter() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION update_comment_counter()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
+    -- Số cần cộng/trừ và ID bài viết cần cập nhật bộ đếm.
     delta INTEGER;
     target UUID;
 BEGIN
+    -- Thêm bình luận đang hoạt động thì cộng 1, placeholder không được tính.
     IF TG_OP = 'INSERT' THEN
-        delta := CASE WHEN NEW.deleted_at IS NULL THEN 1 ELSE 0 END;
+        delta := CASE WHEN NEW.deleted_at IS NULL THEN 1 ELSE 0 END; -- A new active comment adds one.
         target := NEW.blog_id;
+    -- Xóa vật lý placeholder không giảm lần nữa vì đã bị loại khi xóa mềm.
     ELSIF TG_OP = 'DELETE' THEN
-        delta := CASE WHEN OLD.deleted_at IS NULL THEN -1 ELSE 0 END;
+        delta := CASE WHEN OLD.deleted_at IS NULL THEN -1 ELSE 0 END; -- A placeholder was already excluded.
         target := OLD.blog_id;
     ELSE
+        -- UPDATE: lấy trạng thái còn hoạt động sau thay đổi trừ trạng thái trước đó.
+        -- Xóa mềm lần đầu giảm 1, giữ nguyên trạng thái xóa thì không giảm thêm.
         delta := (CASE WHEN NEW.deleted_at IS NULL THEN 1 ELSE 0 END)
-               - (CASE WHEN OLD.deleted_at IS NULL THEN 1 ELSE 0 END);
+               - (CASE WHEN OLD.deleted_at IS NULL THEN 1 ELSE 0 END); -- First soft delete: -1; repeated delete: 0.
         target := NEW.blog_id;
     END IF;
+    -- Chỉ ghi lại bài khi số bình luận thực sự thay đổi.
     IF delta <> 0 THEN
-        UPDATE blogs SET comments_count = comments_count + delta WHERE id = target;
+        UPDATE blogs
+        SET comments_count = comments_count + delta
+        WHERE id = target;
     END IF;
     RETURN NULL;
 END;
 $$;
-CREATE TRIGGER comments_counter AFTER INSERT OR DELETE OR UPDATE OF deleted_at ON comments
-FOR EACH ROW EXECUTE FUNCTION update_comment_counter();
+
+CREATE TRIGGER comments_counter
+AFTER INSERT OR DELETE OR UPDATE OF deleted_at ON comments
+FOR EACH ROW
+EXECUTE FUNCTION update_comment_counter();
 ```
 
 Ví dụ độc lập với cùng mức ban đầu 3 comment còn hoạt động: thêm comment → 4; xóa một comment → 2; sửa nội dung hoặc xóa lặp → vẫn 3 nếu trước thao tác có 3.
@@ -207,26 +280,44 @@ Nếu không dùng trigger, mỗi đường thêm, xóa mềm, cascade và xóa 
 ## 5. guard_comment_like — Kiểm bình luận trước khi thêm like
 
 ```sql
-CREATE FUNCTION guard_comment_like() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION guard_comment_like()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
+    -- Bài chứa bình luận đang được thích.
     target_blog UUID;
+    -- NULL nghĩa là bình luận chưa bị xóa mềm.
     target_deleted TIMESTAMPTZ;
 BEGIN
-    SELECT blog_id INTO target_blog FROM comments WHERE id = NEW.comment_id;
-    PERFORM 1 FROM blogs WHERE id = target_blog FOR UPDATE;
-    SELECT deleted_at INTO target_deleted FROM comments WHERE id = NEW.comment_id FOR UPDATE;
+    -- Tìm ID bài trước để giữ đúng thứ tự khóa blog rồi comment.
+    SELECT blog_id INTO target_blog FROM comments
+    WHERE id = NEW.comment_id;
+    PERFORM 1 FROM blogs
+    WHERE id = target_blog
+    FOR UPDATE;
+    -- Sau khi khóa bài, đọc lại trạng thái xóa và khóa bình luận.
+    SELECT deleted_at INTO target_deleted FROM comments
+    WHERE id = NEW.comment_id
+    FOR UPDATE;
+    -- Bình luận không còn tồn tại thì không được tạo quan hệ like.
     IF NOT FOUND THEN
         RAISE EXCEPTION 'COMMENT_NOT_FOUND' USING ERRCODE = '23503';
     END IF;
+    -- Chặn cả INSERT trực tiếp vào bảng, không chỉ các lời gọi procedure.
     IF target_deleted IS NOT NULL THEN
         RAISE EXCEPTION 'COMMENT_DELETED' USING ERRCODE = '23514';
     END IF;
+    -- BEFORE trigger cho phép tiếp tục INSERT khi đã qua các kiểm tra.
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER comment_like_active BEFORE INSERT ON comment_likes
-FOR EACH ROW EXECUTE FUNCTION guard_comment_like();
+
+CREATE TRIGGER comment_like_active
+BEFORE INSERT ON comment_likes
+FOR EACH ROW
+EXECUTE FUNCTION guard_comment_like();
 ```
 
 Ví dụ: Bình like comment đã bị xóa trong lúc trang vẫn đang mở; database từ chối thay vì tạo lượt like trên placeholder.
@@ -243,19 +334,43 @@ Lấy khóa phối hợp thao tác like và xóa cùng comment; comment đã bi�
 ## 6. check_deleted_comment_likes — Comment đã xóa không được còn likes
 
 ```sql
-CREATE FUNCTION check_deleted_comment_likes() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION check_deleted_comment_likes()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 BEGIN
-    IF EXISTS (SELECT FROM comments c WHERE c.id = NEW.id AND c.deleted_at IS NOT NULL
-               AND (c.likes_count <> 0 OR EXISTS (SELECT FROM comment_likes l WHERE l.comment_id = c.id))) THEN
+    -- Đọc lại trạng thái hiện tại khi constraint chạy, không dùng bộ đếm cũ trong NEW.
+    IF EXISTS (
+        SELECT
+        FROM comments c
+        WHERE c.id = NEW.id
+          AND c.deleted_at IS NOT NULL
+          -- Chỉ cần bộ đếm khác 0 hoặc còn hàng like là dữ liệu chưa được dọn hết.
+          AND (
+              c.likes_count <> 0
+              OR EXISTS (
+                  SELECT
+                  FROM comment_likes l
+                  WHERE l.comment_id = c.id
+              )
+          )
+    ) THEN
+        -- Chỉ báo lỗi, hàm không tự xóa like hoặc đặt lại bộ đếm.
         RAISE EXCEPTION 'DELETED_COMMENT_HAS_LIKES' USING ERRCODE = '23514';
     END IF;
     RETURN NULL;
 END;
 $$;
+
+-- Mặc định kiểm cuối transaction để thao tác xóa mềm và dọn likes có thể thực hiện trước/sau nhau.
+-- WHEN chỉ xếp lịch cho hàng đã xóa, hàm vẫn đọc lại dữ liệu cuối khi thực sự chạy.
 CREATE CONSTRAINT TRIGGER deleted_comment_no_likes
-AFTER INSERT OR UPDATE ON comments DEFERRABLE INITIALLY DEFERRED
-FOR EACH ROW WHEN (NEW.deleted_at IS NOT NULL) EXECUTE FUNCTION check_deleted_comment_likes();
+AFTER INSERT OR UPDATE ON comments
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+WHEN (NEW.deleted_at IS NOT NULL)
+EXECUTE FUNCTION check_deleted_comment_likes();
 ```
 
 Ví dụ: comment đang có 2 likes. Transaction có thể đặt content=NULL/deleted_at trước, sau đó DELETE đủ 2 likes. Cuối cùng phải không còn quan hệ và likes_count=0; nếu thiếu bước dọn likes thì không commit được.
@@ -273,22 +388,39 @@ Dùng deferred cho phép trạng thái trung gian còn likes trong cùng transac
 ## 7. lock_image_blog — Khóa bài khi thay đổi liên kết ảnh
 
 ```sql
-CREATE FUNCTION lock_image_blog() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION lock_image_blog()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 BEGIN
-    IF TG_OP = 'UPDATE' AND (NEW.blog_id IS DISTINCT FROM OLD.blog_id OR NEW.asset_id IS DISTINCT FROM OLD.asset_id) THEN
+    -- Đổi vị trí ảnh vẫn được, nhưng blog_id và asset_id của liên kết phải giữ nguyên.
+    IF TG_OP = 'UPDATE'
+       AND (
+           NEW.blog_id IS DISTINCT FROM OLD.blog_id
+           OR NEW.asset_id IS DISTINCT FROM OLD.asset_id
+       ) THEN
         RAISE EXCEPTION 'IMAGE_LINK_IMMUTABLE' USING ERRCODE = '23514';
     END IF;
+    -- DELETE dùng hàng OLD vì không có hàng NEW sau khi xóa.
     IF TG_OP = 'DELETE' THEN
-        PERFORM 1 FROM blogs WHERE id = OLD.blog_id FOR UPDATE;
+        PERFORM 1 FROM blogs
+        WHERE id = OLD.blog_id
+        FOR UPDATE;
         RETURN OLD;
     END IF;
-    PERFORM 1 FROM blogs WHERE id = NEW.blog_id FOR UPDATE;
+    -- INSERT/UPDATE khóa bài từ NEW để phối hợp với kiểm tra bài không rỗng.
+    PERFORM 1 FROM blogs
+    WHERE id = NEW.blog_id
+    FOR UPDATE;
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER image_blog_lock BEFORE INSERT OR UPDATE OR DELETE ON blog_images
-FOR EACH ROW EXECUTE FUNCTION lock_image_blog();
+
+CREATE TRIGGER image_blog_lock
+BEFORE INSERT OR UPDATE OR DELETE ON blog_images
+FOR EACH ROW
+EXECUTE FUNCTION lock_image_blog();
 ```
 
 Ví dụ: ảnh M của bài A được đổi position từ 0 sang 1 nếu vị trí hợp lệ. Không được UPDATE liên kết để M thuộc bài B hoặc thay M bằng asset khác.
@@ -303,28 +435,52 @@ Nếu không khóa thống nhất, hai transaction có thể kiểm điều ki�
 ## 8. check_nonempty_blog — Bài còn tồn tại phải có chữ hoặc ảnh
 
 ```sql
-CREATE FUNCTION check_nonempty_blog() RETURNS trigger
-LANGUAGE plpgsql SET search_path = public, pg_temp AS $$
+CREATE FUNCTION check_nonempty_blog()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
 DECLARE
+    -- ID bài cần kiểm tra và nội dung hiện tại của bài.
     target UUID;
     body TEXT;
 BEGIN
+    -- Trigger có thể đến từ blogs hoặc blog_images, DELETE phải lấy ID từ OLD.
     IF TG_TABLE_NAME = 'blogs' THEN
         target := CASE WHEN TG_OP = 'DELETE' THEN OLD.id ELSE NEW.id END;
     ELSE
         target := CASE WHEN TG_OP = 'DELETE' THEN OLD.blog_id ELSE NEW.blog_id END;
     END IF;
-    SELECT content INTO body FROM blogs WHERE id = target FOR UPDATE;
-    IF FOUND AND length(btrim(body)) = 0 AND NOT EXISTS (SELECT FROM blog_images WHERE blog_id = target) THEN
+    -- Đọc lại và khóa bài để kiểm tra trạng thái hiện tại, không chỉ hàng lúc phát sinh trigger.
+    SELECT content INTO body FROM blogs
+    WHERE id = target
+    FOR UPDATE;
+    -- Bỏ qua bài đã xóa, chỉ chặn bài còn tồn tại mà cả chữ lẫn ảnh đều rỗng.
+    IF FOUND
+       AND length(btrim(body)) = 0
+       AND NOT EXISTS (
+           SELECT
+           FROM blog_images
+           WHERE blog_id = target
+       ) THEN
         RAISE EXCEPTION 'BLOG_REQUIRES_TEXT_OR_IMAGE' USING ERRCODE = '23514';
     END IF;
     RETURN NULL;
 END;
 $$;
-CREATE CONSTRAINT TRIGGER blogs_nonempty AFTER INSERT OR UPDATE OF content ON blogs
-DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_nonempty_blog();
-CREATE CONSTRAINT TRIGGER blog_images_nonempty AFTER INSERT OR UPDATE OR DELETE ON blog_images
-DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION check_nonempty_blog();
+
+
+-- Kiểm cuối transaction để cho phép tạo bài chỉ có ảnh rồi mới thêm liên kết ảnh.
+CREATE CONSTRAINT TRIGGER blogs_nonempty
+AFTER INSERT OR UPDATE OF content ON blogs
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION check_nonempty_blog();
+CREATE CONSTRAINT TRIGGER blog_images_nonempty
+AFTER INSERT OR UPDATE OR DELETE ON blog_images
+DEFERRABLE INITIALLY DEFERRED
+FOR EACH ROW
+EXECUTE FUNCTION check_nonempty_blog();
 ```
 
 Ví dụ: An tạo bài chỉ có ảnh. INSERT blogs với content rỗng rồi INSERT blog_images trong cùng transaction được phép; xóa ảnh cuối mà không thêm chữ/ảnh thay thế thì bị từ chối.
@@ -344,20 +500,26 @@ Một CHECK đơn giản trên blogs không SELECT ảnh ở bảng khác để 
 ## 9. guard_media_identity — Giữ định danh và vòng đời media
 
 ```sql
-CREATE FUNCTION guard_media_identity() RETURNS trigger
-LANGUAGE plpgsql AS $$
+CREATE FUNCTION guard_media_identity()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
 BEGIN
+    -- id/purpose/public_id không đổi, provider_asset_id chỉ bất biến sau khi đã xác nhận.
     IF NEW.id IS DISTINCT FROM OLD.id OR NEW.purpose IS DISTINCT FROM OLD.purpose
        OR NEW.provider_public_id IS DISTINCT FROM OLD.provider_public_id
        OR (OLD.provider_asset_id IS NOT NULL AND NEW.provider_asset_id IS DISTINCT FROM OLD.provider_asset_id) THEN
         RAISE EXCEPTION 'MEDIA_IDENTITY_IMMUTABLE' USING ERRCODE = '23514';
     END IF;
+    -- Media đang chờ xóa không được chuyển trở lại trạng thái khác.
     IF OLD.state = 'DELETE_PENDING' AND NEW.state <> 'DELETE_PENDING' THEN
         RAISE EXCEPTION 'MEDIA_PENDING_DELETION' USING ERRCODE = '23514';
     END IF;
+    -- Media đã gắn chỉ được giữ ATTACHED hoặc chuyển sang DELETE_PENDING.
     IF OLD.state = 'ATTACHED' AND NEW.state NOT IN ('ATTACHED', 'DELETE_PENDING') THEN
         RAISE EXCEPTION 'ATTACHED_MEDIA_STATE_CANNOT_REVERT' USING ERRCODE = '23514';
     END IF;
+    -- Đã có xác nhận từ provider thì format và kích thước file phải giữ nguyên.
     IF OLD.provider_asset_id IS NOT NULL
        AND (NEW.format IS DISTINCT FROM OLD.format OR NEW.size_bytes IS DISTINCT FROM OLD.size_bytes) THEN
         RAISE EXCEPTION 'CONFIRMED_MEDIA_METADATA_IMMUTABLE' USING ERRCODE = '23514';
@@ -365,8 +527,11 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-CREATE TRIGGER media_identity_immutable BEFORE UPDATE ON media_assets
-FOR EACH ROW EXECUTE FUNCTION guard_media_identity();
+
+CREATE TRIGGER media_identity_immutable
+BEFORE UPDATE ON media_assets
+FOR EACH ROW
+EXECUTE FUNCTION guard_media_identity();
 ```
 
 Ví dụ: ảnh đã xác nhận và ATTACHED không được sửa public ID để trỏ sang file khác; muốn đổi ảnh phải dùng asset mới. Ảnh chờ xóa không được quay lại sử dụng.
@@ -390,3 +555,102 @@ Trigger giúp một asset luôn trỏ đến cùng tài sản đã xác nhận v
 - Đây không phải đo tốc độ, tải 100 user, Docker/JDBC/Flyway/Neon hoặc API. Docker daemon không khả dụng trong lần kiểm này. Không dùng số PASS SQL để khẳng định các môi trường đó đã chạy.
 
 [Sơ đồ A/B của V3](../diagram/README.md) dùng ví dụ trước rồi tới luồng SQL; [báo cáo SQL](08-bao-cao-tong-ket-sql.md) tổng hợp mục đích cho báo cáo cuối kỳ.
+
+## 10. Thông báo tương tác
+
+Một function được bốn AFTER INSERT trigger gọi. TG_TABLE_NAME chọn loại tương tác, NEW cung cấp actor/ngữ cảnh; truy vấn tác giả xác định recipient. Bỏ qua tự tương tác, tác giả NULL và placeholder. Comment mới báo chủ bài; reply còn báo tác giả cha nếu khác chủ bài. ON CONFLICT giữ lịch sử khi like/share lại. Không gửi mạng trong trigger.
+
+Xem [người nhận và ví dụ](10-thong-bao.md), [diagram](../diagram/v4/05-interaction-notification.drawio.png).
+
+```sql
+CREATE FUNCTION create_interaction_notification()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    actor UUID;
+    recipient UUID;
+    blog_author UUID;
+    target_blog UUID;
+    target_comment UUID;
+    notification_type VARCHAR(20);
+BEGIN
+    CASE TG_TABLE_NAME
+        WHEN 'blog_likes', 'blog_shares' THEN
+            actor := NEW.user_id;
+            target_blog := NEW.blog_id;
+            notification_type := CASE WHEN TG_TABLE_NAME = 'blog_likes'
+                THEN 'BLOG_LIKE' ELSE 'BLOG_SHARE' END;
+            SELECT author_id INTO recipient
+            FROM blogs
+            WHERE id = target_blog;
+        WHEN 'comment_likes' THEN
+            actor := NEW.user_id;
+            target_comment := NEW.comment_id;
+            notification_type := 'COMMENT_LIKE';
+            SELECT blog_id, author_id INTO target_blog, recipient
+            FROM comments
+            WHERE id = target_comment;
+        WHEN 'comments' THEN
+            -- Không thông báo cho placeholder hoặc dữ liệu đã gỡ tác giả.
+            IF NEW.deleted_at IS NOT NULL OR NEW.author_id IS NULL THEN
+                RETURN NULL;
+            END IF;
+            actor := NEW.author_id;
+            target_blog := NEW.blog_id;
+            target_comment := NEW.id;
+            notification_type := 'BLOG_COMMENT';
+            SELECT author_id INTO recipient
+            FROM blogs
+            WHERE id = target_blog;
+    END CASE;
+
+    -- Không thông báo cho chính người thao tác hoặc tác giả đã bị gỡ.
+    IF recipient IS NOT NULL AND recipient <> actor THEN
+        INSERT INTO notifications (recipient_id, actor_id, blog_id, comment_id, type)
+        VALUES (recipient, actor, target_blog, target_comment, notification_type)
+        ON CONFLICT ON CONSTRAINT notifications_interaction_unique DO NOTHING;
+    END IF;
+
+    IF TG_TABLE_NAME = 'comments' THEN
+        IF NEW.parent_id IS NOT NULL THEN
+            blog_author := recipient;
+            SELECT author_id INTO recipient
+            FROM comments
+            WHERE id = NEW.parent_id
+              AND blog_id = target_blog;
+            -- Nếu chủ comment cha cũng là chủ bài, một BLOG_COMMENT đã đủ.
+            IF recipient IS NOT NULL AND recipient <> actor AND recipient <> blog_author THEN
+                INSERT INTO notifications (recipient_id, actor_id, blog_id, comment_id, type)
+                VALUES (recipient, actor, target_blog, target_comment, 'COMMENT_REPLY')
+                ON CONFLICT ON CONSTRAINT notifications_interaction_unique DO NOTHING;
+            END IF;
+        END IF;
+    END IF;
+
+    -- AFTER trigger không gửi push/email hoặc tự COMMIT.
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER blog_likes_notify
+AFTER INSERT ON blog_likes
+FOR EACH ROW
+EXECUTE FUNCTION create_interaction_notification();
+
+CREATE TRIGGER comment_likes_notify
+AFTER INSERT ON comment_likes
+FOR EACH ROW
+EXECUTE FUNCTION create_interaction_notification();
+
+CREATE TRIGGER blog_shares_notify
+AFTER INSERT ON blog_shares
+FOR EACH ROW
+EXECUTE FUNCTION create_interaction_notification();
+
+CREATE TRIGGER comments_notify
+AFTER INSERT ON comments
+FOR EACH ROW
+EXECUTE FUNCTION create_interaction_notification();
+```

@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<mxfile host="drawio" version="32.4.1" pages="22" data-sql-source="../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql" data-sql-sha256="b512b19aad75ea85d59ab0fd19407e32eaf410eced5a83ea946491c44f737010" data-typography="node=24;edge=20;title=32;caption=18" data-examples="plain-language-before-sql" data-page-order="business-before-sql" data-routing="straight-first;fixed-anchors;minimal-orthogonal-bends">
+<mxfile host="drawio" version="32.4.1" pages="22" data-sql-source="../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql" data-sql-sha256="0e28c9d8656a760356d98d678950eaa4d8a5b397847bdfa311a9905ca5c7bf83" data-typography="node=24;edge=20;title=32;caption=18" data-examples="plain-language-before-sql" data-page-order="business-before-sql" data-routing="straight-first;fixed-anchors;minimal-orthogonal-bends">
   <diagram id="business-00-transaction" name="00A · Ví dụ like và mất kết nối" data-kind="business" data-function="" data-triggers="" data-straight-connectors="8" data-orthogonal-bends="9">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
@@ -167,7 +167,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-00-transaction" name="00B · Transaction và trigger" data-function="" data-triggers="" data-source-lines="1-208" data-kind="sql" data-straight-connectors="14" data-orthogonal-bends="16">
+  <diagram id="v3-00-transaction" name="00B · Transaction và trigger" data-function="" data-triggers="" data-source-lines="1-528" data-kind="sql" data-straight-connectors="14" data-orthogonal-bends="16">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -413,7 +413,7 @@
         <mxCell id="header-title" value="00B · Transaction và trigger" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1552.5" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Bối cảnh thực thi V3: 9 function, 14 trigger" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="V3: 10 function, 18 trigger · Thông báo tương tác: xem sơ đồ V4/05" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1552.5" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -553,7 +553,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-01-comment-insert" name="01B · Thêm comment và reply" data-function="validate_comment" data-triggers="comments_validate" data-source-lines="1-44" data-kind="sql" data-straight-connectors="13" data-orthogonal-bends="4">
+  <diagram id="v3-01-comment-insert" name="01B · Thêm comment và reply" data-function="validate_comment" data-triggers="comments_validate" data-source-lines="3-67" data-kind="sql" data-straight-connectors="13" data-orthogonal-bends="4">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -720,7 +720,7 @@
         <mxCell id="header-title" value="01B · Thêm comment và reply" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="2150" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: validate_comment | V3: 1-44&lt;br&gt;Trigger: comments_validate&lt;br&gt;Không giới hạn độ sâu; parent tồn tại và cấu trúc bất biến giữ cây không vòng." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: validate_comment | V3: 3-67&lt;br&gt;Trigger: comments_validate&lt;br&gt;Không giới hạn độ sâu; parent tồn tại và cấu trúc bất biến giữ cây không vòng." style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="2150" height="70" as="geometry" />
         </mxCell>
         <UserObject label="Không" mermaidId="e:DELETED-&gt;RETURN#0" mermaidBaseStyle="startArrow=none;endArrow=block;endSize=7;html=1;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;fontSize=20;rounded=0;curved=0;orthogonalLoop=1;jettySize=0;strokeColor=#475569;fontColor=#334155;labelBackgroundColor=#ffffff;edgeStyle=none;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" mermaidBaseValue="Không" id="depth-DELETED-RETURN">
@@ -875,7 +875,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-02-comment-update" name="02B · Sửa comment và version" data-function="validate_comment" data-triggers="comments_validate" data-source-lines="6-26" data-kind="sql" data-straight-connectors="12" data-orthogonal-bends="14">
+  <diagram id="v3-02-comment-update" name="02B · Sửa comment và version" data-function="validate_comment" data-triggers="comments_validate" data-source-lines="14-40" data-kind="sql" data-straight-connectors="12" data-orthogonal-bends="14">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -1092,7 +1092,7 @@
         <mxCell id="header-title" value="02B · Sửa comment và version" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="2691.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: validate_comment | V3: 6-26&lt;br&gt;Trigger: comments_validate" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: validate_comment | V3: 14-40&lt;br&gt;Trigger: comments_validate" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="2691.0" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -1218,7 +1218,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-03-relation-counters" name="03B · Counter lượt like và share" data-function="update_relation_counter" data-triggers="blog_likes_counter,comment_likes_counter,blog_shares_counter" data-source-lines="46-70" data-kind="sql" data-straight-connectors="7" data-orthogonal-bends="7">
+  <diagram id="v3-03-relation-counters" name="03B · Counter lượt like và share" data-function="update_relation_counter" data-triggers="blog_likes_counter,comment_likes_counter,blog_shares_counter" data-source-lines="72-121" data-kind="sql" data-straight-connectors="7" data-orthogonal-bends="7">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -1383,7 +1383,7 @@
         <mxCell id="header-title" value="03B · Counter lượt like và share" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1519.5" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: update_relation_counter | V3: 46-70&lt;br&gt;Trigger: blog_likes_counter, comment_likes_counter, blog_shares_counter" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: update_relation_counter | V3: 72-121&lt;br&gt;Trigger: blog_likes_counter, comment_likes_counter, blog_shares_counter" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1519.5" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -1461,7 +1461,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-04-relation-immutable" name="04B · Chặn UPDATE quan hệ" data-function="reject_relation_update" data-triggers="blog_likes_immutable,comment_likes_immutable,blog_shares_immutable" data-source-lines="72-83" data-kind="sql" data-straight-connectors="4" data-orthogonal-bends="0">
+  <diagram id="v3-04-relation-immutable" name="04B · Chặn UPDATE quan hệ" data-function="reject_relation_update" data-triggers="blog_likes_immutable,comment_likes_immutable,blog_shares_immutable" data-source-lines="126-148" data-kind="sql" data-straight-connectors="4" data-orthogonal-bends="0">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -1518,7 +1518,7 @@
         <mxCell id="header-title" value="04B · Chặn UPDATE quan hệ" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1350.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: reject_relation_update | V3: 72-83&lt;br&gt;Trigger: blog_likes_immutable, comment_likes_immutable, blog_shares_immutable" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: reject_relation_update | V3: 126-148&lt;br&gt;Trigger: blog_likes_immutable, comment_likes_immutable, blog_shares_immutable" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1350.0" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -1668,7 +1668,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-05-comment-counter" name="05B · Đếm comment còn sống" data-function="update_comment_counter" data-triggers="comments_counter" data-source-lines="85-109" data-kind="sql" data-straight-connectors="7" data-orthogonal-bends="10">
+  <diagram id="v3-05-comment-counter" name="05B · Đếm comment còn sống" data-function="update_comment_counter" data-triggers="comments_counter" data-source-lines="155-193" data-kind="sql" data-straight-connectors="7" data-orthogonal-bends="10">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -1823,7 +1823,7 @@
         <mxCell id="header-title" value="05B · Đếm comment còn sống" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1465.5" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: update_comment_counter | V3: 85-109&lt;br&gt;Trigger: comments_counter" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: update_comment_counter | V3: 155-193&lt;br&gt;Trigger: comments_counter" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1465.5" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -1975,7 +1975,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-06-comment-like-guard" name="06B · Kiểm tra trước khi like comment" data-function="guard_comment_like" data-triggers="comment_like_active" data-source-lines="111-130" data-kind="sql" data-straight-connectors="10" data-orthogonal-bends="11">
+  <diagram id="v3-06-comment-like-guard" name="06B · Kiểm tra trước khi like comment" data-function="guard_comment_like" data-triggers="comment_like_active" data-source-lines="198-235" data-kind="sql" data-straight-connectors="10" data-orthogonal-bends="11">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -2160,7 +2160,7 @@
         <mxCell id="header-title" value="06B · Kiểm tra trước khi like comment" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1350.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: guard_comment_like | V3: 111-130&lt;br&gt;Trigger: comment_like_active" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: guard_comment_like | V3: 198-235&lt;br&gt;Trigger: comment_like_active" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1350.0" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -2289,7 +2289,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-07-deleted-comment-likes" name="07B · Comment đã xóa không còn like" data-function="check_deleted_comment_likes" data-triggers="deleted_comment_no_likes" data-source-lines="132-144" data-kind="sql" data-straight-connectors="9" data-orthogonal-bends="9">
+  <diagram id="v3-07-deleted-comment-likes" name="07B · Comment đã xóa không còn like" data-function="check_deleted_comment_likes" data-triggers="deleted_comment_no_likes" data-source-lines="239-275" data-kind="sql" data-straight-connectors="9" data-orthogonal-bends="9">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -2445,7 +2445,7 @@
         <mxCell id="header-title" value="07B · Comment đã xóa không còn like" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1350.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: check_deleted_comment_likes | V3: 132-144&lt;br&gt;Trigger: deleted_comment_no_likes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: check_deleted_comment_likes | V3: 239-275&lt;br&gt;Trigger: deleted_comment_no_likes" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1350.0" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -2560,7 +2560,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-08-image-blog-lock" name="08B · Khóa blog khi đổi liên kết ảnh" data-function="lock_image_blog" data-triggers="image_blog_lock" data-source-lines="146-161" data-kind="sql" data-straight-connectors="10" data-orthogonal-bends="6">
+  <diagram id="v3-08-image-blog-lock" name="08B · Khóa blog khi đổi liên kết ảnh" data-function="lock_image_blog" data-triggers="image_blog_lock" data-source-lines="279-311" data-kind="sql" data-straight-connectors="10" data-orthogonal-bends="6">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -2737,7 +2737,7 @@
         <mxCell id="header-title" value="08B · Khóa blog khi đổi liên kết ảnh" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1504.5" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: lock_image_blog | V3: 146-161&lt;br&gt;Trigger: image_blog_lock" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: lock_image_blog | V3: 279-311&lt;br&gt;Trigger: image_blog_lock" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1504.5" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -2878,7 +2878,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-09-nonempty-blog" name="09B · Bài phải có nội dung hoặc ảnh" data-function="check_nonempty_blog" data-triggers="blogs_nonempty,blog_images_nonempty" data-source-lines="163-184" data-kind="sql" data-straight-connectors="11" data-orthogonal-bends="12">
+  <diagram id="v3-09-nonempty-blog" name="09B · Bài phải có nội dung hoặc ảnh" data-function="check_nonempty_blog" data-triggers="blogs_nonempty,blog_images_nonempty" data-source-lines="315-360" data-kind="sql" data-straight-connectors="11" data-orthogonal-bends="12">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -3082,7 +3082,7 @@
         <mxCell id="header-title" value="09B · Bài phải có nội dung hoặc ảnh" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="1350.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: check_nonempty_blog | V3: 163-184&lt;br&gt;Trigger: blogs_nonempty, blog_images_nonempty" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: check_nonempty_blog | V3: 315-360&lt;br&gt;Trigger: blogs_nonempty, blog_images_nonempty" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="1350.0" height="70" as="geometry" />
         </mxCell>
       </root>
@@ -3262,7 +3262,7 @@
       </root>
     </mxGraphModel>
   </diagram>
-  <diagram id="v3-10-media-identity" name="10B · Định danh và trạng thái media" data-function="guard_media_identity" data-triggers="media_identity_immutable" data-source-lines="186-208" data-kind="sql" data-straight-connectors="12" data-orthogonal-bends="16">
+  <diagram id="v3-10-media-identity" name="10B · Định danh và trạng thái media" data-function="guard_media_identity" data-triggers="media_identity_immutable" data-source-lines="364-395" data-kind="sql" data-straight-connectors="12" data-orthogonal-bends="16">
     <mxGraphModel grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="0" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" background="#ffffff">
       <root>
         <mxCell id="0" />
@@ -3468,7 +3468,7 @@
         <mxCell id="header-title" value="10B · Định danh và trạng thái media" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontStyle=1;fontColor=#0f172a;fontFamily=Arial;fontSize=32;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="20" width="2850.0" height="44" as="geometry" />
         </mxCell>
-        <mxCell id="header-subtitle" value="Function: guard_media_identity | V3: 186-208&lt;br&gt;Trigger: media_identity_immutable" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
+        <mxCell id="header-subtitle" value="Function: guard_media_identity | V3: 364-395&lt;br&gt;Trigger: media_identity_immutable" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontColor=#475569;fontFamily=Arial;fontSize=18;" vertex="1" parent="1">
           <mxGeometry x="90.0" y="70" width="2850.0" height="70" as="geometry" />
         </mxCell>
       </root>

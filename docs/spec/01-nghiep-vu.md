@@ -51,7 +51,7 @@ Nếu thao tác sửa làm bài không còn content và ảnh, trả 400. Có l�
 
 **CMT01** Content sau trim dài 1–2.000 ký tự. Tạo comment/reply chỉ khi actor được xem bài. Chủ bài có thể comment trên bài private của mình. Reply phải có parent đã tồn tại thuộc đúng bài; parent sai bài hoặc cấu trúc không hợp lệ trả 400. Không giới hạn cứng độ sâu và không lưu depth; không từ chối chỉ vì reply ở cấp 6 hoặc sâu hơn. Chặn tự tham chiếu, vòng và đổi ID/blog_id/parent_id sau tạo. Khóa blog rồi parent và kiểm parent chưa xóa; reply trực tiếp vào placeholder trả 409 COMMENT_DELETED. Có thể reply vào comment con chưa xóa dù ancestor là placeholder. Client không được chọn author, ID hay bộ đếm.
 
-**CMT02** Danh sách trả cây `replies`, root/replies tăng dần theo `createdAt, id`. `commentsCount` chỉ tính node có deleted_at IS NULL, gồm cả replies còn hoạt động. Placeholder vẫn được trả để giữ cây nhưng không tính vào counter. Đọc comments của bài private dùng cùng kiểm quyền như đọc bài. Like chỉ áp dụng cho node chưa xóa; node đã xóa trả 409 COMMENT_DELETED.
+**CMT02** Danh sách trả cây `replies`, root và các replies cùng parent sắp theo `createdAt DESC, id DESC` (mới nhất trước). `commentsCount` chỉ tính node có deleted_at IS NULL, gồm cả replies còn hoạt động. Placeholder vẫn được trả để giữ cây nhưng không tính vào counter. Đọc comments của bài private dùng cùng kiểm quyền như đọc bài. Like chỉ áp dụng cho node chưa xóa; node đã xóa trả 409 COMMENT_DELETED.
 
 UI chỉ thụt lề tối đa 3 tầng hiển thị, tính root là tầng 1. Reply sâu hơn vẫn được hiển thị ở mức thụt lề cuối, kèm chỉ dẫn đang trả lời ai; khi bấm trả lời phải gửi ID của comment được chọn, không đổi parent về root hay một ancestor để ép phẳng dữ liệu. Giới hạn thụt lề không phải giới hạn độ sâu lưu trữ hoặc số lượng bình luận.
 
@@ -90,3 +90,7 @@ UI chỉ thụt lề tối đa 3 tầng hiển thị, tính root là tầng 1. R
 ## Giới hạn sản phẩm
 
 Một backend giữ session và rate limit trong bộ nhớ; restart cần đăng nhập lại. Danh sách core vẫn chưa có pagination và media đi qua backend. Cây comment không có giới hạn cứng độ sâu; điều này không phải cam kết tải toàn bộ thảo luận lớn trong một request. Trước khi mở rộng cho bài có nhiều bình luận, cần thiết kế API đọc theo trang/nhóm và chỉ tải phần cần xem; tránh dựng/duyệt cây bằng đệ quy phụ thuộc call stack. Giữ response hiện tại cho migration core; pagination và cách tải theo nhóm cần được đặc tả riêng khi triển khai mở rộng. Session store chung hoặc cache cũng cần số đo trước khi bổ sung.
+
+## Thông báo tương tác
+
+Bổ sung thông báo trong ứng dụng cho like bài, like comment, comment mới, reply và share. Người nhận là tác giả đối tượng; reply còn báo tác giả comment cha nếu khác tác giả bài. Bỏ qua tự tương tác, không báo hai lần cùng người cho một reply. Xem [quy tắc đầy đủ](10-thong-bao.md). SQL đã bổ sung; API/UI vẫn là kế hoạch triển khai.

@@ -128,3 +128,7 @@ Lượt đầu thất bại không rollback nghiệp vụ đã commit. Các job 
 Requeue DEAD là thao tác vận hành rõ ràng: khóa asset rồi job, xác nhận vẫn DELETE_PENDING/không liên kết và namespace đúng, chuyển PENDING, attempts=0, lease=NULL, available_at mới. Đây là một đợt thử mới do người vận hành yêu cầu, không phải retry tự động vượt giới hạn. Kết quả cũ mang lease khác không được ghi đè đợt mới. Nếu provider đã xóa ảnh nhưng worker cũ hết lease trước khi ghi kết quả, lượt còn quyền tiếp theo đối soát not found hoặc người vận hành xử lý job DEAD; không coi receipt đã được dọn khi chưa có commit hợp lệ.
 
 Cloudinary invalidation và việc người dùng đã lưu ảnh không tạo bảo đảm thu hồi mọi bản sao. Bản ứng dụng mới không phục vụ ảnh của bài đã xóa/private qua API ở request tiếp theo, kể cả khi cleanup còn pending. [Cloudinary Upload API](https://cloudinary.com/documentation/image_upload_api_reference).
+
+## Quyền truy cập thông báo
+
+GET/PATCH thông báo bắt buộc đăng nhập; recipient_id phải lấy từ session và được dùng trong WHERE của cả đọc lẫn cập nhật. PATCH cần CSRF. Không nhận actor_id/recipient_id từ JSON và không xuất entity trực tiếp. List/count phải cùng lọc quyền xem bài hiện tại và loại comment đã xóa để không lộ nội dung bài private hoặc placeholder. Role runtime dùng chung cho backend, không phải RLS theo user; quyền sở hữu được thực thi tại service. Xem [10 thông báo](10-thong-bao.md).

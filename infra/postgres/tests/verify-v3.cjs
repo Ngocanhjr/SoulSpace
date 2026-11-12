@@ -18,7 +18,7 @@ const { PGlite } = require(process.env.SOULSPACE_PGLITE_MODULE);
             console.log('PASS migration', name);
         }
         await db.exec('SET ROLE soulspace_runtime;');
-        for (const name of ['invariants.sql', 'public_blog_feed.sql', 'blog_categories.sql']) {
+        for (const name of ['invariants.sql', 'public_blog_feed.sql', 'blog_categories.sql', 'notifications.sql']) {
             await db.exec(fs.readFileSync('infra/postgres/tests/' + name, 'utf8')
                 .replace(/^\s*\\set\s+ON_ERROR_STOP\s+on\b/gm, '').replace(/^\\.*$/gm, ''));
             console.log('PASS suite', name);

@@ -1,10 +1,10 @@
 # ERD PostgreSQL — SoulSpace
 
-Cập nhật 31/10/2026: cả năm hình đã đồng bộ với **thiết kế đầy đủ: 11 bảng/65 cột**, gồm core và chủ đề giai đoạn
-AI. [Mục 5](#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai) bổ sung ERD chủ đề; toàn schema có **11 bảng/65 cột**. Đây là
+Cập nhật 12/11/2026: các hình đã đồng bộ với **thiết kế đầy đủ: 12 bảng/73 cột**, gồm core và chủ đề giai đoạn
+AI. [Mục 5](#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai) bổ sung ERD chủ đề; toàn schema có **12 bảng/73 cột**. Đây là
 thiết kế, chưa phải schema đã triển khai.
 
-Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-postgresql.md), xuất lại ngày 31/10/2026. Mở file này bằng
+Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-postgresql.md), tổng quan và tương tác xuất lại ngày 12/11/2026. Mở file này bằng
 Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cần plugin Mermaid để dựng lại sơ đồ.
 
 Ảnh dùng nền sáng, nhãn SVG thuần và bố cục được lưu sẵn trong file. Khi thay đổi mô hình ở tài liệu nguồn, cần render lại các ảnh SVG tương ứng để bản này phản ánh thiết kế mới.
@@ -20,9 +20,8 @@ Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cầ
 | Vòng tròn và một vạch | Không hoặc một. |
 | Vòng tròn và chân quạ | Không hoặc nhiều. |
 
-Các hình hiển thị đầy đủ cột của từng bảng theo [đặc tả PostgreSQL](03-postgresql.md), gồm kiểu dữ liệu, khóa và ghi chú
-nullable. Sơ đồ tổng quan có **11 bảng, 65 cột**; các sơ đồ theo nhóm cũng giữ đầy đủ cột của các bảng xuất hiện trong
-hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại tài liệu nguồn. Xem [báo cáo chốt thiết kế](erd-review.md)
+Các hình chi tiết hiển thị đầy đủ cột của từng bảng theo [đặc tả PostgreSQL](03-postgresql.md), gồm kiểu dữ liệu, khóa và ghi chú
+nullable. Bản tổng quan gọn hiển thị 12 bảng và các cột PK/FK để dễ lần theo quan hệ. [Bản đầy đủ](assets/erd/tong-quan-day-du.svg) giữ toàn bộ 73 cột; các sơ đồ theo nhóm giữ đầy đủ cột của bảng xuất hiện trong hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại tài liệu nguồn. Xem [báo cáo chốt thiết kế](erd-review.md)
 để phân biệt kết quả rà soát với phần PostgreSQL còn phải triển khai/kiểm chứng.
 
 | Bảng               | Số cột |
@@ -38,15 +37,18 @@ hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại 
 | media_assets       | 10     |
 | blog_images        | 3      |
 | media_cleanup_jobs | 8      |
-| **Tổng**           | **65** |
+| notifications      | 8      |
+| **Tổng**           | **73** |
 
 Hình tổng quan chứa nhiều thông tin; dùng liên kết mở SVG bên dưới mỗi ảnh và phóng to để đọc rõ từng cột.
 
-## 1. Tổng quan mười một bảng
+## 1. Tổng quan mười hai bảng
 
-![ERD tổng quan mười một bảng của SoulSpace](assets/erd/tong-quan.svg)
+![ERD tổng quan mười hai bảng của SoulSpace](assets/erd/tong-quan.svg)
 
-[Mở SVG tổng quan ở kích thước đầy đủ](assets/erd/tong-quan.svg).
+[Mở tổng quan gọn](assets/erd/tong-quan.svg) · [Bản đầy đủ 73 cột](assets/erd/tong-quan-day-du.svg) · [Nguồn bản đầy đủ](assets/erd/tong-quan-day-du.drawio).
+
+Tổng quan gọn dùng đường thẳng, tách riêng các quan hệ song song; đã kiểm tra không có đường cắt nhau, chồng đoạn hoặc xuyên bảng. Bản đầy đủ và các sơ đồ theo nhóm dùng để tra kiểu dữ liệu/cột thường. Không bỏ bảng hoặc quan hệ dữ liệu.
 
 Gồm `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes`, `comment_likes`, `blog_shares`, `media_assets`, `blog_images` và `media_cleanup_jobs`. Quan hệ sở hữu media và quan hệ avatar là hai liên kết riêng.
 
@@ -102,7 +104,7 @@ bảng nối; MANUAL kể cả tập rỗng giữ quyền chọn của tác gi�
 tập MANUAL để đối chiếu, blogs.category_mode chọn nguồn hiển thị. AUTO bắt buộc có confidence trong [0,1]; MANUAL bắt
 buộc NULL. PK ghép giữ riêng hai nguồn cho cùng bài/chủ đề. Slug là tên URL không dấu, duy nhất và ổn định. FK
 blog_categories.blog_id dùng ON DELETE CASCADE; FK category_id dùng ON DELETE RESTRICT. Tổng cấu trúc: categories 3 cột,
-blog_categories 4 cột, blogs 10 cột, các bảng còn lại 48 cột, thành 11 bảng/65 cột.
+blog_categories 4 cột, blogs 10 cột, các bảng còn lại 48 cột và notifications 8 cột, thành 12 bảng/73 cột.
 
 ## Nguồn chỉnh sửa
 
@@ -110,4 +112,14 @@ Mã Mermaid của bốn hình chính nằm trong phần **Mô hình và kiểu d
 
 ## Phạm vi chuẩn hóa
 
-Giữ blog_id trên comments để truy vấn theo bài và kiểm quyền trực tiếp, dù trên các reply nó được suy ra từ parent. Thiết kế chấp nhận phần dư thừa này, không chứng nhận toàn bộ schema đạt BCNF. Counters là dữ liệu tổng hợp do trigger quản lý; quan hệ like/comment/share là nguồn đối soát. UNIQUE nullable chỉ bảo đảm duy nhất khi có giá trị, không mặc nhiên là khóa ứng viên của toàn bảng.
+Giữ blog_id trên comments để truy vấn theo bài và kiểm quyền trực tiếp, dù trên các reply nó được suy ra từ parent. Thiết kế chấp nhận phần dư thừa này, không chứng nhận toàn bộ schema đạt BCNF. Counters là dữ liệu tổng hợp do trigger quản lý; quan hệ like/comment/share là nguồn đối soát. UNIQUE nullable thông thường chỉ bảo đảm duy nhất khi có giá trị, không mặc nhiên là khóa ứng viên của toàn bảng.
+
+## 6. Thông báo tương tác
+
+![ERD thông báo](assets/erd/thong-bao.svg)
+
+[Mở SVG](assets/erd/thong-bao.svg) · [Nguồn draw.io](assets/erd/thong-bao.drawio) · [Đặc tả](10-thong-bao.md).
+
+notifications có 8 cột, liên kết hai vai trò user (recipient và actor), blog và comment (comment_id nullable). FK kép comment_id/blog_id giữ comment đúng bài. UNIQUE gồm recipient/actor/blog/type/comment, coi NULL bằng nhau; mỗi tương tác gửi một lần cho từng người nhận. Tất cả FK thông báo dùng cascade khi xóa vĩnh viễn đối tượng. Soft delete giữ hàng lịch sử; API ẩn ngữ cảnh không còn được phép xem.
+
+Riêng notifications dùng UNIQUE NULLS NOT DISTINCT để chống trùng cả khi comment_id NULL. Nguồn draw.io tổng quan và nhóm tương tác nằm cạnh SVG; chúng được nhập từ Mermaid trong 03 rồi chỉnh bố cục/routing để tách các quan hệ. Tổng quan gọn dùng các đoạn thẳng; bản đầy đủ và nhóm nghiệp vụ giữ nguồn riêng để tra cứu.

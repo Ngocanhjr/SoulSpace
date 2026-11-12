@@ -1,3 +1,4 @@
+-- use for reduce join with users table, and for feed queries that need author profile info (new feed, profile feed, comment feed, etc.)
 -- One row per public original blog; shares do not create extra feed entries.
 CREATE VIEW public.v_public_blog_feed WITH (security_invoker = true) AS
 SELECT b.id AS blog_id,

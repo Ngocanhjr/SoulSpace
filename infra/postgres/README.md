@@ -112,3 +112,9 @@ cột phía dưới ghi nhận bản trước khi bổ sung chủ đề.
 - PostgreSQL 17.5 WASM qua PGlite 0.3.14 cài trong thư mục tạm: PASS provision SQL với role owner không phải superuser; V1–V4 chạy lần lượt trong transaction; 9 bảng/57 cột; smoke suite và kiểm quyền runtime PASS. Đây là thực thi SQL bằng engine PostgreSQL, chưa phải chạy qua Flyway/JDBC hay server Docker 17.11.
 - Runtime bị chặn CREATE trong public, đọc Flyway history và TRUNCATE.
 - Docker daemon chưa chạy nên chưa khởi động container, chưa xác minh shell entrypoint/psql end-to-end, persistent volume hoặc healthcheck. Chưa kết nối Neon, chạy Maven hoặc nghiệm thu concurrency nhiều connection.
+
+## Thông báo tương tác — 12/11/2026
+
+Theo xác nhận chưa chạy Flyway, đã gộp vào V1–V4: 12 bảng/73 cột; V2 19 index; V3 10 function/18 trigger; V4 4 procedure và quyền notifications chỉ SELECT/INSERT/UPDATE(read_at). V5 giữ nguyên. Xem [thiết kế](../../docs/spec/10-thong-bao.md).
+
+Suite `tests/notifications.sql` chạy bằng soulspace_runtime trên DB test, fixture ROLLBACK. Runner `tests/verify-v3.cjs` đã chạy V1–V5 và bốn suite (invariants, public_blog_feed, blog_categories, notifications) trên PostgreSQL WASM 17.5. Dùng biến môi trường SOULSPACE_PGLITE_MODULE trỏ tới package PGlite hiện có rồi chạy `node infra/postgres/tests/verify-v3.cjs` từ gốc repo. Trên PostgreSQL thật chạy suite bằng psql với runtime và ON_ERROR_STOP. Chưa kiểm JDBC/Flyway, Docker/Neon, API/UI hoặc nhiều connection. Không dùng kết quả WASM thay cho nghiệm thu concurrency; đặc biệt tương tác đồng thời xóa người nhận cần kiểm retry toàn transaction.

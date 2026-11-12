@@ -2,7 +2,7 @@
 
 Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH
 /api/v1/blogs/{blogId}/categories và categories/categoryMode trên BlogDTO/SharedBlogDTO
-theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng sau mở rộng là 37 endpoint; chưa
+theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng cùng 2 endpoint thông báo trong [tài liệu 10](10-thong-bao.md) là 39 endpoint; chưa
 triển khai các bổ sung này.
 
 ## Quy ước chung
@@ -110,7 +110,7 @@ U07 không đổi password; field vắng mặt giữ nguyên. Username/fullname 
 | B02 | GET | `/api/v1/blogs/{userId}/all` | UUID path | `BlogDTO[]` public/private, chính chủ. |
 | B03 | GET | `/api/v1/blogs/{userId}/blogs` | UUID path | `BlogDTO[]`, bài public của user. |
 | B04 | GET | `/api/v1/blogs/{blogId}` | UUID path | `BlogDTO`, public hoặc chủ bài. |
-| B05 | GET | `/api/v1/blogs/{blogId}/comments` | UUID path | `CommentDTO[]`, cùng quyền xem bài. |
+| B05 | GET | `/api/v1/blogs/{blogId}/comments` | UUID path | `CommentDTO[]`, cùng quyền xem bài; root và các replies cùng parent sắp theo `createdAt DESC, id DESC` (mới nhất trước). |
 | B06 | POST | `/api/v1/blogs/{blogId}/comments` | JSON `{content,userId?}` | `CommentCreateResponse`, đăng nhập và xem được bài. |
 | B07 | POST | `/api/v1/blogs/{blogId}/comments/{commentId}/reply` | JSON `{content,userId?}` | `CommentReplyResponse`, parent đúng bài và chưa xóa; không giới hạn cứng độ sâu. |
 | B08 | POST | `/api/v1/blogs/{blogId}/comments/{commentId}/like` | JSON `{liked:boolean,userId?}` | `CommentLikeResponse`, đăng nhập và xem được bài. |
@@ -149,7 +149,7 @@ Thứ tự xử lý B15/B16: xác thực/CSRF, kiểm quyền xem bài và comme
 
 B07 khóa blog rồi parent, kiểm deleted_at IS NULL rồi mới insert reply; parent đã xóa trả 409 COMMENT_DELETED. B08 cũng từ chối node đã xóa bằng mã này. Các replies cũ vẫn được đọc và comment con chưa xóa vẫn có thể được trả lời, kể cả khi ancestor là placeholder. Parent/blog sai xử lý theo hợp đồng validation. Không lưu depth hoặc trả lỗi chỉ vì reply ở cấp 6 hay sâu hơn; bỏ COMMENT_DEPTH_EXCEEDED khỏi hợp đồng lỗi.
 
-Giữ `CommentDTO.replies` và response array hiện tại trong migration core; quyết định bỏ giới hạn độ sâu không thêm route hoặc đổi response sang wrapper. UI chỉ thụt lề tối đa 3 tầng, chỉ rõ người được trả lời cho reply sâu hơn và luôn gửi commentId của node thật được chọn. Không gắn reply vào ancestor chỉ để khớp mức thụt lề. Phân trang/tải từng nhóm comments là hợp đồng mở rộng cần chốt riêng trước khi phục vụ thảo luận lớn.
+Giữ `CommentDTO.replies` và response array hiện tại trong migration core; quyết định bỏ giới hạn độ sâu không thêm route hoặc đổi response sang wrapper. UI giữ thứ tự mới nhất trước của API, kể cả sau khi thêm comment/reply. UI chỉ thụt lề tối đa 3 tầng, chỉ rõ người được trả lời cho reply sâu hơn và luôn gửi commentId của node thật được chọn. Không gắn reply vào ancestor chỉ để khớp mức thụt lề. Phân trang/tải từng nhóm comments là hợp đồng mở rộng cần chốt riêng trước khi phục vụ thảo luận lớn.
 
 B10 nhận các part `content?`, `published?` mặc định true, `files` lặp lại, `userId?` để đối chiếu. Chấp nhận và bỏ qua `username` legacy do PostPage đang append field này; author luôn từ session. B14 nhận `blogId`, `content?`, `published?`, `newImages` lặp lại, `removeImagesUrl` lặp lại. Giữ phân biệt field absent với false/rỗng; `published` không có không được bind thành false.
 

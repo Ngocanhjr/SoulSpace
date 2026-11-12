@@ -54,6 +54,7 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | CMT07 | Thiếu/sai kiểu/âm expectedVersion, content không hợp lệ, gửi field cấu trúc | 400, không thay dữ liệu; PATCH node đã xóa với body hợp lệ trả 409 COMMENT_DELETED. |
 | CMT08 | Like rồi đọc lại comment; sửa content rồi đọc lại | Like không đổi version/updatedAt; sửa content tăng version, giữ createdAt/parent và replies. |
 | CMT09 | Hiển thị chuỗi ít nhất 10 cấp trên desktop/mobile và trả lời node sâu | UI thụt lề tối đa 3 tầng, chỉ rõ người được trả lời, không cắt/mất node; request vẫn gửi ID của parent thật, không ép về root/ancestor. |
+| CMT10 | Đọc cây có nhiều roots/replies, có các node cùng createdAt; thêm comment/reply rồi đọc lại | API và UI giữ root và các replies cùng parent theo createdAt DESC, id DESC, mới nhất trước; trùng thời gian phân định bằng id DESC. Giữ đủ node/placeholder và đúng parent dù hàng con được đọc trước hàng cha. |
 | LIKE01 | true hai lần, false hai lần cho bài/comment | Tối đa một row; counter không tăng thừa hoặc âm; response phản ánh trạng thái cuối. |
 | SHR01 | Share một lần, share trùng, unshare lặp | Row/count đúng; duplicate 409; unshare lặp 200. |
 | DEL01 | Xóa blog có comments nhiều cấp, cả placeholder, likes, shares, ảnh | Cascade toàn bộ dữ liệu thuộc bài; placeholder không làm giảm counter lần hai; enqueue ảnh trong cùng commit. |
@@ -133,7 +134,7 @@ DB01–DB07 kiểm các invariant có thể thực thi bằng constraint/trigger
 
 VIEW01–VIEW06 có smoke SQL tại [public_blog_feed.sql](../../infra/postgres/tests/public_blog_feed.sql); VIEW07 chưa
 triển khai Java. Bằng chứng view phải có định nghĩa, query sử dụng thật và kết quả trước/sau thay đổi dữ liệu, không chỉ
-ảnh chụp CREATE VIEW thành công. Schema V1 có 11 bảng/65 cột và thêm 1 view/11 cột; view không được tính là bảng lưu trữ
+ảnh chụp CREATE VIEW thành công. Schema V1 có 12 bảng/73 cột và thêm 1 view/11 cột; view không được tính là bảng lưu trữ
 thứ 12.
 
 ## Năm nhóm bằng chứng SQL
@@ -179,8 +180,8 @@ Thực hiện lần lượt signup, login, reload, xem feed/profile/search hiệ
 
 Giai đoạn AI có các ca TOP-T01–TOP-T13
 tại [nghiệm thu phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng), gồm model lỗi không chặn đăng
-bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 11 bảng/65
-cột và tổng 37 endpoint; Definition of Done bên dưới vẫn dành cho migration core.
+bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 12 bảng/73
+cột và tổng 39 endpoint (gồm cả thông báo); Definition of Done bên dưới vẫn dành cho migration core.
 
 Lưu báo cáo tương lai dưới `docs/verification/<run-id>/` với commit, thời gian UTC, môi trường, version, lệnh thực chạy, PASS/FAIL/chưa kiểm, test report, query plan và ảnh/video demo khi cần. Các đường dẫn này là đầu ra dự kiến, chưa có báo cáo ở thời điểm lập spec.
 
@@ -195,3 +196,13 @@ Definition of Done:
 7. Source legacy và dữ liệu ngoài môi trường kiểm thử được giữ nguyên; không gộp công việc AI vào mốc nghiệm thu này.
 
 Nếu còn ca bắt buộc chưa chạy hoặc thất bại thì ghi rõ phần đó chưa nghiệm thu, không đánh dấu toàn bộ migration hoàn tất.
+
+## Nghiệm thu thông báo
+
+- Like bài/comment và share báo đúng tác giả; comment báo chủ bài; reply báo thêm tác giả cha nếu khác chủ bài.
+- Không thông báo tự tương tác; cùng chủ bài/cha chỉ nhận một thông báo cho reply; placeholder không sinh thông báo.
+- Retry true không tạo trùng; unlike/relike, unshare/reshare giữ lịch sử, created_at và read_at.
+- Rollback hoàn tác thông báo/counter/quan hệ; xóa bài/comment vĩnh viễn/tài khoản cascade đúng. Xóa tài khoản vẫn phải chuyển comment ở bài khác thành placeholder theo contract.
+- GET/PATCH chỉ cho recipient từ session, PATCH idempotent và có CSRF; private/deleted không lộ qua list/count, phân trang đồng thứ tự created_at DESC,id DESC.
+- SQL suite [notifications.sql](../../infra/postgres/tests/notifications.sql) đã qua PostgreSQL WASM 17.5 ngày 12/11/2026 cùng ba suite cũ. Chưa phải bằng chứng API/UI, JDBC/Flyway hay nhiều connection.
+- Trên PostgreSQL thật, kiểm like/comment/share đồng thời xóa actor/recipient/bài. Có thể deadlock do FK recipient; service rollback và retry toàn transaction với 40P01/40001 theo giới hạn đã chốt, không retry riêng INSERT thông báo.

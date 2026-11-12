@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="drawio" data-source="../../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql" data-kind="business">
+  <diagram id="notification-business" name="11A · Thông báo tương tác">
+    <mxGraphModel page="0" grid="1" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Thông báo khi có tương tác · Luồng nghiệp vụ" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;text;fillColor=none;strokeColor=none;fontSize=32;" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="800" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="Người dùng thực hiện một tương tác" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="140" width="800" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="write" value="Thích bài viết / thích bình luận&lt;br&gt;Viết bình luận / trả lời bình luận&lt;br&gt;Chia sẻ bài viết" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="300" width="800" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="new" value="Có lượt thích, chia sẻ&lt;br&gt;hoặc bình luận mới được tạo?" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="100" y="520" width="800" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="trigger" value="Bắt đầu xử lý thông báo&lt;br&gt;theo loại tương tác vừa phát sinh" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="810" width="800" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="function" value="Xác định người nhận&lt;br&gt;Thích/chia sẻ/bình luận bài → tác giả bài&lt;br&gt;Thích bình luận → tác giả bình luận&lt;br&gt;Trả lời → xét thêm tác giả bình luận cha" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1060" width="800" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="valid" value="Có người nhận còn tồn tại&lt;br&gt;và khác người tương tác?" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1350" width="800" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="save" value="Lưu thông báo chưa đọc cho người nhận&lt;br&gt;Nếu đã có thông báo cho cùng tương tác:&lt;br&gt;giữ lịch sử và trạng thái đã đọc,&lt;br&gt;không tạo thêm thông báo trùng" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1670" width="800" height="190" as="geometry" />
+        </mxCell>
+        <mxCell id="end" value="Hoàn tất xử lý&lt;br&gt;Thông báo chỉ được lưu khi thao tác thành công" style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="100" y="1990" width="800" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Không tự thông báo cho người vừa thao tác. Nếu chủ bài cũng là tác giả bình luận cha, chỉ nhận một thông báo.&lt;br&gt;Bỏ thích/gỡ chia sẻ giữ lịch sử; thích/chia sẻ lại không tạo trùng. Bình luận đã xóa không phát sinh thông báo mới.&lt;br&gt;Đây là luồng nghiệp vụ dự kiến; API và giao diện thông báo còn ở giai đoạn triển khai." style="whiteSpace=wrap;html=1;fontSize=24;fontColor=#1f2937;strokeWidth=2;text;fillColor=none;strokeColor=none;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="100" y="2210" width="800" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="a" source="start" target="write" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="b" source="write" target="new" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="c" source="new" target="trigger" value="Có" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="d" source="trigger" target="function" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e" source="function" target="valid" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f" source="valid" target="save" value="Có" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="g" source="save" target="end" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="skip-insert" source="new" target="end" value="Không: không phát sinh thông báo" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=1;exitY=0.5;entryX=1;entryY=0.75;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1310" y="620" />
+              <mxPoint x="1310" y="2065" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="skip-notify" source="valid" target="end" value="Không: bỏ qua thông báo" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=1;exitY=0.5;entryX=1;entryY=0.3;exitPerimeter=0;entryPerimeter=0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1080" y="1460" />
+              <mxPoint x="1080" y="2020" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

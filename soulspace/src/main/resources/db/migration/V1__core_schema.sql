@@ -125,3 +125,26 @@ CREATE TABLE media_cleanup_jobs (
         OR (status IN ('PENDING', 'DEAD') AND lease_until IS NULL)
     )
 );
+
+-- Thông báo tương tác dùng chung; read_at NULL nghĩa là chưa đọc.
+CREATE TABLE notifications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,
+    comment_id UUID,
+    type VARCHAR(20) NOT NULL CHECK (type IN (
+        'BLOG_LIKE', 'COMMENT_LIKE', 'BLOG_COMMENT', 'COMMENT_REPLY', 'BLOG_SHARE'
+    )),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    read_at TIMESTAMPTZ,
+    FOREIGN KEY (comment_id, blog_id) REFERENCES comments(id, blog_id) ON DELETE CASCADE,
+    -- Giữ lịch sử khi bỏ thích/gỡ share; thao tác lại không tạo thông báo trùng.
+    CONSTRAINT notifications_interaction_unique
+        UNIQUE NULLS NOT DISTINCT (recipient_id, actor_id, blog_id, type, comment_id),
+    CONSTRAINT notifications_no_self CHECK (recipient_id <> actor_id),
+    CONSTRAINT notifications_comment_type CHECK (
+        (type IN ('BLOG_LIKE', 'BLOG_SHARE') AND comment_id IS NULL)
+        OR (type IN ('COMMENT_LIKE', 'BLOG_COMMENT', 'COMMENT_REPLY') AND comment_id IS NOT NULL)
+    )
+);

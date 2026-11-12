@@ -1,7 +1,7 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 31/10/2026. Phiên bản: 1.4. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
-giai đoạn AI; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
+Ngày lập: 24/10/2026. Cập nhật: 12/11/2026. Phiên bản: 1.5. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+giai đoạn AI cùng thông báo tương tác; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
 
 Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspace`, sử dụng PostgreSQL mới và tích hợp với frontend React hiện tại. Bộ tài liệu này chốt hành vi sản phẩm, hợp đồng API, dữ liệu, bảo mật và tiêu chí nghiệm thu để có thể triển khai theo từng mốc.
@@ -26,6 +26,8 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | D14 | Cleanup RUNNING bắt buộc có lease, PENDING/DEAD không giữ lease; kết quả worker phải khớp lượt claim. Tối đa 5 lượt claim tự động, kể cả lượt bị crash/hết lease.                                                                                                                                                                        |
 | D15 | Model phân loại đa nhãn (0..n chủ đề) ở nền, không bắt xác nhận; tác giả được đổi/bỏ nhãn hoặc bật lại AUTO. V1 có categories, blog_categories(category_source,confidence), PK ghép ba cột giữ riêng AUTO/MANUAL để so sánh; blogs.category_mode chọn nguồn hiển thị, kể cả MANUAL rỗng. Chưa triển khai gợi ý cá nhân hóa hay xu hướng. |
 
+| D16 | Thông báo trong ứng dụng cho like bài/comment, bình luận, reply và share; lưu lịch sử và read_at. Trigger cùng transaction, không tự thông báo cho mình; API/UI triển khai theo tài liệu 10. |
+
 ## Cách đọc
 
 | Tài liệu                                              | Nội dung                                                                                                                                      |
@@ -39,7 +41,8 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | [07 phân loại chủ đề](07-phan-loai-chu-de.md)         | Nghiệp vụ AI, dữ liệu/API bổ sung, xử lý nền, quyền sửa nhãn và nghiệm thu riêng.                                                             |
 | [08 báo cáo tổng kết SQL](08-bao-cao-tong-ket-sql.md) | ERD và cơ sở thiết kế V1/V2, view, khung báo cáo procedure/trigger/transaction/AI in SQL; lưu quyết định đã chốt để dùng cho báo cáo cuối kỳ. |
 | [09 giải thích V3](09-giai-thich-v3.md) | Toàn bộ code V3 theo 9 nhóm, giải thích từng nhánh, ví dụ, lý do dùng và đánh đổi; hai tối ưu constraint trigger và kết quả kiểm SQL. |
-| [ERD dạng SVG](erd.md)                                | Năm hình SVG đã đồng bộ: tổng quan 11 bảng/65 cột, ba nhóm nghiệp vụ và chủ đề riêng; chưa triển khai phần AI.                                |
+| [10 thông báo](10-thong-bao.md) | Người nhận, bảng notifications, trigger, API và nghiệm thu. |
+| [ERD dạng SVG](erd.md)                                | SVG tổng quan gọn 12 bảng, bản đầy đủ 73 cột, ba nhóm nghiệp vụ và chủ đề riêng; chưa triển khai phần AI.                                |
 | [Rà soát và chốt database](erd-review.md)             | Các quyết định đã đóng, kiểm tra tài liệu và những bước thực thi còn phải kiểm chứng.                                                         |
 
 Các thuật ngữ `blog` và `bài viết` chỉ cùng một thực thể. Database dùng tên `blogs` để khớp API hiện tại. ID mới là UUID; JSON vẫn biểu diễn ID bằng string. Đường dẫn code/config trong nội dung tính từ gốc repository; link Markdown tính từ file tài liệu. Không hardcode đường dẫn filesystem tuyệt đối.

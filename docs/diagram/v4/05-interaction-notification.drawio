@@ -1,0 +1,118 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="drawio" data-source="../../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql">
+  <diagram id="interaction-notification" name="Thông báo tương tác">
+    <mxGraphModel grid="1" page="0" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Trigger · create_interaction_notification()" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;text;strokeColor=none;fillColor=none;fontSize=32;" vertex="1" parent="1">
+          <mxGeometry x="150" y="20" width="1400" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="AFTER INSERT: một hàng mới" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="140" width="600" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="source" value="blog_likes / comment_likes&lt;br&gt;blog_shares / comments&lt;br&gt;TG_TABLE_NAME chọn loại tương tác" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="290" width="600" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="placeholder" value="Là comments và&lt;br&gt;đã xóa hoặc author NULL?" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="600" y="490" width="600" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="resolve" value="Xác định actor, blog, comment và recipient&lt;br&gt;Like/share bài → chủ bài&lt;br&gt;Like comment → chủ comment&lt;br&gt;Comment/reply → chủ bài" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="770" width="600" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="eligible" value="Recipient tồn tại&lt;br&gt;và khác actor?" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1030" width="600" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="insert" value="INSERT notifications&lt;br&gt;ON CONFLICT DO NOTHING&lt;br&gt;Giữ lịch sử/read_at nếu đã có" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1320" width="530" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="reply" value="Là reply mới&lt;br&gt;(comments.parent_id khác NULL)?" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1530" width="600" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="parent" value="Tra tác giả comment cha&lt;br&gt;trong cùng blog" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="600" y="1810" width="600" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="parentok" value="Tác giả cha tồn tại,&lt;br&gt;khác actor và chủ bài?" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rhombus;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="600" y="2000" width="600" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="replyinsert" value="INSERT COMMENT_REPLY&lt;br&gt;ON CONFLICT DO NOTHING" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="2290" width="530" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="end" value="RETURN NULL · kết thúc Trigger" style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="600" y="2540" width="600" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Không tự COMMIT, không gửi push/email. Counter và notification cùng transaction.&lt;br&gt;Không INSERT thực sự → không chạy AFTER row trigger. Lỗi → caller rollback toàn transaction." style="whiteSpace=wrap;html=1;fontSize=24;strokeWidth=2;fontColor=#1f2937;text;strokeColor=none;fillColor=none;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="200" y="2700" width="1400" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" source="start" target="source" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" source="source" target="placeholder" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" source="placeholder" target="resolve" value="Không" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" source="resolve" target="eligible" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" source="eligible" target="insert" value="Có" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0;exitY=0.5;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="1130" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e6" source="eligible" target="reply" value="Không" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" source="insert" target="reply" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="1630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e8" source="reply" target="parent" value="Có" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" source="parent" target="parentok" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" source="parentok" target="replyinsert" value="Có" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0;exitY=0.5;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="2100" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e11" source="parentok" target="end" value="Không" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0.5;entryY=0;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" source="replyinsert" target="end" value="" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=0.5;exitY=1;entryX=0;entryY=0.5;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="325" y="2580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e13" source="reply" target="end" value="Không" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=1;exitY=0.5;entryX=1;entryY=0.5;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1440" y="1630" />
+              <mxPoint x="1440" y="2580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" source="placeholder" target="end" value="Có" edge="1" parent="1" style="edgeStyle=none;rounded=0;curved=0;html=1;fontSize=20;endArrow=block;exitX=1;exitY=0.5;entryX=1;entryY=0.7;exitPerimeter=0;entryPerimeter=0;">
+          <mxGeometry relative="1" as="geometry" x="-0.85">
+            <Array as="points">
+              <mxPoint x="1610" y="590" />
+              <mxPoint x="1610" y="2596" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

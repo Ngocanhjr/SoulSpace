@@ -12,8 +12,8 @@ vụ môi trường dùng chung; mỗi backend chỉ kết nối một database 
 
 | Nội dung         | Quyết định và nguồn                                                                                                                                       |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Schema V1        | 11 bảng/65 cột, gồm chủ đề, nguồn nhãn và confidence. [V1](../../soulspace/src/main/resources/db/migration/V1__core_schema.sql)                           |
-| Index V2         | Giữ 14 index sau phân tích query, khóa sẵn có và chi phí duy trì. [V2](../../soulspace/src/main/resources/db/migration/V2__query_indexes.sql)             |
+| Schema V1        | 12 bảng/73 cột, gồm chủ đề, nguồn nhãn và confidence. [V1](../../soulspace/src/main/resources/db/migration/V1__core_schema.sql)                           |
+| Index V2         | Giữ 19 index sau phân tích query, khóa sẵn có và chi phí duy trì. [V2](../../soulspace/src/main/resources/db/migration/V2__query_indexes.sql)             |
 | View             | v_public_blog_feed: bài public kèm thông tin tác giả hiện tại, mỗi bài một hàng. [V5](../../soulspace/src/main/resources/db/migration/V5__read_views.sql) |
 | Stored procedure | Bốn procedure tương tác trong V4; phần phân tích chi tiết bổ sung khi review V4.                                                                          |
 | Trigger          | Các ràng buộc động và counters trong V3; phần phân tích chi tiết bổ sung khi review V3.                                                                   |
@@ -44,7 +44,8 @@ V1 được bổ sung trực tiếp vì người dùng xác nhận mới chạy 
 | media_assets       |     10 | Chủ sở hữu, trạng thái và metadata ảnh                       |
 | blog_images        |      3 | Asset gắn vào bài và vị trí hiển thị                         |
 | media_cleanup_jobs |      8 | Công việc dọn media, retry và lease                          |
-| **Tổng**           | **65** | **11 bảng**                                                  |
+| notifications      |      8 | Lịch sử tương tác, người nhận và trạng thái đã đọc           |
+| **Tổng**           | **73** | **12 bảng**                                                  |
 
 ### 2.2. Bài viết và bình luận
 
@@ -238,12 +239,14 @@ suất là bằng chứng duy nhất về mức tăng tốc.
 ### I04. comments_blog_idx
 
 ```sql
-CREATE INDEX comments_blog_idx ON comments (blog_id, created_at, id);
+CREATE INDEX comments_blog_idx ON comments (blog_id, created_at DESC, id DESC);
 ```
 
-Phục vụ WHERE blog_id=:blogId ORDER BY created_at,id để lấy hàng phẳng rồi dựng cây. UNIQUE(id,blog_id) không có blog_id
-đứng đầu nên không thay thế tốt query này. Giữ cả placeholder, không thêm WHERE deleted_at IS NULL vì sẽ làm thiếu node
-cha của replies. Quyết định: giữ.
+Phục vụ WHERE blog_id=:blogId ORDER BY created_at DESC,id DESC để lấy hàng phẳng rồi dựng cây; root và các replies cùng
+parent giữ thứ tự mới nhất trước. Dựng cây theo ID/parent_id, không phụ thuộc hàng cha xuất hiện trước hàng con.
+Query vẫn phải ghi ORDER BY; index chỉ hỗ trợ thực thi, không tự bảo đảm thứ tự kết quả. UNIQUE(id,blog_id) không có
+blog_id đứng đầu nên không thay thế tốt query này. Giữ cả placeholder, không thêm WHERE deleted_at IS NULL vì sẽ làm
+thiếu node cha của replies. Quyết định: giữ.
 
 ### I05. comments_parent_idx
 
@@ -267,23 +270,24 @@ yêu cầu sort. Quyết định: giữ.
 ### I07. blog_likes_user_idx
 
 ```sql
-CREATE INDEX blog_likes_user_idx ON blog_likes (user_id, blog_id);
+CREATE INDEX blog_likes_user_idx ON blog_likes (user_id, created_at DESC, blog_id DESC);
 ```
 
-PK(blog_id,user_id) phục vụ theo bài; index đảo chiều phục vụ WHERE user_id=:userId để tìm/dọn tương tác. Kiểm đúng một
-cặp blog/user đã có PK; không cần viện lý do like một cặp nhanh hơn để tạo index này. Lợi ích bổ sung là lấy các blog
-user đã like làm đầu vào recommendation hoặc loại bài đã tương tác; index không tự tạo hệ thống gợi ý. Người dùng chốt
-giữ.
+Phục vụ WHERE user_id=:userId ORDER BY created_at DESC,blog_id DESC LIMIT :limit để lấy lượt thích bài gần đây làm
+đầu vào gợi ý cá nhân hóa; created_at là thời điểm thích, không phải thời điểm đăng bài. Vẫn hỗ trợ tìm/dọn tương tác
+theo user khi xóa tài khoản. Kiểm đúng một cặp blog/user đã có PK(blog_id,user_id). Query phải ghi ORDER BY;
+index không tự tạo hệ thống gợi ý. Người dùng chốt giữ và bổ sung thứ tự theo thời gian; chưa đo lại index mới.
 
 ### I08. comment_likes_user_idx
 
 ```sql
-CREATE INDEX comment_likes_user_idx ON comment_likes (user_id, comment_id);
+CREATE INDEX comment_likes_user_idx ON comment_likes (user_id, created_at DESC, comment_id DESC);
 ```
 
-PK(comment_id,user_id) có hướng theo comment; index bổ sung có hướng theo user. Phục vụ dọn lượt like comment khi xóa
-tài khoản, tránh quét quan hệ của nhiều người khác. Quyết định: giữ; không phải index chống trùng mới vì PK đã bảo đảm
-tính duy nhất.
+Phục vụ WHERE user_id=:userId ORDER BY created_at DESC,comment_id DESC LIMIT :limit để lấy lượt thích bình luận gần
+đây. Từ comment_id tìm bài chứa bình luận và chủ đề của bài làm tín hiệu gợi ý cá nhân hóa. Vẫn hỗ trợ dọn lượt like
+comment khi xóa tài khoản. PK(comment_id,user_id) đã bảo đảm tính duy nhất và kiểm tra một cặp comment/user.
+Query phải ghi ORDER BY. Quyết định: giữ và bổ sung thứ tự theo thời gian; chưa đo lại index mới.
 
 ### I09. blog_shares_blog_idx
 
@@ -303,7 +307,8 @@ CREATE INDEX blog_shares_user_time_idx ON blog_shares (user_id, shared_at DESC, 
 Phục vụ WHERE user_id=:userId ORDER BY shared_at DESC,blog_id DESC LIMIT :limit. PK đã tìm được share theo user nhưng
 sắp tiếp theo blog_id, không theo shared_at. Một bài cũ vừa được share cần lên đầu danh sách share theo thời điểm share,
 không theo ngày đăng gốc. Với ít share, PK rồi sort có thể đủ rẻ; phép thử thăm dò chưa cho thấy giảm buffer cho query
-này. Người dùng vẫn chốt giữ để phục vụ thứ tự mới nhất; cần đo tiếp với phân bố share thực tế.
+này. Người dùng vẫn chốt giữ để phục vụ thứ tự mới nhất; cần đo tiếp với phân bố share thực tế. Các lượt share gần đây
+cũng là đầu vào dự kiến cho gợi ý cá nhân hóa; index không thay thế logic chấm điểm chủ đề.
 
 ### I11. media_assets_owner_idx
 
@@ -401,7 +406,17 @@ password_hash/dob/provider IDs; view không thay kiểm quyền toàn hệ thố
 
 ## 6. Stored Procedure — khung phân tích V4
 
+V3/V4 được trình bày lại ngày 12/11/2026: khai báo function/procedure/trigger, truy vấn EXISTS lồng nhau và điều kiện dài được tách dòng; mỗi mệnh đề truy vấn (WHERE, SET, VALUES, ON CONFLICT, FOR UPDATE/FOR KEY SHARE) xuống dòng riêng; các điều kiện AND trong WHERE được căn theo cùng truy vấn. Thay đổi chỉ là khoảng trắng/thụt lề, giữ nguyên comment, logic và mã lỗi. Các khối SQL trong tài liệu giải thích V3 và mốc dòng sơ đồ được đồng bộ tương ứng.
+
 Nguồn: [V4__interaction_procedures.sql](../../soulspace/src/main/resources/db/migration/V4__interaction_procedures.sql).
+
+Bổ sung sơ đồ [chia sẻ](../diagram/v4/03-share-blog-trigger.drawio.png) và [gỡ chia sẻ](../diagram/v4/04-unshare-blog-trigger.drawio.png): đường procedure → blog_shares → blog_shares_counter → update_relation_counter → blogs.shares_count. Share yêu cầu public và báo ALREADY_SHARED khi INSERT bỏ qua cặp trùng; unshare cho phép private/blog vắng và không lỗi nếu DELETE không có hàng. Các nhánh lỗi/thành công cùng ý nghĩa dùng nút kết thúc chung. Trigger chạy trong câu DML, không chạy sau commit; các hình thoi số hàng giải thích DML/trigger, không bổ sung IF vào SQL. Đây là đối chiếu code, không thay bằng chứng kiểm thử thực thi.
+
+Bổ sung [sơ đồ sp_set_comment_like](../diagram/v4/README.md#02-thíchbỏ-thích-bình-luận-và-cập-nhật-bộ-đếm) cho chuỗi procedure → comment_likes → comment_likes_counter → update_relation_counter → comments.likes_count. Sơ đồ giữ thứ tự khóa user/blog/comment, kiểm bình luận đúng bài/chưa xóa, năm lỗi chung một nút kết thúc; thể hiện riêng BEFORE INSERT guard_comment_like và AFTER row trigger cập nhật counter. BEFORE INSERT vẫn có thể chạy khi ON CONFLICT bỏ qua hàng trùng, còn counter không đổi nếu không có hàng thực sự thêm/xóa. Đây là đối chiếu code, không phải kết quả kiểm thử database.
+
+Quan hệ procedure → DML → trigger → counter được mô tả trong [sơ đồ sp_set_blog_like](../diagram/v4/README.md). INSERT/DELETE thật sự thay đổi hàng mới kích hoạt row trigger `blog_likes_counter`, gọi `update_relation_counter()` để sửa `blogs.likes_count` trong cùng transaction. Các nhánh không thay đổi hàng giữ nguyên counter; sơ đồ không bổ sung logic IF hoặc COMMIT vào SQL.
+
+Bản trình bày ngày 11/11/2026 tách các IF báo lỗi thành nhiều dòng và bổ sung comment theo mục đích từng procedure. Phần cấp quyền được phân nhóm riêng: thu hồi quyền mặc định, cấp quyền runtime và bảo vệ Flyway history. Thay đổi này chỉ giúp đọc code, không đổi kiểm quyền, thứ tự khóa, SQLSTATE hoặc cách commit/rollback.
 Ghi nhận thiết kế hiện tại; bổ sung phân tích từng nhánh, lỗi và bằng chứng sau khi review V4.
 
 | Procedure           | Input                         | Vai trò                                                                    |
@@ -527,9 +542,17 @@ phép thử V1 cũ gồm 76 trường hợp trước bổ sung chủ đề, còn
 mới phải ghi ngày, version và bộ test tương ứng, không áp số ca cũ cho schema mới mà không kiểm lại.
 
 Kiểm tra ngày 31/10/2026: V1–V5 và cả ba file smoke SQL trong bảng nguồn chạy đạt trên PostgreSQL WASM 17.5, fixtures
-được ROLLBACK. Tên/thứ tự cột của 11 bảng trong SQL khớp nguồn Mermaid; năm SVG có đủ cột của các bảng xuất hiện, gồm
+được ROLLBACK. Kết quả cũ trước khi bổ sung thông báo: tên/thứ tự cột của 11 bảng trong SQL khớp nguồn Mermaid; năm SVG có đủ cột của các bảng xuất hiện, gồm
 category_source và confidence. Các link tài liệu/ảnh và định nghĩa 14 index trong báo cáo đã được đối chiếu với nguồn.
 
 Phần sẽ bổ sung sau khi chốt từng mục: review V3, review V4, implementation transaction service và cách đáp ứng AI in
 SQL. Trước nộp báo cáo tổng kết, gắn bằng chứng từ môi trường chạy thật, query plan, ca rollback/concurrency và số đo
 model. Thiết kế và kết quả nghiệm thu là hai loại thông tin riêng; không chuyển tiêu chí dự kiến thành kết quả PASS.
+
+## Bổ sung thông báo — 12/11/2026
+
+notifications thêm 8 cột: schema 12 bảng/73 cột. V2 tổng 19 index, gồm 5 index thông báo (recipient/time, unread, blog, comment và actor). V3 tổng 10 function/18 trigger; create_interaction_notification được 4 AFTER INSERT trigger gọi. Counters hiện có giữ nguyên. V4 thêm quyền notifications, không thêm procedure; V5 giữ nguyên.
+
+Thông báo lưu cùng transaction và chỉ khi hàng mới thực sự được thêm. UNIQUE chống spam khi thích/chia sẻ lại, CHECK loại/ngữ cảnh, FK cascade khi xóa và quyền chỉ cập nhật read_at. [Thiết kế](10-thong-bao.md), [ERD](assets/erd/thong-bao.svg), [diagram trigger](../diagram/v4/05-interaction-notification.drawio.png).
+
+Đã chạy V1–V5 và 4 SQL suite trên PostgreSQL WASM 17.5; chưa chạy Docker/Neon/JDBC và concurrency nhiều connection. API/UI thông báo chưa triển khai.

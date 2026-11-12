@@ -10,6 +10,8 @@ Tự động nhận dạng không hoặc nhiều chủ đề từ nội dung vă
 
 Chủ đề là dữ liệu nền cho gợi ý nội dung sau này. Phiên bản này chưa triển khai feed cá nhân hóa, phân tích xu hướng, collaborative filtering, phân loại ảnh hoặc tìm kiếm ngữ nghĩa. Danh mục ban đầu được seed và ánh xạ với nhãn model; chưa thêm giao diện quản trị danh mục.
 
+V2 chuẩn bị index theo user và thời gian giảm dần cho lượt thích bài, thích bình luận và chia sẻ để lấy các tương tác gần đây làm đầu vào gợi ý cá nhân hóa. Với lượt thích bình luận, lấy chủ đề từ bài chứa bình luận. Truy vấn phải ghi ORDER BY tương ứng; cách chọn số lượng/khoảng thời gian tương tác và chấm điểm sở thích sẽ được đặc tả khi triển khai tính năng gợi ý, chưa được thực hiện chỉ bằng việc thêm index.
+
 ## Quy tắc nghiệp vụ
 
 | Mã    | Quy tắc                                                                                                                                                                                                                                                                              |
@@ -27,7 +29,7 @@ Ví dụ: người dùng đăng “Mai thi rồi mà giờ vẫn chưa học xon
 
 ## Dữ liệu mở rộng
 
-Schema V1 gồm categories (3 cột), blog_categories (4 cột, gồm confidence) và blogs.category_mode; tổng **11 bảng, 65 cột
+Schema V1 gồm categories (3 cột), blog_categories (4 cột, gồm confidence) và blogs.category_mode; tổng **12 bảng, 73 cột
 **, blogs có 10 cột. Người dùng xác nhận mới chạy Docker Compose, chưa chạy Flyway nên đưa phần này trực tiếp vào V1.
 Sau khi migration đã áp dụng, thay đổi tiếp theo phải dùng version mới. Không đặt category_id trên blogs; quan hệ
 nhiều–nhiều đi qua blog_categories.
@@ -125,7 +127,7 @@ erDiagram
 
 ## Hợp đồng API bổ sung
 
-Base path vẫn là /api/v1. Đây là hai endpoint giai đoạn AI, ngoài 35 endpoint core; tổng thiết kế khi triển khai cả hai giai đoạn là 37 endpoint. Không thêm public endpoint gọi model hoặc cho client ghi trực tiếp kết quả AUTO.
+Base path vẫn là /api/v1. Đây là hai endpoint giai đoạn AI, ngoài 35 endpoint core; tổng core + chủ đề là 37 endpoint, thêm 2 route thông báo trong tài liệu 10 thành 39. Không thêm public endpoint gọi model hoặc cho client ghi trực tiếp kết quả AUTO.
 
 | Endpoint                         | Quyền                        | Request/response                                                                                                                                                                                                                      |
 |----------------------------------|------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -179,7 +181,7 @@ component/API client hiện có. Không cài dependency ML hay đổi runtime ch
 | TOP-T04 | Sửa nội dung hoặc chuyển MANUAL trong lúc suy luận                          | Kết quả cho nội dung cũ bị bỏ; worker chỉ cập nhật tập AUTO, lựa chọn MANUAL và mode hiển thị được giữ.                                                                   |
 | TOP-T05 | Xóa bài/tài khoản trong lúc worker chạy                                     | Không ghi hoặc tái tạo bài đã xóa.                                                                                                                                        |
 | TOP-T06 | Guest/user khác/CSRF sai; truy cập bài private                              | Áp dụng quyền/status như contract; không lộ bài private qua categories, DTO hoặc log.                                                                                     |
-| TOP-T07 | Migration trên Docker và Neon và constraint chủ đề                          | V1 tạo đủ 11 bảng/65 cột, gồm blog_categories.confidence; PK ghép, FK, cascade liên kết khi xóa bài, RESTRICT danh mục, slug unique, source enum và MANUAL/tập rỗng đúng. |
+| TOP-T07 | Migration trên Docker và Neon và constraint chủ đề                          | V1 tạo đủ 12 bảng/73 cột, gồm blog_categories.confidence; PK ghép, FK, cascade liên kết khi xóa bài, RESTRICT danh mục, slug unique, source enum và MANUAL/tập rỗng đúng. |
 | TOP-T08 | Feed/detail/profile/share với 0/1/nhiều chủ đề và phân trang                | Không mất hoặc lặp bài, không sai phân trang, không N+1; share dùng nhãn hiện tại, tự gắn nhãn không đẩy bài lên đầu feed.                                                |
 | TOP-T09 | Đánh giá model trên tập test giữ riêng                                      | Có dữ liệu/nhãn/version model, micro-F1/macro-F1, kết quả từng nhãn và tỷ lệ bỏ gắn nhãn; phân biệt kết quả thật với ví dụ.                                               |
 | TOP-T10 | Một bài nhiều chủ đề; một chủ đề nhiều bài; cùng cặp bài/chủ đề ở hai nguồn | N–N hợp lệ; PK ghép cho phép AUTO và MANUAL cùng tồn tại, từ chối trùng bộ (blog_id,category_id,category_source).                                                         |

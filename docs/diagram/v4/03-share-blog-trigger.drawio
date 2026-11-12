@@ -1,0 +1,119 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="drawio" data-source="../../../soulspace/src/main/resources/db/migration/V4__interaction_procedures.sql" data-procedure="sp_share_blog">
+  <diagram id="v4-sp_share_blog" name="Chia sẻ bài viết: Procedure và Trigger">
+    <mxGraphModel grid="1" gridSize="10" page="0" pageWidth="2600" pageHeight="2780" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="Chia sẻ bài viết: Procedure và Trigger" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;text;strokeColor=none;fillColor=none;align=center;fontSize=32;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="20" width="2460" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="sp_share_blog → blog_shares → blog_shares_counter → update_relation_counter → blogs.shares_count" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;text;strokeColor=none;fillColor=none;align=center;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="70" y="95" width="2460" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="start" value="Bắt đầu: CALL sp_share_blog" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="550" y="180" width="600" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="input" value="Nhận p_actor, p_blog&lt;br&gt;Actor lấy từ session phía server" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;size=25;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="550" y="320" width="600" height="85" as="geometry" />
+        </mxCell>
+        <mxCell id="lockactor" value="Procedure · Tìm và khóa user&lt;br&gt;WHERE id = p_actor · FOR KEY SHARE" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="550" y="510" width="600" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="actor" value="Tìm thấy user&lt;br&gt;có id = p_actor?" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rhombus;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="590" y="730" width="520" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="actorerror" value="Báo lỗi: ACTOR_NOT_FOUND&lt;br&gt;SQLSTATE P0002" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;size=25;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="755" width="470" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="start" target="input">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="input" target="lockactor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="lockactor" target="actor">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" value="Không" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=1;" edge="1" parent="1" source="actor" target="actorerror">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lockblog" value="Procedure · Lấy published vào is_public&lt;br&gt;WHERE id = p_blog · FOR UPDATE" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="550" y="1030" width="600" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="public" value="Tìm thấy bài và&lt;br&gt;is_public = true?" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rhombus;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="530" y="1250" width="640" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="blogerror" value="Báo lỗi: BLOG_NOT_FOUND&lt;br&gt;SQLSTATE P0002" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;size=25;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1295" width="470" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="insert" value="Procedure · INSERT INTO blog_shares&lt;br&gt;VALUES (p_actor, p_blog)&lt;br&gt;ON CONFLICT DO NOTHING" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="550" y="1580" width="600" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="inserted" value="Có hàng thực sự được thêm?&lt;br&gt;(FOUND = true)" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rhombus;rounded=0;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="550" y="1810" width="600" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="sharederror" value="Báo lỗi: ALREADY_SHARED&lt;br&gt;SQLSTATE 23505" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;shape=parallelogram;perimeter=parallelogramPerimeter;fixedSize=1;size=25;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1450" y="1845" width="470" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="plus" value="Trigger · AFTER INSERT, mỗi hàng&lt;br&gt;counter → update_relation_counter()&lt;br&gt;shares_count + 1&lt;br&gt;blog_shares_notify → ghi thông báo hợp lệ" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=0;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="550" y="2120" width="600" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="errorend" value="Kết thúc bằng lỗi&lt;br&gt;Caller xử lý transaction lỗi" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=1;arcSize=50;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="2010" y="2120" width="500" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="end" value="Kết thúc procedure&lt;br&gt;Chưa đồng nghĩa đã COMMIT" style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;rounded=1;arcSize=50;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="570" y="2450" width="560" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="footer" value="&lt;b&gt;Chia sẻ khác với thích&lt;/b&gt;&lt;br&gt;Chỉ chia sẻ bài công khai, kể cả actor là tác giả. Bài không tồn tại hoặc private cùng báo BLOG_NOT_FOUND.&lt;br&gt;INSERT trùng không thêm hàng, không gọi AFTER row trigger; ngay sau INSERT, IF NOT FOUND báo ALREADY_SHARED thay vì thành công.&lt;br&gt;Nhánh FOUND diễn giải kết quả INSERT và tác dụng row trigger trong cùng câu lệnh; khi INSERT trả về, trigger đã hoàn tất.&lt;br&gt;Procedure không tự COMMIT. Service đọc trạng thái/counter trong cùng transaction; rollback hoàn tác cả quan hệ share, counter và thông báo." style="html=1;whiteSpace=wrap;fontFamily=Arial;fontSize=24;fontColor=#183153;strokeWidth=1.5;spacing=12;text;strokeColor=none;fillColor=none;align=left;verticalAlign=top;fontSize=18;" vertex="1" parent="1">
+          <mxGeometry x="200" y="2630" width="2320" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" value="Có" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="actor" target="lockblog">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="lockblog" target="public">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" value="Có" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="public" target="insert">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" value="Không" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=1;" edge="1" parent="1" source="public" target="blogerror">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="insert" target="inserted">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="Có" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="inserted" target="plus">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="Không" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=1;" edge="1" parent="1" source="inserted" target="sharederror">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e12" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=0.5;exitY=1;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="plus" target="end">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=1;entryX=0.8;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="actorerror" target="errorend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2410" y="810" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e14" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="blogerror" target="errorend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2260" y="1350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" value="" style="edgeStyle=none;rounded=0;curved=0;html=1;endArrow=block;endFill=1;strokeColor=#53657a;strokeWidth=1.5;fontSize=20;fontFamily=Arial;labelBackgroundColor=#ffffff;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=1;entryX=0.2;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="sharederror" target="errorend">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2110" y="1900" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

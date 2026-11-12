@@ -52,7 +52,7 @@ DDL được triển khai trước theo Flyway V1–V5; bằng chứng từng k�
 
 ## Mô hình và kiểu dữ liệu
 
-Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 11 bảng/65 cột**, gồm chủ đề và confidence. V1 đã bổ sung
+Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 12 bảng/73 cột**, gồm chủ đề và confidence. V1 đã bổ sung
 categories (3 cột), blog_categories (4 cột) và blogs.category_mode trước lần chạy Flyway đầu tiên theo xác nhận của
 người dùng. Model triển khai theo [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md#dữ-liệu-mở-rộng).
 Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai).
@@ -60,7 +60,7 @@ Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn
 PostgreSQL là nguồn dữ liệu nghiệp vụ duy nhất của backend mới: Neon cho dùng chung/online và Docker cho local, mỗi lần chạy chỉ trỏ một database. Chọn cùng major, mặc định 17; cùng một bộ Flyway, trigger và procedure trên cả hai. Không đồng bộ hoặc tự động failover ghi dữ liệu giữa Neon và Docker. Dùng UUID sinh ở server cho các thực thể và trả string qua JSON. Không lưu ObjectId, snapshot tác giả, cây comments dưới dạng JSON, hoặc danh sách like trong một cột. `UserInfo` legacy được thay bằng JOIN users khi dựng DTO.
 
 Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú
-nullable. Sơ đồ tổng quan có đủ 11 bảng với 65 cột; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ
+nullable. Nguồn Mermaid và [bản tổng quan đầy đủ](assets/erd/tong-quan-day-du.svg) có 12 bảng/73 cột; SVG tổng quan gọn chỉ hiển thị các cột khóa để đọc quan hệ; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ
 đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa
 chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
 
@@ -80,6 +80,7 @@ Có thể đọc bảng dưới đây rồi chuyển đến phần mô tả từ
 | blog_shares        | Ai chia sẻ bài nào và thời điểm share                                 | Mỗi hàng nối một user với một blog. Nội dung hiển thị được lấy từ bài gốc hiện tại; không có bản sao nội dung trong hàng share.                                                             |
 | media_assets       | Metadata của một ảnh đã hoặc đang upload                              | owner_id xác định chủ asset; purpose phân biệt avatar/ảnh bài/upload độc lập; state theo dõi vòng đời. File ảnh nằm ở Cloudinary; bảng giữ ID provider, định dạng, kích thước và thời gian. |
 | blog_images        | Ảnh nào được gắn vào bài nào và ở vị trí nào                          | blog_id trỏ đến bài; asset_id trỏ đến ảnh và là PK của bảng. position xác định thứ tự hiển thị, từ 0 đến 9.                                                                                 |
+| notifications | Lịch sử tương tác và đã đọc/chưa đọc | recipient_id nhận, actor_id thao tác; blog_id và comment_id nullable cho ngữ cảnh. Xem tài liệu 10. |
 | media_cleanup_jobs | Công việc dọn một asset khỏi Cloudinary                               | asset_id xác định ảnh cần dọn. status, attempts, available_at, lease_until và last_error giúp worker nhận việc, thử lại và theo dõi lỗi.                                                    |
 
 Ví dụ một bài có hai ảnh và ba người like sẽ có một hàng blogs, hai hàng blog_images và ba hàng blog_likes. Sửa tên tác giả cập nhật hàng users; khi đọc bài/comment/share, backend JOIN users để lấy tên mới. Xóa một quan hệ share không xóa bài gốc hoặc ảnh của bài.
@@ -88,7 +89,7 @@ Các trường thời gian và counters nằm ngay trên bảng mô tả đối 
 
 ### Sơ đồ tổng quan
 
-Sơ đồ gồm đủ mười một bảng và toàn bộ 65 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là
+Sơ đồ gồm đủ mười hai bảng và toàn bộ 73 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là
 không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK
 cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
 
@@ -99,6 +100,10 @@ config:
 ---
 erDiagram
     direction LR
+    users ||--o{ notifications : recipient
+    users ||--o{ notifications : actor
+    blogs ||--o{ notifications : target
+    comments o|--o{ notifications : context
     blogs ||--o{ blog_categories : has
     categories ||--o{ blog_categories : classifies
     users ||--o{ blogs : authors
@@ -214,6 +219,17 @@ erDiagram
         TEXT last_error "nullable"
         TIMESTAMPTZ created_at
     }
+
+    notifications {
+        UUID id PK
+        UUID recipient_id FK
+        UUID actor_id FK
+        UUID blog_id FK
+        UUID comment_id FK "nullable"
+        VARCHAR(20) type
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ read_at "nullable"
+    }
 ```
 
 Ký hiệu ở mỗi đầu cạnh thể hiện số lượng bản ghi ở phía đó; cột đánh dấu `FK` xác định phía giữ khóa ngoại. Khóa ngoại ghép và các ràng buộc nhiều cột được mô tả trong các phần chi tiết bên dưới.
@@ -296,6 +312,10 @@ config:
 ---
 erDiagram
     direction LR
+    users ||--o{ notifications : recipient
+    users ||--o{ notifications : actor
+    blogs ||--o{ notifications : target
+    comments o|--o{ notifications : context
     blogs ||--o{ blog_categories : has
     categories ||--o{ blog_categories : classifies
     users ||--o{ blog_likes : likes
@@ -371,6 +391,17 @@ erDiagram
         UUID user_id PK, FK
         UUID blog_id PK, FK
         TIMESTAMPTZ shared_at "NOT NULL; DEFAULT now()"
+    }
+
+    notifications {
+        UUID id PK
+        UUID recipient_id FK
+        UUID actor_id FK
+        UUID blog_id FK
+        UUID comment_id FK "nullable"
+        VARCHAR(20) type
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ read_at "nullable"
     }
 ```
 
@@ -786,13 +817,13 @@ Ví dụ thay avatar: upload asset mới trước, rồi trong một transaction
 | blogs(created_at DESC,id DESC) WHERE published=true | Feed và nguồn bài công khai cho SearchPage. |
 | blogs(author_id,created_at DESC,id DESC) | Trang /all và xóa tài khoản. |
 | blogs(author_id,created_at DESC,id DESC) WHERE published=true | Trang bài công khai của tác giả. |
-| comments(blog_id,created_at,id) | Lấy toàn bộ cây của một bài bằng một query. |
+| comments(blog_id,created_at DESC,id DESC) | Lấy toàn bộ comments của một bài, mới nhất trước, rồi dựng cây. |
 | comments(parent_id,blog_id) WHERE parent_id IS NOT NULL | Cascade nhánh replies; bổ sung cho composite FK. |
 | comments(author_id) | Xóa tài khoản và tìm các bài còn sống cần cập nhật counters. |
-| blog_likes(user_id,blog_id) | Cascade khi xóa user; PK đã phục vụ truy vấn theo blog. |
-| comment_likes(user_id,comment_id) | Cascade khi xóa user; PK đã phục vụ truy vấn theo comment. |
+| blog_likes(user_id,created_at DESC,blog_id DESC) | Lấy lượt thích bài gần đây của user làm đầu vào gợi ý cá nhân hóa; hỗ trợ cascade khi xóa user. |
+| comment_likes(user_id,created_at DESC,comment_id DESC) | Lấy lượt thích bình luận gần đây của user làm đầu vào gợi ý cá nhân hóa; hỗ trợ cascade khi xóa user. |
 | blog_shares(blog_id) | Counter/cascade theo bài; PK đã có user_id đứng đầu. |
-| blog_shares(user_id,shared_at DESC,blog_id DESC) | Trang bài đã share. |
+| blog_shares(user_id,shared_at DESC,blog_id DESC) | Trang bài đã share, mới nhất trước; đầu vào gợi ý cá nhân hóa từ lượt share gần đây. |
 | media_assets(owner_id) | Thu thập tài sản khi xóa user. |
 | media_assets(state,created_at) | Quét PENDING quá hạn; metadata phân biệt upload chưa xác nhận với asset đã xác nhận nhưng chưa gắn. |
 | media_cleanup_jobs(available_at,id) WHERE status='PENDING' | Worker nhận job đến hạn. |
@@ -820,6 +851,12 @@ Xóa comment_likes của một placeholder vẫn cập nhật likes_count qua tr
 Không gọi HTTP/Cloudinary, ghi file hoặc COMMIT bên trong trigger. Không dùng TRUNCATE cho reset demo vì nó không có cùng semantics với trigger DELETE.
 
 ## Stored Procedure
+
+Hai procedure chia sẻ có sơ đồ [sp_share_blog](../diagram/v4/03-share-blog-trigger.drawio.png) và [sp_unshare_blog](../diagram/v4/04-unshare-blog-trigger.drawio.png). Share chỉ chấp nhận bài tồn tại/public; INSERT trùng báo ALREADY_SHARED/23505 sau khi không thêm hàng. Unshare chỉ kiểm actor, không kiểm published/FOUND sau khóa blog; không có quan hệ để xóa vẫn kết thúc bình thường. AFTER row trigger blog_shares_counter gọi update_relation_counter() tăng/giảm blogs.shares_count khi hàng thực sự thay đổi, trong cùng transaction của service. Xem [phạm vi sơ đồ](../diagram/v4/README.md).
+
+Luồng `sp_set_comment_like` có [sơ đồ riêng](../diagram/v4/README.md#02-thíchbỏ-thích-bình-luận-và-cập-nhật-bộ-đếm): kiểm comment thuộc đúng blog và chưa xóa trước cả thích/bỏ thích. BEFORE INSERT `comment_like_active` gọi `guard_comment_like()` kể cả khi INSERT sau đó bỏ qua hàng trùng; AFTER `comment_likes_counter` chỉ gọi `update_relation_counter()` cập nhật `comments.likes_count` khi hàng thực sự được thêm/xóa. Các thao tác và counter cùng transaction của service.
+
+Luồng `sp_set_blog_like` và quan hệ với trigger V3 được diễn giải tại [sơ đồ V4](../diagram/v4/README.md): chỉ INSERT/DELETE thật sự thay đổi hàng trong `blog_likes` mới gọi `blog_likes_counter` → `update_relation_counter()` → cập nhật `blogs.likes_count`. Gọi lặp cùng trạng thái không đổi counter; toàn bộ nằm trong transaction của service.
 
 | Procedure | Input | Hành vi |
 | --- | --- | --- |
@@ -873,7 +910,7 @@ Các query đọc dựng BlogDTO dùng JOIN users, batch lấy ảnh và trạng
 
 Migration [V5__read_views.sql](../../soulspace/src/main/resources/db/migration/V5__read_views.sql) tạo view
 thường `public.v_public_blog_feed`. View JOIN blogs với users và lọc `blogs.published=true`, mỗi blog public đúng một
-hàng. View không thêm bảng hoặc dữ liệu sao chép; schema có 11 bảng/65 cột, cộng 1 view có 11 cột; view không thay đổi
+hàng. View không thêm bảng hoặc dữ liệu sao chép; schema có 12 bảng/73 cột, cộng 1 view có 11 cột; view không thay đổi
 số cột của bảng gốc.
 
 | Cột view                                  | Nguồn và công dụng                                            |
@@ -944,10 +981,10 @@ repository/service đọc view trong backend; nghiệm thu sử dụng thật đ
 
 | Migration dự kiến               | Nội dung                                                                                                                  |
 |---------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| V1__core_schema.sql             | Mười một bảng/65 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
+| V1__core_schema.sql             | Mười hai bảng/73 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
 | V2__query_indexes.sql           | Các index bổ sung có mục đích ở trên.                                                                                     |
-| V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, parent hợp lệ/cây không vòng không lưu depth hoặc giới hạn cứng độ sâu, field bất biến và nonempty blog deferred constraint. |
-| V4__interaction_procedures.sql  | Bốn stored procedure và quyền EXECUTE.                                                                                    |
+| V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, parent hợp lệ/cây không vòng không lưu depth hoặc giới hạn cứng độ sâu, field bất biến, nonempty blog deferred constraint và thông báo tương tác. |
+| V4__interaction_procedures.sql  | Bốn stored procedure, quyền EXECUTE và SELECT/INSERT/UPDATE(read_at) cho notifications.                                                                                    |
 | V5__read_views.sql              | View bài public kèm tác giả hiện tại; runtime chỉ SELECT.                                                                 |
 
 Đặt dưới `soulspace/src/main/resources/db/migration/`. Seed không nằm trong versioned migration; không sửa migration đã áp dụng. Hibernate dùng `ddl-auto=validate`, không `update/create/create-drop` để quản lý schema.
@@ -969,3 +1006,21 @@ HAVING b.likes_count <> COUNT(l.user_id);
 ```
 
 Tương tự cho comments theo blog_id nhưng chỉ COUNT các hàng deleted_at IS NULL, blog_shares theo blog_id và comment_likes theo comment_id. Placeholder vẫn có mặt trong cây đọc nhưng không tính comments_count. Kết quả kỳ vọng là 0 dòng; comment đã xóa phải có content=NULL và không còn likes. Query báo sai lệch để điều tra; không tự sửa counter khi demo hoặc chạy test. Các ca nghiệm thu còn thiếu theo chính sách mới được liệt kê trong [báo cáo ERD](erd-review.md).
+
+## Bổ sung thông báo trước lần migration đầu tiên — 12/11/2026
+
+V1 bổ sung notifications (8 cột), đưa tổng lên 12 bảng/73 cột. V2 có 19 index tường minh, gồm 5 index thông báo. V3 có 10 function/18 trigger, bổ sung create_interaction_notification và 4 AFTER INSERT trigger trên blog_likes, comment_likes, blog_shares, comments. V4 giữ 4 procedure; bổ sung quyền SELECT/INSERT và UPDATE riêng read_at. V5 không đổi. Đây là thay đổi nghiệp vụ bổ sung, không chỉ định dạng SQL.
+
+UNIQUE NULLS NOT DISTINCT(recipient_id, actor_id, blog_id, type, comment_id) chống trùng cả khi comment_id NULL. CHECK ràng buộc type với comment_id; FK(comment_id,blog_id) bảo đảm bình luận đúng bài. UUID thông báo do gen_random_uuid() tạo. Chi tiết cột, người nhận, quyền, truy vấn, xóa và retry xem [10 thông báo](10-thong-bao.md).
+
+```sql
+CREATE INDEX notifications_recipient_time_idx ON notifications (recipient_id, created_at DESC, id DESC);
+CREATE INDEX notifications_unread_idx ON notifications (recipient_id) WHERE read_at IS NULL;
+CREATE INDEX notifications_blog_idx ON notifications (blog_id);
+CREATE INDEX notifications_comment_idx ON notifications (comment_id, blog_id) WHERE comment_id IS NOT NULL;
+CREATE INDEX notifications_actor_idx ON notifications (actor_id);
+```
+
+Index UNIQUE có recipient_id đứng đầu nên không thay thế index actor_id cho xóa tài khoản. notifications_actor_idx hỗ trợ FK actor. Khi SELECT vẫn phải ghi ORDER BY created_at DESC, id DESC. Diagram thông báo: [luồng trigger](../diagram/v4/05-interaction-notification.drawio.png).
+
+Từ bản trình bày ngày 12/11/2026, [tong-quan.svg](assets/erd/tong-quan.svg) là ERD gọn với PK/FK. Toàn bộ 73 cột vẫn nằm trong nguồn Mermaid bên trên và [tong-quan-day-du.svg](assets/erd/tong-quan-day-du.svg); đây chỉ là tách cách trình bày, không thay đổi schema.

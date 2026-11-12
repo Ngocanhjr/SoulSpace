@@ -114,7 +114,7 @@ Neon có thể có thời gian mở compute/kết nối lại tùy cấu hình p
 
 Sau các mốc migration core, triển khai model/API
 theo [thứ tự phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng). Schema chủ đề/confidence đã có
-trong V1, tổng 11 bảng/65 cột; không tạo thêm migration lặp các bảng này. V1 được bổ sung trước lần chạy Flyway đầu tiên
+trong V1, tổng 12 bảng/73 cột; không tạo thêm migration lặp các bảng này. V1 được bổ sung trước lần chạy Flyway đầu tiên
 theo xác nhận của người dùng; migration đã áp dụng phải được giữ nguyên.
 
 | Mốc | Công việc                                                                                                                                         | Điều kiện hoàn tất                                                                                                                  |
@@ -174,7 +174,13 @@ Compose bind cổng database vào `127.0.0.1`, có healthcheck, volume lưu dữ
 
 Cần source, secret examples, Flyway, seed runner, ERD/API cập nhật, bộ test và báo cáo kết quả riêng cho Docker, Neon, media thật và LAN. Runbook phải nêu đúng cách nạp env, xem job DEAD và requeue ID cụ thể, đổi database, phục hồi kết nối và giới hạn session sau restart. Không đưa credential, bản dump dữ liệu cá nhân hoặc URL ký media vào báo cáo.
 
-Schema chốt 11 bảng/65 cột theo 03-postgresql.md. Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
+Schema chốt 12 bảng/73 cột theo 03-postgresql.md. Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
 buộc lease/status và các invariant comment/media đã chốt. Chốt thiết kế không thay thế bằng chứng chạy migration.
 Requeue DEAD cần theo transaction và cặp claim trong tài liệu bảo mật/media; không reset một job RUNNING hoặc bỏ điều
 kiện xác nhận lượt xử lý.
+
+## Bổ sung thông báo vào V1–V4 trước khi chạy Flyway
+
+Theo xác nhận chưa chạy migration, gộp schema/index/trigger/quyền thông báo vào V1–V4; không tạo V6 trùng chức năng. V5 giữ nguyên. Sau migration thực tế đầu tiên phải tạo migration mới cho các thay đổi tiếp theo.
+
+Sau các mốc tương tác, triển khai entity/repository notifications, GET danh sách + unreadCount, PATCH đã đọc và chuông thông báo của Navigation theo [10](10-thong-bao.md). SQL hiện có chưa đồng nghĩa các API/UI này hoạt động. Seed like/comment/share sẽ sinh thông báo tự động qua trigger; không seed lại cùng thông báo bằng tay. Chạy SQL suite notifications.sql và sau đó kiểm JDBC/Flyway, API/UI, concurrency trên Docker/Neon.
