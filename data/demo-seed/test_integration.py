@@ -92,6 +92,28 @@ class SeedIntegrationTests(unittest.TestCase):
             self.assertEqual(before, conn.execute("SELECT id,password_hash FROM users ORDER BY id").fetchall())
             self.assertEqual(notices, conn.execute("SELECT id FROM notifications ORDER BY id").fetchall())
 
+    def test_demo01_extension_upgrades_existing_seed_and_can_rerun(self):
+        self.seed()
+        with psycopg.connect(self.runtime, autocommit=True) as conn:
+            original = conn.execute("SELECT id FROM blogs").fetchall()
+            def run_extension(verify=False):
+                return self.seed_module.run(conn, self.data, self.password,
+                                            extend_demo01=True, verify_only=verify)
+
+            with self.assertRaisesRegex(ValueError, "mở rộng"):
+                run_extension(verify=True)
+            self.assertEqual(run_extension()["status"], "seeded")
+            self.assertEqual(run_extension()["status"], "already-seeded")
+            self.assertEqual(run_extension(verify=True)["status"], "verified")
+            rows = conn.execute("""
+                SELECT published, count(*) FROM blogs JOIN users ON users.id=blogs.author_id
+                WHERE username='demo01' GROUP BY published
+            """).fetchall()
+            self.assertEqual(dict(rows), {True: 1000, False: 300})
+            self.assertEqual(conn.execute("SELECT count(*) FROM blogs").fetchone()[0], 1684)
+            self.assertTrue(set(original) <= set(conn.execute("SELECT id FROM blogs").fetchall()))
+            self.assertEqual(conn.execute("SELECT count(*) FROM v_public_blog_feed").fetchone()[0], 1338)
+
     def test_phases_resume_and_order(self):
         with self.assertRaises(ValueError):
             self.seed(verify=True)
