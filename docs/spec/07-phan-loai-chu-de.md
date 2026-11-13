@@ -29,7 +29,7 @@ Ví dụ: người dùng đăng “Mai thi rồi mà giờ vẫn chưa học xon
 
 ## Dữ liệu mở rộng
 
-Schema V1 gồm categories (3 cột), blog_categories (4 cột, gồm confidence) và blogs.category_mode; tổng **12 bảng, 73 cột
+Schema V1 gồm categories (3 cột), blog_categories (4 cột, gồm confidence) và blogs.category_mode; tổng **13 bảng, 76 cột
 **, blogs có 10 cột. Người dùng xác nhận mới chạy Docker Compose, chưa chạy Flyway nên đưa phần này trực tiếp vào V1.
 Sau khi migration đã áp dụng, thay đổi tiếp theo phải dùng version mới. Không đặt category_id trên blogs; quan hệ
 nhiều–nhiều đi qua blog_categories.
@@ -38,7 +38,7 @@ nhiều–nhiều đi qua blog_categories.
 
 | Cột | Kiểu và ràng buộc | Ý nghĩa |
 | --- | --- | --- |
-| id | UUID, PK, do server/seed cấp | Khóa liên kết, không dùng tên hiển thị để nối dữ liệu. |
+| id | UUID, PK; Java sinh mới dùng v7, seed/fixture cố định được giữ theo [chính sách UUID](03-postgresql.md#chính-sách-sinh-uuid) | Khóa liên kết, không dùng tên hiển thị để nối dữ liệu. |
 | name | VARCHAR(100), NOT NULL, CHECK char_length(btrim(name)) BETWEEN 1 AND 100 | Tên hiển thị, ví dụ “Học tập”. |
 | slug | VARCHAR(100), NOT NULL, UNIQUE, CHECK slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' | Tên dùng trong URL/ánh xạ nhãn, ví dụ hoc-tap; chữ thường không dấu, phân tách bằng dấu gạch ngang. |
 
@@ -181,7 +181,7 @@ component/API client hiện có. Không cài dependency ML hay đổi runtime ch
 | TOP-T04 | Sửa nội dung hoặc chuyển MANUAL trong lúc suy luận                          | Kết quả cho nội dung cũ bị bỏ; worker chỉ cập nhật tập AUTO, lựa chọn MANUAL và mode hiển thị được giữ.                                                                   |
 | TOP-T05 | Xóa bài/tài khoản trong lúc worker chạy                                     | Không ghi hoặc tái tạo bài đã xóa.                                                                                                                                        |
 | TOP-T06 | Guest/user khác/CSRF sai; truy cập bài private                              | Áp dụng quyền/status như contract; không lộ bài private qua categories, DTO hoặc log.                                                                                     |
-| TOP-T07 | Migration trên Docker và Neon và constraint chủ đề                          | V1 tạo đủ 12 bảng/73 cột, gồm blog_categories.confidence; PK ghép, FK, cascade liên kết khi xóa bài, RESTRICT danh mục, slug unique, source enum và MANUAL/tập rỗng đúng. |
+| TOP-T07 | Migration trên Docker và Neon và constraint chủ đề                          | V1 tạo đủ 13 bảng/76 cột, gồm blog_categories.confidence; PK ghép, FK, cascade liên kết khi xóa bài, RESTRICT danh mục, slug unique, source enum và MANUAL/tập rỗng đúng. |
 | TOP-T08 | Feed/detail/profile/share với 0/1/nhiều chủ đề và phân trang                | Không mất hoặc lặp bài, không sai phân trang, không N+1; share dùng nhãn hiện tại, tự gắn nhãn không đẩy bài lên đầu feed.                                                |
 | TOP-T09 | Đánh giá model trên tập test giữ riêng                                      | Có dữ liệu/nhãn/version model, micro-F1/macro-F1, kết quả từng nhãn và tỷ lệ bỏ gắn nhãn; phân biệt kết quả thật với ví dụ.                                               |
 | TOP-T10 | Một bài nhiều chủ đề; một chủ đề nhiều bài; cùng cặp bài/chủ đề ở hai nguồn | N–N hợp lệ; PK ghép cho phép AUTO và MANUAL cùng tồn tại, từ chối trùng bộ (blog_id,category_id,category_source).                                                         |

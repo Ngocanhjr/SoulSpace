@@ -1,12 +1,21 @@
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     username VARCHAR(32) NOT NULL UNIQUE CHECK (username ~ '^[a-z0-9]{3,32}$'),
-    password_hash TEXT NOT NULL,
+    password_hash TEXT,
     fullname VARCHAR(100) NOT NULL CHECK (char_length(btrim(fullname)) BETWEEN 1 AND 100),
     dob DATE,
     avatar_media_id UUID UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Liên kết tài khoản SoulSpace với danh tính Google đã xác thực.
+CREATE TABLE external_identities (
+    provider VARCHAR(20) NOT NULL CHECK (provider = 'GOOGLE'),
+    subject VARCHAR(255) NOT NULL,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (provider, subject),
+    UNIQUE (user_id, provider)
 );
 
 CREATE TABLE media_assets (
@@ -126,9 +135,30 @@ CREATE TABLE media_cleanup_jobs (
     )
 );
 
+-- UUID v7: 48 bit thời gian mili giây, version 7 và các bit ngẫu nhiên.
+CREATE FUNCTION uuid_v7()
+RETURNS UUID
+LANGUAGE SQL
+VOLATILE
+SET search_path = pg_catalog, pg_temp
+AS $$
+    SELECT encode(
+        set_byte(
+            overlay(
+                uuid_send(gen_random_uuid())
+                PLACING substring(int8send(floor(extract(epoch FROM clock_timestamp()) * 1000)::bigint) FROM 3)
+                FROM 1 FOR 6
+            ),
+            6,
+            (get_byte(uuid_send(gen_random_uuid()), 6) & 15) | 112
+        ),
+        'hex'
+    )::uuid;
+$$;
+
 -- Thông báo tương tác dùng chung; read_at NULL nghĩa là chưa đọc.
 CREATE TABLE notifications (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id UUID PRIMARY KEY DEFAULT uuid_v7(),
     recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     actor_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     blog_id UUID NOT NULL REFERENCES blogs(id) ON DELETE CASCADE,

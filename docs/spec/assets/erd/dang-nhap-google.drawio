@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<mxfile host="drawio">
+  <diagram name="Đăng nhập Google">
+    <mxGraphModel page="0" grid="1" background="#ffffff">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" value="ERD đăng nhập bằng mật khẩu và Google" vertex="1" style="text;html=1;align=left;verticalAlign=middle;fontSize=32;fontStyle=1;">
+          <mxGeometry x="40" y="20" width="1200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="users" parent="1" value="&lt;b&gt;users&lt;/b&gt;&lt;hr&gt;id [PK] · UUID v7&lt;br&gt;username [UK] · VARCHAR(32)&lt;br&gt;password_hash · TEXT, nullable&lt;br&gt;fullname · VARCHAR(100)&lt;br&gt;dob · DATE, nullable&lt;br&gt;avatar_media_id [FK, UK] · UUID, nullable&lt;br&gt;created_at · TIMESTAMPTZ&lt;br&gt;updated_at · TIMESTAMPTZ" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=18;fontSize=24;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;">
+          <mxGeometry x="60" y="130" width="650" height="360" as="geometry" />
+        </mxCell>
+        <mxCell id="external" parent="1" value="&lt;b&gt;external_identities&lt;/b&gt;&lt;hr&gt;provider [PK] · VARCHAR(20)&lt;br&gt;subject [PK] · VARCHAR(255)&lt;br&gt;user_id [FK] · UUID&lt;br&gt;&lt;br&gt;UNIQUE (user_id, provider)" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=18;fontSize=24;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;">
+          <mxGeometry x="60" y="650" width="650" height="280" as="geometry" />
+        </mxCell>
+        <mxCell id="rel" parent="1" edge="1" source="users" target="external" value="có 0..1 danh tính Google" style="startArrow=ERmandOne;endArrow=ERzeroToOne;html=1;fontSize=20;strokeColor=#475569;strokeWidth=2;labelBackgroundColor=#ffffff;edgeStyle=none;rounded=0;curved=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" value="Google: provider = GOOGLE; subject là sub do Google xác thực.&lt;br&gt;Không tự liên kết tài khoản theo email. Xóa user sẽ xóa liên kết.&lt;br&gt;Bảng liên kết được định nghĩa trong V1; cần chạy và kiểm chứng." vertex="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=middle;spacing=16;fontSize=22;fillColor=#f8fafc;strokeColor=#94a3b8;">
+          <mxGeometry x="760" y="180" width="700" height="180" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -30,12 +30,12 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | --- | --- | --- |
 | AUTH01 | Signup với dob; signup với birthday; cả hai trùng/khác nhau | Alias hoạt động; khác nhau 400; response không có password/hash. |
 | AUTH02 | Username trùng/case khác nhau và hai signup đồng thời | Canonical nhất quán; một account duy nhất, request còn lại 409. |
-| AUTH03 | Đúng/sai password, username không tồn tại, vượt rate limit | 200 AuthResponse hoặc 401 chung; 429 và Retry-After; không lộ trạng thái tài khoản. |
+| AUTH03 | Đúng/sai password, username không tồn tại, Google-only có hash NULL, vượt rate limit | 200 AuthResponse hoặc 401 chung; hash NULL cũng kiểm dummy hash, không lỗi 500; 429 và Retry-After; không lộ trạng thái tài khoản. |
 | AUTH04 | Login rồi gọi me ở request mới/reload browser | Đăng nhập thật được giữ qua cookie; không phụ thuộc localStorage. |
 | AUTH05 | Cookie trước/sau login; CSRF trước/sau login/logout | Session ID thay đổi; token mới dùng được; token cũ không làm phát sinh ghi trái phép. |
 | AUTH06 | POST/PATCH/multipart không có/sai CSRF | 403, không đổi DB và không bắt đầu upload. |
 | AUTH07 | Idle timeout, tuổi tối đa, logout, restart backend | Session không còn được chấp nhận theo policy; UI clear trạng thái đúng mã lỗi. |
-| AUTH08 | Đổi password và xóa account khi đang có nhiều session | Thu hồi tất cả session; password mới hoạt động, password cũ không hoạt động. |
+| AUTH08 | Đặt/đổi password và xóa account khi đang có nhiều session | Thu hồi tất cả session, Google flow và proof; password mới hoạt động, password cũ không hoạt động. |
 | ACL01 | Đổi userId body/path thành người khác | 403 ở route owner/actor; không giả tác giả, không chỉnh profile hoặc xóa tài sản của người khác. |
 | ACL02 | Guest/user khác đọc chi tiết/comments/ảnh của bài private | 404 tại tài nguyên private; không lộ qua feed/profile/shared list. |
 | ACL03 | Public chuyển private rồi public trở lại | Share bị ẩn rồi hiện theo nguồn; nội dung cập nhật hiện đúng; ảnh dùng cùng rule. |
@@ -59,7 +59,36 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | SHR01 | Share một lần, share trùng, unshare lặp | Row/count đúng; duplicate 409; unshare lặp 200. |
 | DEL01 | Xóa blog có comments nhiều cấp, cả placeholder, likes, shares, ảnh | Cascade toàn bộ dữ liệu thuộc bài; placeholder không làm giảm counter lần hai; enqueue ảnh trong cùng commit. |
 | DEL02 | Xóa user có bài riêng và comment ở bài người khác có replies | Bài của user/cây thuộc bài bị xóa; comment ở bài còn sống thành placeholder, author_id=NULL, không còn content/likes của node; giữ replies của người khác; counters đúng, sessions thu hồi. |
-| DEL03 | Password xác nhận sai hoặc đổi password đồng thời với xóa | Không xóa dữ liệu; password đã kiểm tra phải còn tương ứng bản hash khi khóa account. |
+| DEL03 | Password xác nhận sai hoặc đổi password đồng thời với xóa | Không xóa dữ liệu; password đã kiểm tra phải còn tương ứng bản hash khi khóa account. Google-only thiếu/sai proof DELETE_ACCOUNT cũng không xóa; không chấp nhận proof Google để bỏ qua currentPassword của user có hash. |
+
+## Đăng nhập Google và liên kết tài khoản
+
+[Thiết kế Google](11-dang-nhap-google.md) chưa được triển khai; các ca dưới đây là điều kiện nghiệm thu tương lai. Seed demo local hiện tại giữ nguyên; Google fixtures dùng riêng, không nhúng token/client secret/account Google thực vào seed hoặc repository. V1 định nghĩa 13 bảng/76 cột, gồm external_identities; cần chạy migration, xác minh quyền runtime và triển khai mapping trước khi kiểm chức năng Google.
+
+| Mã | Kịch bản | Kết quả bắt buộc |
+| --- | --- | --- |
+| GGL01 | Google LOGIN với identity đã liên kết; reload/me/logout | Cùng UUID SoulSpace, session ID đổi khi login, CSRF mới, cookie đúng policy, response local giữ nguyên; không có token trong browser storage/URL. |
+| GGL02 | LOGIN Google mới, chưa hoàn tất onboarding; gọi me và API ghi/đọc riêng tư | Pending tối đa 10 phút, không principal đầy đủ, route cần user trả 401; chưa có user/identity trong DB. |
+| GGL03 | Onboarding username chữ hoa/space/trùng/sai regex, fullname trống, dob tương lai | Canonical/validation đúng; field sai hoặc trùng không tạo user dở; sửa lại được trong TTL, thiếu pending/CSRF bị chặn. |
+| GGL04 | Hai POST onboarding đồng thời cùng pending/sub; hai pending khác nhau cùng username | Tối đa một user/identity hợp lệ; loser conflict, rollback toàn bộ, không orphan hoặc tự liên kết vào user thắng. |
+| GGL05 | Email Google trùng thông tin account khác hoặc Google đổi email với cùng sub | Không auto-link; cùng sub vẫn về đúng user hiện tại, khác sub không chiếm account. |
+| GGL06 | User có password chủ động LINK sau xác nhận; callback chọn Google khác | Actor giữ đúng user đã khởi tạo; không bị oauth2Login đổi principal; không chuyển sang owner identity khác. |
+| GGL07 | Google identity đã thuộc user khác; user đã liên kết một Google khác; link lặp cùng actor | Conflict chung không lộ user/email/ID bên kia; link cùng identity/actor idempotent; không gộp/chuyển tài khoản. |
+| GGL08 | Hai user cùng LINK một Google; cùng user link hai Google đồng thời | PK(provider,subject)/UNIQUE(user_id,provider) quyết định một kết quả; rollback loser, không đổi actor hoặc credential khác. |
+| GGL09 | State/nonce sai, replay code/callback, thiếu request session, flow quá 10 phút, flow cũ sau khi bắt đầu flow mới | Không login/link/stage proof/ghi DB; kết quả lỗi chung, không lộ provider response hoặc token; callback không open redirect. |
+| GGL10 | Token sai signature/iss/aud hoặc hết exp; frontend gửi sub/email/token tự tạo | Bị từ chối qua security filters/token validation thật; không chỉ dựa vào service mock hoặc decoded JWT. |
+| GGL11 | Google-only REAUTH đúng/sai linked sub và intent; prompt chọn account khi Google SSO còn hiệu lực | Đúng sub/action mới stage xác nhận; sai không đổi user; không tuyên bố đã nhập lại mật khẩu/MFA, không dựa vào prompt=login/max_age chưa xác minh. |
+| GGL12 | Proof thiếu/hết 5 phút/đã dùng/sai actor/session/intent; lấy G05 stage hai lần | 403 REAUTH_REQUIRED khi session vẫn hợp lệ; session hết hạn 401; không universal elevation hoặc cấp lại proof từ stage đã tiêu thụ. |
+| GGL13 | Google-only đặt password lần đầu, hai request cùng đặt, rồi login local | Proof SET_PASSWORD hợp lệ mới đặt; một request commit, request khác conflict/proof invalid; không ghi đè hash, tất cả session bị thu hồi, login local hoạt động. |
+| GGL14 | Google-only xóa account có bài/comment/Google identity; callback hoặc proof cũ tới sau xóa | U08 cùng chuỗi thành công cũ khi hợp lệ; cascade identity, xử lý dữ liệu như DEL02, revoke session/flow/proof; request muộn không phục hồi user. |
+| GGL15 | User có hash dùng proof Google thay currentPassword; credential đổi đồng thời LINK/xóa | Không bypass currentPassword; khóa user và kiểm credential snapshot, stale xác nhận bị từ chối trước commit. |
+| GGL16 | Google từ chối consent/timeout; logout/restart giữa flow; callback lỗi provider | Không session đầy đủ/user dở; pending/flow cũ hết hiệu lực; lỗi chung, không log code/query/token/proof/password/secret. |
+| GGL17 | G01/G03/G05/G06 thiếu CSRF, vượt rate limit; callback GET hợp lệ | Unsafe request bị chặn trước tác dụng/provider/hash; callback dùng state/nonce, không tắt CSRF toàn API; 429 có Retry-After. |
+| GGL18 | Runtime thực thi schema identity, user không phương thức đăng nhập; cố ghi NULL/sai provider/trùng khóa | Constraint PK/FK/UNIQUE/CHECK đúng thiết kế; service transaction không commit account không có hash lẫn identity; không coi CHECK riêng users là bảo vệ invariant liên bảng. |
+
+GGL04/GGL08/GGL13/GGL15 chạy bằng PostgreSQL thật nhiều connection/transaction có barrier; kiểm số hàng và credential sau quiescence. Kiểm integration qua đầy đủ SecurityFilterChain, authorization request repository, callback, session/CSRF và handlers LINK/REAUTH. Mock provider dùng cho lỗi có kiểm soát; không đánh dấu Google thật PASS từ mock OidcUser/token.
+
+Smoke Google thật dùng account kiểm thử được phép, client/redirect URI đúng môi trường và HTTPS production; thực hiện LOGIN mới, onboarding, LINK chủ động, REAUTH/đặt password và logout. Xác minh cookie redirect qua proxy, state/nonce/session fixation, consent từ chối, không token trong URL/localStorage/network response ứng dụng/log. Chỉ lưu bằng chứng đã lọc credential; phân biệt smoke thật với mock và SQL-only. Không xóa tài khoản/dữ liệu người dùng thật để kiểm thử.
 
 ## Media và chịu lỗi
 
@@ -134,8 +163,7 @@ DB01–DB07 kiểm các invariant có thể thực thi bằng constraint/trigger
 
 VIEW01–VIEW06 có smoke SQL tại [public_blog_feed.sql](../../infra/postgres/tests/public_blog_feed.sql); VIEW07 chưa
 triển khai Java. Bằng chứng view phải có định nghĩa, query sử dụng thật và kết quả trước/sau thay đổi dữ liệu, không chỉ
-ảnh chụp CREATE VIEW thành công. Schema V1 có 12 bảng/73 cột và thêm 1 view/11 cột; view không được tính là bảng lưu trữ
-thứ 12.
+ảnh chụp CREATE VIEW thành công. Schema V1 định nghĩa 13 bảng/76 cột và thêm 1 view/11 cột; cần xác nhận trên database sau migration. View không được tính là bảng lưu trữ.
 
 ## Năm nhóm bằng chứng SQL
 
@@ -180,7 +208,7 @@ Thực hiện lần lượt signup, login, reload, xem feed/profile/search hiệ
 
 Giai đoạn AI có các ca TOP-T01–TOP-T13
 tại [nghiệm thu phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng), gồm model lỗi không chặn đăng
-bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 12 bảng/73
+bài, MANUAL không bị ghi đè, kết quả cũ bị loại và quyền bài private. Khi triển khai AI, kiểm riêng schema 13 bảng/76
 cột và tổng 39 endpoint (gồm cả thông báo); Definition of Done bên dưới vẫn dành cho migration core.
 
 Lưu báo cáo tương lai dưới `docs/verification/<run-id>/` với commit, thời gian UTC, môi trường, version, lệnh thực chạy, PASS/FAIL/chưa kiểm, test report, query plan và ảnh/video demo khi cần. Các đường dẫn này là đầu ra dự kiến, chưa có báo cáo ở thời điểm lập spec.
@@ -206,3 +234,14 @@ Nếu còn ca bắt buộc chưa chạy hoặc thất bại thì ghi rõ phần 
 - GET/PATCH chỉ cho recipient từ session, PATCH idempotent và có CSRF; private/deleted không lộ qua list/count, phân trang đồng thứ tự created_at DESC,id DESC.
 - SQL suite [notifications.sql](../../infra/postgres/tests/notifications.sql) đã qua PostgreSQL WASM 17.5 ngày 12/11/2026 cùng ba suite cũ. Chưa phải bằng chứng API/UI, JDBC/Flyway hay nhiều connection.
 - Trên PostgreSQL thật, kiểm like/comment/share đồng thời xóa actor/recipient/bài. Có thể deadlock do FK recipient; service rollback và retry toàn transaction với 40P01/40001 theo giới hạn đã chốt, không retry riêng INSERT thông báo.
+
+## Nghiệm thu chính sách UUID
+
+| Mã | Ca kiểm tra | Kết quả bắt buộc |
+| --- | --- | --- |
+| UUID01 | Tạo mới User, Blog, Comment, MediaAsset, Category và MediaCleanupJob qua backend | ID do generator Java tạo có `UUID.version() == 7`; kiểm cả sau khi ghi/đọc lại DB và trả JSON string. |
+| UUID02 | Tạo thông báo qua trigger sau tương tác hợp lệ | ID do PostgreSQL tạo có version 7 qua DEFAULT mới; kiểm cấu trúc UUID v7 theo RFC 9562, các FK trỏ đúng đối tượng. Cần chạy migration và kiểm chứng generator database trước khi ca này có thể PASS. |
+| UUID03 | Tạo khóa ghép, gắn ảnh vào bài, dùng seed/fixture ID cố định | Không sinh UUID riêng cho bảng khóa ghép hoặc BlogImage.assetId; giữ ID tham chiếu/fixture. Không áp đặt kiểm tra version 7 lên mọi UUID đầu vào. |
+| UUID04 | Rà generator và kiểm dữ liệu đồng thời | Không dựa vào mặc định GenerationType.UUID, UUID.randomUUID() hoặc Style.TIME để sinh v7. Ghi nhận Hibernate/generator thực tế; kiểm PK/UNIQUE, không coi thứ tự UUID là thứ tự commit hoặc bỏ ORDER BY thời gian nghiệp vụ. |
+
+Các ca này là tiêu chí triển khai, chưa có kết quả PASS trong lượt cập nhật spec. SQL fixture cố định và kết quả WASM trước đây không chứng minh generator Java hoặc database v7 đã hoạt động.

@@ -1,36 +1,56 @@
-package ctu.edu.blogAPI.entities;
+package ctu.soulspace.entities;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.Instant;
+import java.util.UUID;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
+
+import lombok.Getter;
+import lombok.Setter;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 
-@Document(collection = "user")
-@Data
-@Builder
+@Entity
+@Table(name = "users")
+@Getter
+@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
 
-    String id; // dùng String để MongoDB tự sinh ObjectId
-    String username;
-    String password;
-    String fullname;
-    LocalDate dob;
-    String userAvatarUrl;
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
-    @Builder.Default
-    List<SharedBlog> sharedBlogs = new ArrayList<>();
+    @Column(name = "username", nullable = false, unique = true, length = 32)
+    private String username;
 
+    @Column(name = "password_hash", columnDefinition = "TEXT")
+    private String passwordHash;
+
+    @Column(name = "fullname", nullable = false, length = 100)
+    private String fullname;
+
+    @Column(name = "dob")
+    private LocalDate dob; // date of birth
+
+    @Column(name = "avatar_media_id", unique = true)
+    private UUID avatarMediaId;
+
+    //thời gian từ database khi tạo bản ghi
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp(source = SourceType.DB)
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 }

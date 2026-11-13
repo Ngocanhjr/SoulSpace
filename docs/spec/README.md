@@ -1,6 +1,6 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 12/11/2026. Phiên bản: 1.5. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+Ngày lập: 24/10/2026. Cập nhật: 12/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
 giai đoạn AI cùng thông báo tương tác; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
 
@@ -25,8 +25,9 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | D13 | Media có ba trạng thái PENDING, ATTACHED, DELETE_PENDING. Chỉ PENDING đã xác nhận metadata và đúng owner/purpose mới được gắn; DELETE_PENDING không được gắn lại. Cloudinary ngoài transaction.                                                                                                                                          |
 | D14 | Cleanup RUNNING bắt buộc có lease, PENDING/DEAD không giữ lease; kết quả worker phải khớp lượt claim. Tối đa 5 lượt claim tự động, kể cả lượt bị crash/hết lease.                                                                                                                                                                        |
 | D15 | Model phân loại đa nhãn (0..n chủ đề) ở nền, không bắt xác nhận; tác giả được đổi/bỏ nhãn hoặc bật lại AUTO. V1 có categories, blog_categories(category_source,confidence), PK ghép ba cột giữ riêng AUTO/MANUAL để so sánh; blogs.category_mode chọn nguồn hiển thị, kể cả MANUAL rỗng. Chưa triển khai gợi ý cá nhân hóa hay xu hướng. |
-
 | D16 | Thông báo trong ứng dụng cho like bài/comment, bình luận, reply và share; lưu lịch sử và read_at. Trigger cùng transaction, không tự thông báo cho mình; API/UI triển khai theo tài liệu 10. |
+| D17 | Tất cả ID được sinh mới dùng UUID v7; backend Java sinh ID thực thể, database sinh notifications.id qua hàm uuid_v7() trong V1, cần kiểm chứng trên PostgreSQL 17. Khóa ghép và ID tham chiếu không tự sinh thêm UUID; fixture có ID cố định được giữ. Chi tiết tại [chính sách sinh UUID](03-postgresql.md#chính-sách-sinh-uuid). |
+| D18 | Hỗ trợ username/mật khẩu và đăng nhập Google; một tài khoản có thể dùng cả hai. Google được liên kết bằng subject đã xác minh, không tự gộp theo email. Chi tiết tại [đăng nhập Google](11-dang-nhap-google.md). |
 
 ## Cách đọc
 
@@ -42,10 +43,11 @@ Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspac
 | [08 báo cáo tổng kết SQL](08-bao-cao-tong-ket-sql.md) | ERD và cơ sở thiết kế V1/V2, view, khung báo cáo procedure/trigger/transaction/AI in SQL; lưu quyết định đã chốt để dùng cho báo cáo cuối kỳ. |
 | [09 giải thích V3](09-giai-thich-v3.md) | Toàn bộ code V3 theo 9 nhóm, giải thích từng nhánh, ví dụ, lý do dùng và đánh đổi; hai tối ưu constraint trigger và kết quả kiểm SQL. |
 | [10 thông báo](10-thong-bao.md) | Người nhận, bảng notifications, trigger, API và nghiệm thu. |
-| [ERD dạng SVG](erd.md)                                | SVG tổng quan gọn 12 bảng, bản đầy đủ 73 cột, ba nhóm nghiệp vụ và chủ đề riêng; chưa triển khai phần AI.                                |
+| [11 đăng nhập Google](11-dang-nhap-google.md) | Đăng nhập, đăng ký lần đầu, liên kết Google và thay đổi phương thức xác thực. |
+| [ERD dạng SVG](erd.md) | Tổng quan thiết kế 13 bảng, bản đầy đủ V1 76 cột và ERD đăng nhập Google. |
 | [Rà soát và chốt database](erd-review.md)             | Các quyết định đã đóng, kiểm tra tài liệu và những bước thực thi còn phải kiểm chứng.                                                         |
 
-Các thuật ngữ `blog` và `bài viết` chỉ cùng một thực thể. Database dùng tên `blogs` để khớp API hiện tại. ID mới là UUID; JSON vẫn biểu diễn ID bằng string. Đường dẫn code/config trong nội dung tính từ gốc repository; link Markdown tính từ file tài liệu. Không hardcode đường dẫn filesystem tuyệt đối.
+Các thuật ngữ `blog` và `bài viết` chỉ cùng một thực thể. Database dùng tên `blogs` để khớp API hiện tại. ID được sinh mới đều là UUID v7, bao gồm notifications.id do database sinh. JSON vẫn biểu diễn ID bằng string. Chính sách này đã chốt ở mức spec; generator Java và hàm UUID v7 trong V1 còn cần kiểm chứng. Đường dẫn code/config trong nội dung tính từ gốc repository; link Markdown tính từ file tài liệu. Không hardcode đường dẫn filesystem tuyệt đối.
 
 ## Mặc định do thiết kế chọn
 
@@ -72,11 +74,10 @@ Kiểm SQL trên PostgreSQL WASM đạt với chuỗi 100 cấp và reply cấp 
 ## Hiện trạng đã đọc từ checkout
 
 - [POM legacy](../../old/Blog_api/pom.xml): Java 17, Spring Boot 3.5.6, MongoDB, MapStruct, Cloudinary và BCrypt trong source.
-- [POM target](../../soulspace/pom.xml): Java 21, Spring Boot 4.1.1, JPA, PostgreSQL, Flyway, Security, Validation, Actuator; target hiện chỉ có application class và context test.
+- [POM target](../../soulspace/pom.xml): Java 21, Spring Boot 4.1.1, JPA, PostgreSQL, Flyway, Security, Validation, Actuator; target đã có các entity đang được viết; các bước kiểm và hoàn thiện còn tiếp tục.
 - [Cấu hình target](../../soulspace/src/main/resources/application.properties) đã có datasource/Flyway, validate schema,
   giới hạn upload và cấu hình nền. Đã tạo Compose, profile Docker/Neon, provision roles và
-  V1–V5; [kết quả kiểm tra SQL và giới hạn](../../infra/postgres/README.md). Chưa có entity/service/API nghiệp vụ trong
-  target.
+  V1–V5; [kết quả kiểm tra SQL và giới hạn](../../infra/postgres/README.md). Entity đang được viết; service/API nghiệp vụ theo thiết kế vẫn cần triển khai và kiểm chứng.
 - Bốn controller legacy có 29 endpoint đang được khai báo hoạt động; hợp đồng target giữ đủ 29 và bổ sung 6 endpoint: session/CSRF/media và sửa/xóa comment, tổng 35. Đây là số route thiết kế, chưa triển khai trong target.
 - [README legacy](../../old/Blog_api/README.md) ghi `pre-v1`, có route và HTTP method lệch controller; nguồn hợp đồng là controller, DTO và caller frontend đã đối chiếu.
 - `docs/Ke_hoach.docx` là kế hoạch tổng thể SoulSpace AI. Trong bộ spec này, chỉ đưa phần backend core và các kỹ thuật SQL phù hợp vào giai đoạn đầu.

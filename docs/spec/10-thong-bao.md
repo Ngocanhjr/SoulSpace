@@ -22,7 +22,7 @@ Không báo khi sửa/xóa comment, unlike hoặc unshare. Đây là lịch sử
 
 | Cột | Kiểu | Ý nghĩa |
 | --- | --- | --- |
-| id | UUID PK, DEFAULT gen_random_uuid() | ID thông báo |
+| id | UUID PK; DEFAULT gọi hàm `uuid_v7()` tại database | UUID v7 do PostgreSQL sinh khi trigger tạo thông báo. |
 | recipient_id | UUID NOT NULL FK users | Người nhận |
 | actor_id | UUID NOT NULL FK users | Người thao tác |
 | blog_id | UUID NOT NULL FK blogs | Bài chứa tương tác |
@@ -31,7 +31,7 @@ Không báo khi sửa/xóa comment, unlike hoặc unshare. Đây là lịch sử
 | created_at | TIMESTAMPTZ NOT NULL DEFAULT now() | Lúc ghi thông báo |
 | read_at | TIMESTAMPTZ nullable | NULL = chưa đọc, có giá trị = đã đọc |
 
-Schema tổng 12 bảng/73 cột. CHECK cấm tự thông báo và buộc comment_id NULL cho BLOG_LIKE/BLOG_SHARE, NOT NULL cho ba loại bình luận. UNIQUE NULLS NOT DISTINCT(recipient_id,actor_id,blog_id,type,comment_id) chống trùng kể cả comment_id NULL (PostgreSQL 15+). FK(comment_id,blog_id) tham chiếu comments(id,blog_id), ngăn liên kết comment sai bài.
+Schema V1 định nghĩa 13 bảng/76 cột, gồm bảng liên kết Google theo [tài liệu 11](11-dang-nhap-google.md). CHECK cấm tự thông báo và buộc comment_id NULL cho BLOG_LIKE/BLOG_SHARE, NOT NULL cho ba loại bình luận. UNIQUE NULLS NOT DISTINCT(recipient_id,actor_id,blog_id,type,comment_id) chống trùng kể cả comment_id NULL (PostgreSQL 15+). FK(comment_id,blog_id) tham chiếu comments(id,blog_id), ngăn liên kết comment sai bài.
 
 Xóa vĩnh viễn actor, recipient, blog hoặc comment xóa thông báo liên quan bằng ON DELETE CASCADE. Xóa tài khoản vẫn phải thực hiện quy trình placeholder comment theo 01/03 trước khi xóa user. Soft delete comment không xóa hàng thông báo nhưng API không trả ngữ cảnh comment đã xóa. Không lưu snapshot nội dung hoặc tên/avatar; JOIN dữ liệu hiện tại khi đọc.
 
@@ -40,6 +40,8 @@ V2 thêm 5 index: recipient/time/id cho danh sách mới nhất; partial recipie
 ![ERD thông báo](assets/erd/thong-bao.svg)
 
 [Flowchart nghiệp vụ dễ đọc](../diagram/v3/11-interaction-notification-business.drawio.png) · [Flowchart nguồn tương tác → trigger → notifications](../diagram/v3/11-interaction-notification.drawio.png). Đây là luồng tạo thông báo; ERD chỉ nối các FK thực tế.
+
+notifications.id dùng UUID v7 để đồng nhất với ID đối tượng do Java sinh mới. Database vẫn chịu trách nhiệm sinh ID thông báo; trigger bỏ qua cột id khi INSERT. V1 đã định nghĩa hàm `uuid_v7()` và đặt DEFAULT tương ứng; cần kiểm chứng migration trên PostgreSQL thật. Không thêm generator Java cho notification trong luồng trigger này. Xem [chính sách sinh UUID](03-postgresql.md#chính-sách-sinh-uuid).
 
 ## Trigger và transaction
 

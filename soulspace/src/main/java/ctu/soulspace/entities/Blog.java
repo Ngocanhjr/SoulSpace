@@ -1,60 +1,60 @@
-package ctu.edu.blogAPI.entities;
+package ctu.soulspace.entities;
 
-import lombok.*;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.UuidGenerator;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Entity
+@Table(name = "blogs")
 @Getter
 @Setter
-@Document(collection = "blogs")
+@NoArgsConstructor
 public class Blog {
     @Id
-    private ObjectId id;
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
-    private ObjectId userId;
+    @Column(name = "author_id", nullable = false)
+    private UUID authorId;
 
-    private UserInfo author;
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    private String content = "";
 
-    private String content;
-
-    private List<String> imageContentUrls;
-
-    @Builder.Default
-    private Long likesCount = 0L;
-
-    @Builder.Default
-    private Long commentsCount = 0L;
-
-    @Builder.Default
-    private Long sharesCount = 0L;
-
-    @Builder.Default
-    private Set<String> likedUserIds = new HashSet<>();
-
-    @Builder.Default
-    private List<Comment> comments = new ArrayList<>();
-
-    @Builder.Default
+    @Column(name = "published", nullable = false)
     private boolean published = true;
 
-    @CreatedDate
+    @Setter(AccessLevel.NONE)
+    @Column(name = "likes_count", nullable = false, insertable = false, updatable = false)
+    private Long likesCount;
+
+    @Setter(AccessLevel.NONE)
+    @Column(name = "comments_count", nullable = false, insertable = false, updatable = false)
+    private Long commentsCount;
+
+    @Setter(AccessLevel.NONE)
+    @Column(name = "shares_count", nullable = false, insertable = false, updatable = false)
+    private Long sharesCount;
+
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @LastModifiedDate
+    @UpdateTimestamp(source = SourceType.DB)
+    @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public Blog(Blog blog) {
-    }
+    @Column(name = "category_mode", nullable = false, length = 6)
+    private String categoryMode = "AUTO";
 }

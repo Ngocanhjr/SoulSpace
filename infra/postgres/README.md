@@ -115,6 +115,6 @@ cột phía dưới ghi nhận bản trước khi bổ sung chủ đề.
 
 ## Thông báo tương tác — 12/11/2026
 
-Theo xác nhận chưa chạy Flyway, đã gộp vào V1–V4: 12 bảng/73 cột; V2 19 index; V3 10 function/18 trigger; V4 4 procedure và quyền notifications chỉ SELECT/INSERT/UPDATE(read_at). V5 giữ nguyên. Xem [thiết kế](../../docs/spec/10-thong-bao.md).
+Theo xác nhận chưa chạy Flyway, đã gộp vào V1–V4: hiện V1 định nghĩa 13 bảng/76 cột, gồm external_identities; V2 19 index; V3 10 function/18 trigger; V4 4 procedure và quyền notifications chỉ SELECT/INSERT/UPDATE(read_at). V5 giữ nguyên. V1 định nghĩa uuid_v7() cho notifications.id; các thay đổi này cần chạy lại và kiểm chứng, không suy ra từ kết quả cũ bên dưới. Xem [thiết kế](../../docs/spec/10-thong-bao.md).
 
 Suite `tests/notifications.sql` chạy bằng soulspace_runtime trên DB test, fixture ROLLBACK. Runner `tests/verify-v3.cjs` đã chạy V1–V5 và bốn suite (invariants, public_blog_feed, blog_categories, notifications) trên PostgreSQL WASM 17.5. Dùng biến môi trường SOULSPACE_PGLITE_MODULE trỏ tới package PGlite hiện có rồi chạy `node infra/postgres/tests/verify-v3.cjs` từ gốc repo. Trên PostgreSQL thật chạy suite bằng psql với runtime và ON_ERROR_STOP. Chưa kiểm JDBC/Flyway, Docker/Neon, API/UI hoặc nhiều connection. Không dùng kết quả WASM thay cho nghiệm thu concurrency; đặc biệt tương tác đồng thời xóa người nhận cần kiểm retry toàn transaction.

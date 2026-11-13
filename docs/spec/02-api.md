@@ -3,11 +3,13 @@
 Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH
 /api/v1/blogs/{blogId}/categories và categories/categoryMode trên BlogDTO/SharedBlogDTO
 theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng cùng 2 endpoint thông báo trong [tài liệu 10](10-thong-bao.md) là 39 endpoint; chưa
-triển khai các bổ sung này.
+triển khai các bổ sung này. [Google OIDC](11-dang-nhap-google.md#api-bổ-sung-mục-tiêu) thiết kế thêm 6 API JSON, nâng mục tiêu lên 45 API; callback framework GET `/login/oauth2/code/google` nằm ngoài số API JSON này. Các route Google chưa được triển khai; không thay response/route local đã chốt.
 
 ## Quy ước chung
 
 Base path là `/api/v1`. Giữ JSON trực tiếp hoặc array trực tiếp như frontend hiện tại, không bọc thêm `result` hay `data`. Những endpoint xóa trả chuỗi legacy giữ `text/plain; charset=utf-8`. Tất cả response thành công của 29 endpoint legacy tiếp tục dùng HTTP 200. ID là UUID string; timestamp là ISO 8601 UTC; ngày sinh là `YYYY-MM-DD`; field danh sách không có phần tử trả `[]`, không trả null. Giới hạn ký tự trong text/password tính theo Unicode code points để thống nhất với char_length của PostgreSQL.
+
+ID được sinh mới đều dùng UUID v7, bao gồm ID thông báo do database sinh. API vẫn trả ID dưới dạng UUID string. Phiên bản sinh ID không thay quy tắc validation hiện tại: không tự từ chối ID tham chiếu/fixture hợp lệ chỉ vì nó khác v7. Xem [chính sách sinh UUID](03-postgresql.md#chính-sách-sinh-uuid).
 
 Cookie session và CSRF áp dụng theo [bảo mật](04-bao-mat-media.md). GET an toàn không thay dữ liệu. POST/PUT/PATCH/DELETE cần CSRF, gồm đăng nhập và đăng ký. Actor được lấy từ session; `userId` legacy nếu được gửi phải trùng actor, khác trả 403. ID sai định dạng trả 400, tài nguyên không tồn tại hoặc private không có quyền đọc trả 404.
 
@@ -76,7 +78,9 @@ Ví dụ `BlogDTO`:
 
 A01 giữ route legacy. A02–A04 là endpoint bổ sung. A02 trả `headerName="X-CSRF-TOKEN"`, `parameterName="_csrf"`; client gửi token ở header cho cả JSON và multipart. Token không lưu bền trong localStorage. Lấy lại token sau đăng nhập hoặc đăng xuất vì session/token có thể đã đổi.
 
-Sai thông tin đăng nhập trả 401, gồm `authentication=false`, `user=null`, `message="Invalid username or password"` và các field lỗi chung. Không phân biệt tài khoản không tồn tại, sai password hoặc account đã xóa. Hết session ở A03 trả lỗi `AUTH_REQUIRED` 401. Logout không có session xác thực vẫn có thể kết thúc bằng 200 nếu CSRF hợp lệ; CSRF sai luôn trả 403.
+Sai thông tin đăng nhập trả 401, gồm `authentication=false`, `user=null`, `message="Invalid username or password"` và các field lỗi chung. Không phân biệt tài khoản không tồn tại, sai password, Google-only có hash NULL hoặc account đã xóa; hash NULL cũng kiểm dummy hash. Hết session ở A03 trả lỗi `AUTH_REQUIRED` 401. Session Google pending onboarding không phải đăng nhập đầy đủ, A03 vẫn 401. Logout không có session xác thực vẫn có thể kết thúc bằng 200 nếu CSRF hợp lệ; CSRF sai luôn trả 403, logout hủy cả pending Google flow.
+
+Đăng nhập/liên kết Google dùng [G01–G06 và callback](11-dang-nhap-google.md#api-bổ-sung-mục-tiêu): POST bắt đầu có CSRF, intent được backend gắn session; callback không nhận actor từ query, không tự liên kết theo email. LOGIN hoàn tất trả cùng AuthResponse qua G03 hoặc frontend gọi A03 sau callback; LINK/REAUTH giữ actor đang có, không đổi user âm thầm. Token Google, subject và proof không xuất hiện trong AuthResponse/URL callback về frontend.
 
 ## Người dùng
 
@@ -89,7 +93,7 @@ Sai thông tin đăng nhập trả 401, gồm `authentication=false`, `user=null
 | U05 | GET | `/api/v1/users/patch/{userId}` | UUID path | `UserResponsePatch`, chính chủ. |
 | U06 | PUT | `/api/v1/users/{userId}` | JSON field cập nhật; xem bên dưới | `UserResponse`, chính chủ. |
 | U07 | PATCH | `/api/v1/users/{userId}` | JSON `{username?,fullname?,dob?}` | `UserResponsePatch`, chính chủ. |
-| U08 | DELETE | `/api/v1/users/{userId}` | JSON `{currentPassword}` | Chuỗi `User has been deleted.`, chính chủ, xác nhận lại password. |
+| U08 | DELETE | `/api/v1/users/{userId}` | JSON `{currentPassword}` nếu có hash; `{reauthProof}` nếu Google-only | Chuỗi `User has been deleted.`, chính chủ; Google proof phải đúng DELETE_ACCOUNT. |
 | U09 | DELETE | `/api/v1/users/{id}/avatar` | Không có body | Chuỗi `Avatar has been deleted.`, chính chủ. |
 | U10 | PATCH | `/api/v1/users/{id}/avatar` | Multipart part `file` | `UserResponsePatch`, chính chủ. |
 | U11 | DELETE | `/api/v1/users/{userId}/shared-blogs/{blogId}` | UUID path | Chuỗi `Shared blog removed successfully`, chính chủ. |
@@ -98,9 +102,9 @@ U01 hỗ trợ `birthday` vì frontend cũ đang gửi tên này; response thố
 
 Username canonical dài 3–32, chỉ `a-z` và `0-9`; fullname sau trim dài 1–100. Password mới theo [chính sách mật khẩu](04-bao-mat-media.md#mật-khẩu). Trùng username trả 409. Response đăng ký giữ ngày sinh của user vừa tạo, nhưng không trả dữ liệu xác thực.
 
-U06 giữ hành vi cập nhật field có giá trị của legacy thay vì biến thành replace toàn entity. Có thể nhận `username`, `fullname`, `dob` và `password`. Nếu `password` được gửi không rỗng thì bắt buộc `currentPassword`, xác thực lại và áp dụng chính sách password mới; thành công làm hết hiệu lực mọi session của user. Chỉ gửi `currentPassword` mà không có thay đổi nào là request không hợp lệ.
+U06 giữ hành vi cập nhật field có giá trị của legacy thay vì biến thành replace toàn entity. Có thể nhận `username`, `fullname`, `dob` và `password`. User có hash gửi `password` không rỗng phải có `currentPassword`, xác thực lại và áp dụng chính sách password mới; thành công làm hết hiệu lực mọi session của user. Google-only muốn đặt mật khẩu đầu tiên dùng G06 sau Google REAUTH; gửi password ở U06 trả 409 PASSWORD_NOT_ENABLED, không cập nhật một phần hồ sơ trong request lỗi. Chỉ gửi `currentPassword` mà không có thay đổi nào là request không hợp lệ.
 
-U07 không đổi password; field vắng mặt giữ nguyên. Username/fullname explicit null hoặc rỗng trả 400; `dob:null` được xóa ngày sinh. Cả U06/U07 chấp nhận `id` trùng user và `userAvatarUrl` trùng URL hiện tại do form frontend có thể gửi lại; bỏ qua hai field đọc này. ID lệch trả 400; URL khác trả 400 và hướng dẫn dùng U10. U09 gọi lại khi avatar đã mặc định vẫn trả 200. U08 dùng `axios.delete(url, {data:{currentPassword}})` để gửi body JSON và CSRF header.
+U07 không đổi password; field vắng mặt giữ nguyên. Username/fullname explicit null hoặc rỗng trả 400; `dob:null` được xóa ngày sinh. Cả U06/U07 chấp nhận `id` trùng user và `userAvatarUrl` trùng URL hiện tại do form frontend có thể gửi lại; bỏ qua hai field đọc này. ID lệch trả 400; URL khác trả 400 và hướng dẫn dùng U10. U09 gọi lại khi avatar đã mặc định vẫn trả 200. U08 dùng `axios.delete(url, {data:{currentPassword}})` như cũ với user có hash; Google-only dùng `data:{reauthProof}`, kèm CSRF. Không nhận cả hai field cùng lúc; user có hash không được dùng proof để bỏ qua currentPassword. Proof thiếu/hết hạn/đã dùng/sai actor/session/intent trả 403 REAUTH_REQUIRED; session đầy đủ không còn hợp lệ trả 401 AUTH_REQUIRED. Quy tắc proof và lỗi Google ở [tài liệu 11](11-dang-nhap-google.md#api-bổ-sung-mục-tiêu).
 
 ## Bài viết và tương tác
 
@@ -205,13 +209,13 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 | --- | --- |
 | `src/config/api.js` và nơi import axios | Tạo một client HTTP dùng chung, gửi cookie và CSRF, giữ `buildApiUrl`; không nhân bản cấu hình ở từng page. Chỉ clear auth toàn cục khi code AUTH_REQUIRED; INVALID_CREDENTIALS của xác nhận lại password được xử lý tại form, không tự logout. |
 | `App.jsx` và luồng kiểm tra đăng nhập | Bootstrap `/auth/me`; localStorage chỉ là cache hiển thị, không là bằng chứng đăng nhập. |
-| `SignInPage/SignIn.jsx` | Lấy CSRF trước login, xử lý 401/429, nhận avatarUrl, lấy token mới sau login; bỏ log response xác thực. |
+| `SignInPage/SignIn.jsx` | Lấy CSRF trước login, xử lý 401/429, nhận avatarUrl, lấy token mới sau login; bỏ log response xác thực. Bổ sung Google start/result/onboarding theo tài liệu 11, pending không được coi đã đăng nhập. |
 | `SignUpPage/SignUp.jsx` | Gửi `dob` canonical; API vẫn nhận birthday; cập nhật policy password và bỏ log password/form. |
 | `Navigation`, `UserPage`, mọi nơi logout | Gọi A04 rồi clear state; không chỉ xóa localStorage. |
 | `ListPost`, `PostDetailPage` | Optimistic UI; gửi `liked` mong muốn và gộp lần bấm nhanh theo blog, tối đa một request đang chạy/mục; response không ghi đè ý định mới hơn. Counter chuẩn lấy từ response. |
 | `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Like comment dùng cùng quy tắc optimistic/coalescing; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. Thụt lề tối đa 3 tầng, chỉ rõ người được trả lời ở nhánh sâu; gửi đúng parent comment, không chặn reply theo độ sâu. |
 | `UserPage` sửa bài | Gộp published vào B14; giữ các tên multipart hiện có. |
-| `UserPage` xóa tài khoản | Dialog xác nhận lại password và gửi U08 body; lỗi không xóa state trước khi server xác nhận. |
+| `UserPage` xóa tài khoản | Đọc auth/methods: user có hash xác nhận currentPassword như cũ; Google-only hoàn tất REAUTH và gửi proof DELETE_ACCOUNT. Dialog xác nhận rồi gửi U08; lỗi không xóa state trước khi server xác nhận. |
 | `EditProfile`, `EditAvatar`, `PostPage`, `SearchPage`, `PublicProfilePage` | Dùng chung HTTP client; UUID là string, ảnh API relative URL; xử lý privacy/expired session. |
 
 Giữ route giao diện hiện tại; bổ sung thao tác sửa/xóa comment và các trạng thái đã chốt trong luồng comment. Tìm kiếm nâng cao thuộc thiết kế tính năng riêng, không thêm endpoint tìm kiếm trong bộ 35 route này. Các route chỉ nằm trong tài liệu pre-v1, như `/auth/login`, `/auth/check-session`, PUT `/blogs/details`, không được tính là endpoint hiện có và không bổ sung alias tự động.

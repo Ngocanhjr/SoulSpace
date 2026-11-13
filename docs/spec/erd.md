@@ -1,13 +1,8 @@
 # ERD PostgreSQL — SoulSpace
 
-Cập nhật 12/11/2026: các hình đã đồng bộ với **thiết kế đầy đủ: 12 bảng/73 cột**, gồm core và chủ đề giai đoạn
-AI. [Mục 5](#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai) bổ sung ERD chủ đề; toàn schema có **12 bảng/73 cột**. Đây là
-thiết kế, chưa phải schema đã triển khai.
+Cập nhật 13/11/2026: V1 định nghĩa **13 bảng/76 cột**, bao gồm `external_identities` với 3 cột; migration cần được chạy và kiểm chứng. `users.password_hash` trong V1 hiện nullable. Xem [đặc tả đăng nhập Google](11-dang-nhap-google.md).
 
-Bản SVG cố định của bốn sơ đồ trong [đặc tả PostgreSQL](03-postgresql.md), tổng quan và tương tác xuất lại ngày 12/11/2026. Mở file này bằng
-Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cần plugin Mermaid để dựng lại sơ đồ.
-
-Ảnh dùng nền sáng, nhãn SVG thuần và bố cục được lưu sẵn trong file. Khi thay đổi mô hình ở tài liệu nguồn, cần render lại các ảnh SVG tương ứng để bản này phản ánh thiết kế mới.
+Bản tổng quan gọn và bản đầy đủ thể hiện 13 bảng trong V1; các hình nhóm thể hiện những bảng liên quan đến từng chức năng. Các hình nhóm ghi chú `users.password_hash` có thể NULL. Nguồn draw.io có thể chỉnh sửa kèm SVG tương ứng.
 
 ## Ký hiệu
 
@@ -20,13 +15,12 @@ Markdown Preview trên VS Code hoặc IntelliJ IDEA để xem ảnh; không cầ
 | Vòng tròn và một vạch | Không hoặc một. |
 | Vòng tròn và chân quạ | Không hoặc nhiều. |
 
-Các hình chi tiết hiển thị đầy đủ cột của từng bảng theo [đặc tả PostgreSQL](03-postgresql.md), gồm kiểu dữ liệu, khóa và ghi chú
-nullable. Bản tổng quan gọn hiển thị 12 bảng và các cột PK/FK để dễ lần theo quan hệ. [Bản đầy đủ](assets/erd/tong-quan-day-du.svg) giữ toàn bộ 73 cột; các sơ đồ theo nhóm giữ đầy đủ cột của bảng xuất hiện trong hình. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem tại tài liệu nguồn. Xem [báo cáo chốt thiết kế](erd-review.md)
-để phân biệt kết quả rà soát với phần PostgreSQL còn phải triển khai/kiểm chứng.
+Bản tổng quan gọn hiển thị khóa và quan hệ của 13 bảng trong V1. [Bản đầy đủ](assets/erd/tong-quan-day-du.svg) có 76 cột; [ERD đăng nhập](assets/erd/dang-nhap-google.svg) trình bày `external_identities` và `users`. Giá trị mặc định, CHECK và ràng buộc nhiều cột xem ở tài liệu nguồn.
 
 | Bảng               | Số cột |
 |--------------------|--------|
 | users              | 8      |
+| external_identities | 3 |
 | blogs              | 10     |
 | categories         | 3      |
 | blog_categories    | 4      |
@@ -38,19 +32,21 @@ nullable. Bản tổng quan gọn hiển thị 12 bảng và các cột PK/FK đ
 | blog_images        | 3      |
 | media_cleanup_jobs | 8      |
 | notifications      | 8      |
-| **Tổng**           | **73** |
+| **Tổng**  | **76** |
 
 Hình tổng quan chứa nhiều thông tin; dùng liên kết mở SVG bên dưới mỗi ảnh và phóng to để đọc rõ từng cột.
 
-## 1. Tổng quan mười hai bảng
+## 1. Tổng quan mười ba bảng (thiết kế)
 
-![ERD tổng quan mười hai bảng của SoulSpace](assets/erd/tong-quan.svg)
+![ERD tổng quan mười ba bảng của SoulSpace](assets/erd/tong-quan.svg)
 
-[Mở tổng quan gọn](assets/erd/tong-quan.svg) · [Bản đầy đủ 73 cột](assets/erd/tong-quan-day-du.svg) · [Nguồn bản đầy đủ](assets/erd/tong-quan-day-du.drawio).
+[Mở tổng quan gọn](assets/erd/tong-quan.svg) · [Bản đầy đủ: 76 cột](assets/erd/tong-quan-day-du.svg) · [ERD đăng nhập Google](assets/erd/dang-nhap-google.svg) · [Nguồn ERD đăng nhập](assets/erd/dang-nhap-google.drawio) · [Nguồn bản đầy đủ](assets/erd/tong-quan-day-du.drawio).
 
-Tổng quan gọn dùng đường thẳng, tách riêng các quan hệ song song; đã kiểm tra không có đường cắt nhau, chồng đoạn hoặc xuyên bảng. Bản đầy đủ và các sơ đồ theo nhóm dùng để tra kiểu dữ liệu/cột thường. Không bỏ bảng hoặc quan hệ dữ liệu.
+Tổng quan gọn dùng đường thẳng và tách riêng các quan hệ song song. Bản đầy đủ và các sơ đồ theo nhóm dùng để tra kiểu dữ liệu/cột thường. Không bỏ bảng hoặc quan hệ dữ liệu.
 
-Gồm `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes`, `comment_likes`, `blog_shares`, `media_assets`, `blog_images` và `media_cleanup_jobs`. Quan hệ sở hữu media và quan hệ avatar là hai liên kết riêng.
+Gồm bảng `external_identities` cùng `users`, `categories`, `blog_categories`, `blogs`, `comments`, `blog_likes`, `comment_likes`, `blog_shares`, `media_assets`, `blog_images`, `media_cleanup_jobs` và `notifications`. Quan hệ sở hữu media và quan hệ avatar là hai liên kết riêng.
+
+![ERD tài khoản và danh tính Google dự kiến](assets/erd/dang-nhap-google.svg)
 
 ## 2. Bài viết và bình luận
 
@@ -104,7 +100,7 @@ bảng nối; MANUAL kể cả tập rỗng giữ quyền chọn của tác gi�
 tập MANUAL để đối chiếu, blogs.category_mode chọn nguồn hiển thị. AUTO bắt buộc có confidence trong [0,1]; MANUAL bắt
 buộc NULL. PK ghép giữ riêng hai nguồn cho cùng bài/chủ đề. Slug là tên URL không dấu, duy nhất và ổn định. FK
 blog_categories.blog_id dùng ON DELETE CASCADE; FK category_id dùng ON DELETE RESTRICT. Tổng cấu trúc: categories 3 cột,
-blog_categories 4 cột, blogs 10 cột, các bảng còn lại 48 cột và notifications 8 cột, thành 12 bảng/73 cột.
+blog_categories 4 cột, blogs 10 cột, các bảng còn lại 48 cột và notifications 8 cột, trước bổ sung liên kết Google là 12 bảng/73 cột; thêm external_identities thành 13 bảng/76 cột.
 
 ## Nguồn chỉnh sửa
 

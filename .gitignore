@@ -13,3 +13,5 @@ old/
 # Runtime logs
 *.log
 logs/
+learning/
+AGENTS.md

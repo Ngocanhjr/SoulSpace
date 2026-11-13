@@ -52,7 +52,7 @@
         <mxCell id="16" parent="13" style="shape=partialRectangle;connectable=0;fillColor=none;strokeColor=#9370DB;strokeWidth=1;fontColor=#333333;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;top=1;left=1;bottom=1;right=1;align=left;spacingLeft=8;overflow=hidden;fontSize=24;" value="" vertex="1">
           <mxGeometry height="64.5" width="102.0" x="408.0" as="geometry" />
         </mxCell>
-        <mxCell id="17" parent="13" style="shape=partialRectangle;connectable=0;fillColor=none;strokeColor=#9370DB;strokeWidth=1;fontColor=#333333;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;top=1;left=1;bottom=1;right=1;align=left;spacingLeft=8;overflow=hidden;fontSize=24;" value="" vertex="1">
+        <mxCell id="17" parent="13" style="shape=partialRectangle;connectable=0;fillColor=none;strokeColor=#9370DB;strokeWidth=1;fontColor=#333333;fontFamily=Trebuchet MS,Verdana,Arial,sans-serif;top=1;left=1;bottom=1;right=1;align=left;spacingLeft=8;overflow=hidden;fontSize=24;" value="nullable" vertex="1">
           <mxGeometry height="64.5" width="124.5" x="510.0" as="geometry" />
         </mxCell>
         <mxCell id="18" parent="2" style="shape=tableRow;horizontal=0;startSize=0.0;swimlaneHead=0;swimlaneBody=1;fillColor=#F1F1FF;strokeColor=inherit;strokeWidth=1;collapsible=0;dropTarget=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;top=0;left=0;right=0;bottom=0;fontSize=24;" vertex="1">
@@ -1382,6 +1382,12 @@
             </mxGeometry>
           </mxCell>
         </UserObject>
+        <mxCell id="external-identities-full" parent="1" value="&lt;b&gt;external_identities&lt;/b&gt;&lt;hr&gt;VARCHAR(20) provider [PK]&lt;br&gt;VARCHAR(255) subject [PK]&lt;br&gt;UUID user_id [FK]&lt;br&gt;&lt;br&gt;UNIQUE (user_id, provider)" vertex="1" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=18;fontSize=24;fillColor=#fff2cc;strokeColor=#d6b656;strokeWidth=2;">
+          <mxGeometry x="3382.75" y="4580.25" width="634.5" height="245" as="geometry" />
+        </mxCell>
+        <mxCell id="external-identities-full-rel" parent="1" edge="1" source="2" target="external-identities-full" value="liên kết" style="startArrow=ERmandOne;endArrow=ERzeroToOne;html=1;fontSize=20;strokeColor=#475569;strokeWidth=2;labelBackgroundColor=#ffffff;edgeStyle=none;rounded=0;curved=0;exitX=0.5;exitY=1;entryX=0.5;entryY=0;">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>

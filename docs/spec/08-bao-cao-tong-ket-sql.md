@@ -12,7 +12,7 @@ vụ môi trường dùng chung; mỗi backend chỉ kết nối một database 
 
 | Nội dung         | Quyết định và nguồn                                                                                                                                       |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Schema V1        | 12 bảng/73 cột, gồm chủ đề, nguồn nhãn và confidence. [V1](../../soulspace/src/main/resources/db/migration/V1__core_schema.sql)                           |
+| Schema V1        | 13 bảng/76 cột, gồm chủ đề, nguồn nhãn, confidence và liên kết Google. [V1](../../soulspace/src/main/resources/db/migration/V1__core_schema.sql)                           |
 | Index V2         | Giữ 19 index sau phân tích query, khóa sẵn có và chi phí duy trì. [V2](../../soulspace/src/main/resources/db/migration/V2__query_indexes.sql)             |
 | View             | v_public_blog_feed: bài public kèm thông tin tác giả hiện tại, mỗi bài một hàng. [V5](../../soulspace/src/main/resources/db/migration/V5__read_views.sql) |
 | Stored procedure | Bốn procedure tương tác trong V4; phần phân tích chi tiết bổ sung khi review V4.                                                                          |
@@ -34,6 +34,7 @@ V1 được bổ sung trực tiếp vì người dùng xác nhận mới chạy 
 | Bảng               |    Cột | Trách nhiệm                                                  |
 |--------------------|-------:|--------------------------------------------------------------|
 | users              |      8 | Tài khoản, hồ sơ, hash mật khẩu và avatar                    |
+| external_identities |      3 | Liên kết danh tính Google với tài khoản SoulSpace            |
 | blogs              |     10 | Bài viết, public/private, counters và chế độ chủ đề hiển thị |
 | categories         |      3 | Danh mục chủ đề với tên và slug                              |
 | blog_categories    |      4 | Liên kết bài/chủ đề/nguồn và confidence                      |
@@ -45,7 +46,7 @@ V1 được bổ sung trực tiếp vì người dùng xác nhận mới chạy 
 | blog_images        |      3 | Asset gắn vào bài và vị trí hiển thị                         |
 | media_cleanup_jobs |      8 | Công việc dọn media, retry và lease                          |
 | notifications      |      8 | Lịch sử tương tác, người nhận và trạng thái đã đọc           |
-| **Tổng**           | **73** | **12 bảng**                                                  |
+| **Tổng**           | **76** | **13 bảng**                                                  |
 
 ### 2.2. Bài viết và bình luận
 
@@ -93,7 +94,7 @@ trong [03 PostgreSQL](03-postgresql.md), hình và nguồn ở [erd.md](erd.md).
 
 ### 3.1. Khóa và kiểu dữ liệu
 
-- UUID do backend/seed cấp; PRIMARY KEY không đồng nghĩa SQL tự sinh UUID khi chưa có DEFAULT.
+- Thiết kế chốt tất cả ID sinh mới dùng UUID v7, bao gồm notifications.id do database sinh. V1 đã dùng DEFAULT uuid_v7(); cần kiểm chứng generator tương thích PostgreSQL 17 trước khi nghiệm thu. Seed/fixture có ID cố định được giữ để tái hiện kiểm thử. PRIMARY KEY không đồng nghĩa SQL tự sinh UUID khi chưa có DEFAULT. Xem [chính sách sinh UUID](03-postgresql.md#chính-sách-sinh-uuid); phiên bản generator là quyết định thiết kế, chưa có kết quả chạy Java/JDBC cho chính sách mới.
 - DATE dùng cho dob; TIMESTAMPTZ dùng cho thời gian sự kiện. DEFAULT now() chỉ áp dụng lúc INSERT bỏ qua cột, không tự
   sửa updated_at khi UPDATE.
 - BIGINT NOT NULL DEFAULT 0 và CHECK không âm cho counters; nguồn đối soát là các bảng quan hệ.
@@ -551,7 +552,7 @@ model. Thiết kế và kết quả nghiệm thu là hai loại thông tin riên
 
 ## Bổ sung thông báo — 12/11/2026
 
-notifications thêm 8 cột: schema 12 bảng/73 cột. V2 tổng 19 index, gồm 5 index thông báo (recipient/time, unread, blog, comment và actor). V3 tổng 10 function/18 trigger; create_interaction_notification được 4 AFTER INSERT trigger gọi. Counters hiện có giữ nguyên. V4 thêm quyền notifications, không thêm procedure; V5 giữ nguyên.
+notifications thêm 8 cột và external_identities thêm 3 cột: schema 13 bảng/76 cột. V2 tổng 19 index, gồm 5 index thông báo (recipient/time, unread, blog, comment và actor). V3 tổng 10 function/18 trigger; create_interaction_notification được 4 AFTER INSERT trigger gọi. Counters hiện có giữ nguyên. V4 thêm quyền notifications, không thêm procedure; V5 giữ nguyên.
 
 Thông báo lưu cùng transaction và chỉ khi hàng mới thực sự được thêm. UNIQUE chống spam khi thích/chia sẻ lại, CHECK loại/ngữ cảnh, FK cascade khi xóa và quyền chỉ cập nhật read_at. [Thiết kế](10-thong-bao.md), [ERD](assets/erd/thong-bao.svg), [diagram trigger](../diagram/v4/05-interaction-notification.drawio.png).
 

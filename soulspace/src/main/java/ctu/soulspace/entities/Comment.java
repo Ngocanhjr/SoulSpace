@@ -1,35 +1,58 @@
-package ctu.edu.blogAPI.entities;
+package ctu.soulspace.entities;
 
-import lombok.*;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SourceType;
+import org.hibernate.annotations.UuidGenerator;
 
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
+@Entity
+@Table(name = "comments")
 @Getter
 @Setter
+@NoArgsConstructor
 public class Comment {
-    private String id;
+    @Id
+    @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+    @Column(name = "id", nullable = false, updatable = false)
+    private UUID id;
 
-    private String userId;
+    @Column(name = "blog_id", nullable = false, updatable = false)
+    private UUID blogId;
 
-    private UserInfo author;
+    @Column(name = "author_id")
+    private UUID authorId;
 
+    @Column(name = "parent_id", updatable = false)
+    private UUID parentId;
+
+    @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
-    @Builder.Default
-    private Long likesCount = 0L;
+    @Setter(AccessLevel.NONE)
+    @Column(name = "likes_count", nullable = false, insertable = false, updatable = false)
+    private Long likesCount;
 
-    @Builder.Default
-    private Set<String> likedUserIds = new HashSet<>();
-
-    @Builder.Default
-    private List<Comment> replies = new ArrayList<>();
-
+    @CreationTimestamp(source = SourceType.DB)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
+
+    @Setter(AccessLevel.NONE)
+    @Column(name = "updated_at", nullable = false, insertable = false, updatable = false)
+    private Instant updatedAt;
+
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
+
+    @Setter(AccessLevel.NONE)
+    @Column(name = "version", nullable = false, insertable = false, updatable = false)
+    private Long version;
 }

@@ -181,7 +181,7 @@ GRANT EXECUTE ON PROCEDURE sp_set_blog_like(UUID, UUID, BOOLEAN),
 -- Procedures run with the caller's privileges, so the runtime also needs table access.
 GRANT SELECT, INSERT, UPDATE, DELETE ON users, blogs, comments, blog_likes,
     comment_likes, blog_shares, media_assets, blog_images, media_cleanup_jobs,
-    categories, blog_categories TO soulspace_runtime;
+    categories, blog_categories, external_identities TO soulspace_runtime;
 
 -- The runtime must not modify Flyway migration history.
 DO $$

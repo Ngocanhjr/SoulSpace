@@ -1,4 +1,4 @@
-package ctu.edu.blogAPI.entities;
+package ctu.soulspace.entities;
 
 import lombok.*;
 

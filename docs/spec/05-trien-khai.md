@@ -36,6 +36,14 @@ Giữ package gốc `ctu.soulspace` với cấu trúc controller/service/reposit
 
 Dependency bổ sung được yêu cầu là Cloudinary SDK tương thích, BouncyCastle cho Argon2, và công cụ integration test PostgreSQL khi triển khai. Giữ dependency do Spring Boot quản lý nếu phù hợp; kiểm effective versions và advisory trước khi pin. Không copy nguyên POM legacy hoặc gắn version Spring Security khác BOM Boot. POM đang khai Boot 4.1.1/Java 21 nhưng chưa có bằng chứng build; xác minh mốc đầu.
 
+## Generator UUID khi triển khai Entity
+
+Theo [D17 và chính sách UUID](03-postgresql.md#chính-sách-sinh-uuid), tất cả ID được sinh mới phải là v7; notifications.id vẫn do database sinh khi trigger tạo thông báo. Trước khi chọn annotation, kiểm tra Hibernate thực tế do Spring Boot BOM resolve và generator hỗ trợ v7. Không nâng PostgreSQL hoặc thêm dependency chỉ vì mặc định GenerationType.UUID chưa chỉ rõ v7. Nếu runtime chưa hỗ trợ phương án đã chọn, ghi nhận và chốt cách triển khai thay vì âm thầm đổi chính sách sang v4.
+
+Với PostgreSQL 17, V1 đã định nghĩa hàm `uuid_v7()` trước bảng notifications và dùng làm DEFAULT. Cần kiểm chứng hàm theo RFC 9562; trigger vẫn INSERT không truyền id.
+
+Khi triển khai, đồng bộ entity, các đường ghi native/procedure cần ID Java cấp, seed sinh ID mới và bài Entity/JPA trong learning với chính sách này. Giữ fixture ID cố định, khóa ghép, FK và kiểu UUID hiện có. Chạy các ca UUID01–UUID04 trong tài liệu 06; chỉ ghi đã hoàn tất khi có bằng chứng chạy. Tác vụ hiện tại chỉ cập nhật spec, chưa thay generator hoặc bài học.
+
 ## File dự kiến khi triển khai
 
 Nền database/config đã được tạo: Compose, env examples, provision roles, các profile và Flyway V1–V5.
@@ -114,7 +122,7 @@ Neon có thể có thời gian mở compute/kết nối lại tùy cấu hình p
 
 Sau các mốc migration core, triển khai model/API
 theo [thứ tự phân loại chủ đề](07-phan-loai-chu-de.md#triển-khai-và-nghiệm-thu-riêng). Schema chủ đề/confidence đã có
-trong V1, tổng 12 bảng/73 cột; không tạo thêm migration lặp các bảng này. V1 được bổ sung trước lần chạy Flyway đầu tiên
+trong V1, tổng 13 bảng/76 cột; không tạo thêm migration lặp các bảng này. V1 được bổ sung trước lần chạy Flyway đầu tiên
 theo xác nhận của người dùng; migration đã áp dụng phải được giữ nguyên.
 
 | Mốc | Công việc                                                                                                                                         | Điều kiện hoàn tất                                                                                                                  |
@@ -174,7 +182,7 @@ Compose bind cổng database vào `127.0.0.1`, có healthcheck, volume lưu dữ
 
 Cần source, secret examples, Flyway, seed runner, ERD/API cập nhật, bộ test và báo cáo kết quả riêng cho Docker, Neon, media thật và LAN. Runbook phải nêu đúng cách nạp env, xem job DEAD và requeue ID cụ thể, đổi database, phục hồi kết nối và giới hạn session sau restart. Không đưa credential, bản dump dữ liệu cá nhân hoặc URL ký media vào báo cáo.
 
-Schema chốt 12 bảng/73 cột theo 03-postgresql.md. Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
+V1 định nghĩa 13 bảng/76 cột, gồm `external_identities` (3 cột); cần chạy migration và nghiệm thu theo [tài liệu 11](11-dang-nhap-google.md). Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
 buộc lease/status và các invariant comment/media đã chốt. Chốt thiết kế không thay thế bằng chứng chạy migration.
 Requeue DEAD cần theo transaction và cặp claim trong tài liệu bảo mật/media; không reset một job RUNNING hoặc bỏ điều
 kiện xác nhận lượt xử lý.

@@ -52,15 +52,15 @@ DDL được triển khai trước theo Flyway V1–V5; bằng chứng từng k�
 
 ## Mô hình và kiểu dữ liệu
 
-Các bảng và bốn sơ đồ bên dưới thể hiện **thiết kế đầy đủ: 12 bảng/73 cột**, gồm chủ đề và confidence. V1 đã bổ sung
+V1 định nghĩa **13 bảng/76 cột**, gồm bảng liên kết Google `external_identities` (3 cột); cần chạy migration để kiểm chứng. V1 đã bổ sung
 categories (3 cột), blog_categories (4 cột) và blogs.category_mode trước lần chạy Flyway đầu tiên theo xác nhận của
 người dùng. Model triển khai theo [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md#dữ-liệu-mở-rộng).
 Xem [ERD mở rộng](erd.md#5-mở-rộng-phân-loại-chủ-đề-giai-đoạn-ai).
 
-PostgreSQL là nguồn dữ liệu nghiệp vụ duy nhất của backend mới: Neon cho dùng chung/online và Docker cho local, mỗi lần chạy chỉ trỏ một database. Chọn cùng major, mặc định 17; cùng một bộ Flyway, trigger và procedure trên cả hai. Không đồng bộ hoặc tự động failover ghi dữ liệu giữa Neon và Docker. Dùng UUID sinh ở server cho các thực thể và trả string qua JSON. Không lưu ObjectId, snapshot tác giả, cây comments dưới dạng JSON, hoặc danh sách like trong một cột. `UserInfo` legacy được thay bằng JOIN users khi dựng DTO.
+PostgreSQL là nguồn dữ liệu nghiệp vụ duy nhất của backend mới: Neon cho dùng chung/online và Docker cho local, mỗi lần chạy chỉ trỏ một database. Chọn cùng major, mặc định 17; cùng một bộ Flyway, trigger và procedure trên cả hai. Không đồng bộ hoặc tự động failover ghi dữ liệu giữa Neon và Docker. ID được sinh mới đều dùng UUID v7; Java sinh ID thực thể, PostgreSQL sinh notifications.id khi trigger tạo thông báo. API trả UUID qua JSON dưới dạng string. Không lưu ObjectId, snapshot tác giả, cây comments dưới dạng JSON, hoặc danh sách like trong một cột. `UserInfo` legacy được thay bằng JOIN users khi dựng DTO.
 
 Các sơ đồ dưới đây hiển thị đầy đủ cột của các bảng xuất hiện trong mỗi hình, gồm kiểu dữ liệu, khóa và ghi chú
-nullable. Nguồn Mermaid và [bản tổng quan đầy đủ](assets/erd/tong-quan-day-du.svg) có 12 bảng/73 cột; SVG tổng quan gọn chỉ hiển thị các cột khóa để đọc quan hệ; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ
+nullable. Nguồn Mermaid và [bản tổng quan đầy đủ](assets/erd/tong-quan-day-du.svg) mô tả 13 bảng/76 cột được định nghĩa trong V1. SVG tổng quan gọn chỉ hiển thị các cột khóa để đọc quan hệ; ba sơ đồ theo nhóm lặp lại đầy đủ cột của các bảng liên quan để dễ
 đọc. Giá trị mặc định, CHECK và ràng buộc nhiều cột nằm trong các bảng mô tả ở phần sau. `PK, FK` chỉ cột vừa thuộc khóa
 chính vừa là khóa ngoại; `UK` chỉ ràng buộc duy nhất trên một cột. UNIQUE ghép được mô tả riêng.
 
@@ -70,6 +70,7 @@ Có thể đọc bảng dưới đây rồi chuyển đến phần mô tả từ
 
 | Bảng               | Lưu thông tin gì?                                                     | Liên kết và cách đọc                                                                                                                                                                        |
 |--------------------|-----------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| external_identities | Liên kết với danh tính Google | Mỗi hàng tham chiếu một user; PK `(provider, subject)` và UNIQUE `(user_id, provider)`. Chi tiết tại [đăng nhập Google](11-dang-nhap-google.md). |
 | users              | Tài khoản, hồ sơ và hash mật khẩu                                     | Một user có nhiều bài viết và bình luận; avatar_media_id trỏ đến một media asset hoặc NULL khi dùng avatar mặc định.                                                                        |
 | blogs              | Nội dung, quyền công khai, chủ đề, thời gian và counters của bài viết | author_id trỏ đến user viết bài; category_mode chọn tập AUTO/MANUAL để hiển thị; blog_categories lưu riêng hai tập theo category_source. Mỗi bài có nhiều comments, ảnh, likes và shares.   |
 | blog_categories    | Tập chủ đề của từng bài                                               | Bảng nối N–N; PK ghép (blog_id, category_id, category_source), mỗi hàng nối đúng một bài với một chủ đề và một nguồn AUTO/MANUAL.                                                           |
@@ -87,9 +88,31 @@ Ví dụ một bài có hai ảnh và ba người like sẽ có một hàng blog
 
 Các trường thời gian và counters nằm ngay trên bảng mô tả đối tượng/quan hệ tương ứng. Mục bảng ở phần sau giải thích kiểu dữ liệu, khóa và cách duy trì nhất quán khi ghi.
 
+### Chính sách sinh UUID
+
+Chốt ngày 12/11/2026: tất cả ID được sinh mới dùng **UUID v7**, bao gồm `notifications.id` do PostgreSQL sinh khi trigger tạo thông báo. Kiểu cột vẫn là `UUID`, kiểu Java vẫn là `java.util.UUID`, JSON vẫn trả ID dưới dạng string.
+
+| Phạm vi | Phiên bản và nguồn ID |
+| --- | --- |
+| `users.id`, `blogs.id`, `comments.id`, `media_assets.id`, `categories.id`, `media_cleanup_jobs.id` | UUID v7 do backend Java sinh khi tạo bản ghi mới. |
+| `notifications.id` | UUID v7 do database sinh qua DEFAULT gọi hàm `uuid_v7()`; trigger INSERT bỏ qua cột id để dùng default. |
+| `blog_images.asset_id` | Dùng lại ID của media asset đã tồn tại, không sinh ID riêng cho liên kết. |
+| `blog_likes`, `comment_likes`, `blog_shares`, `blog_categories` | Dùng khóa chính ghép đã thiết kế; lấy các ID được tham chiếu, không bổ sung UUID riêng. |
+| Seed/fixture có UUID cố định | Giữ ID cố định để kiểm thử tái hiện được; không tự thay dữ liệu fixture thành UUID mới. Khi seed tạo ID mới bằng generator Java, generator đó phải sinh v7. |
+
+Backend phải chọn generator v7 rõ ràng; không coi `@GeneratedValue(strategy = GenerationType.UUID)` mặc định hoặc `UUID.randomUUID()` là bảo đảm v7. Khi triển khai, kiểm tra phiên bản Hibernate thực tế được Spring Boot BOM resolve trước khi dùng `UuidGenerator.Style.VERSION_7`. `Style.TIME` không phải v7. Chưa chốt hoặc thêm thư viện sinh UUID khác trong lượt cập nhật spec này.
+
+Giữ PostgreSQL major 17. V1 định nghĩa `uuid_v7()` và dùng hàm này làm DEFAULT cho notifications.id; cần kiểm chứng trên PostgreSQL thật. Không gọi trực tiếp uuidv7() của PostgreSQL 18 trên PostgreSQL 17; không tự nâng major hoặc yêu cầu extension để đồng nhất phiên bản UUID. Không suy phiên bản của ID mới từ tên kiểu `UUID`. Chính sách sinh ID cũng không thêm quy tắc từ chối một ID tham chiếu/ID fixture chỉ vì nó khác v7; API tiếp tục kiểm định dạng UUID, tồn tại và quyền theo hợp đồng hiện có.
+
+UUID v7 có phần thời gian giúp các ID sinh gần nhau có tính cục bộ tốt hơn trong index. Đây là cơ sở chọn thiết kế, chưa phải số đo hiệu năng SoulSpace. Không dùng thứ tự UUID thay cho thời gian nghiệp vụ hoặc thứ tự commit; feed/comment/share vẫn ghi `ORDER BY` theo thời gian và ID đã chốt, kể cả khi nhiều ID được sinh trong cùng millisecond hoặc từ các tiến trình khác nhau.
+
+Nguồn kỹ thuật: [RFC 9562: UUID v7](https://www.rfc-editor.org/rfc/rfc9562.html#section-5.7), [Hibernate: kiểu generator UUID](https://docs.hibernate.org/orm/7.1/javadocs/org/hibernate/annotations/UuidGenerator.Style.html), [PostgreSQL 17: gen_random_uuid sinh v4](https://www.postgresql.org/docs/17/functions-uuid.html).
+
+Đây là quyết định thiết kế. Generator database đã được thêm vào V1; generator Java và migration vẫn cần được kiểm chứng khi triển khai.
+
 ### Sơ đồ tổng quan
 
-Sơ đồ gồm đủ mười hai bảng và toàn bộ 73 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là
+Sơ đồ mục tiêu gồm mười ba bảng và toàn bộ 76 cột, dùng ký hiệu chân quạ: `||` là đúng một, `o|` là không hoặc một, `o{` là
 không hoặc nhiều. Cả bốn sơ đồ chọn bố cục ELK để ưu tiên đường nối ngang/dọc gấp vuông góc; cần trình xem hỗ trợ ELK
 cho ERD. Bản SVG trong erd.md lưu sẵn bố cục để tránh khác biệt giữa trình xem.
 
@@ -100,6 +123,7 @@ config:
 ---
 erDiagram
     direction LR
+    users ||--o| external_identities : links
     users ||--o{ notifications : recipient
     users ||--o{ notifications : actor
     blogs ||--o{ notifications : target
@@ -125,12 +149,18 @@ erDiagram
     users {
         UUID id PK
         VARCHAR(32) username UK
-        TEXT password_hash
+        TEXT password_hash "nullable"
         VARCHAR(100) fullname
         DATE dob "nullable"
         UUID avatar_media_id FK, UK "nullable"
         TIMESTAMPTZ created_at
         TIMESTAMPTZ updated_at
+    }
+
+    external_identities {
+        VARCHAR(20) provider PK
+        VARCHAR(255) subject PK
+        UUID user_id FK
     }
 
     blog_categories {
@@ -253,7 +283,7 @@ erDiagram
     users {
         UUID id PK
         VARCHAR(32) username UK
-        TEXT password_hash
+        TEXT password_hash "nullable"
         VARCHAR(100) fullname
         DATE dob "nullable"
         UUID avatar_media_id FK, UK "nullable"
@@ -328,7 +358,7 @@ erDiagram
     users {
         UUID id PK
         VARCHAR(32) username UK
-        TEXT password_hash
+        TEXT password_hash "nullable"
         VARCHAR(100) fullname
         DATE dob "nullable"
         UUID avatar_media_id FK, UK "nullable"
@@ -427,7 +457,7 @@ erDiagram
     users {
         UUID id PK
         VARCHAR(32) username UK
-        TEXT password_hash
+        TEXT password_hash "nullable"
         VARCHAR(100) fullname
         DATE dob "nullable"
         UUID avatar_media_id FK, UK "nullable"
@@ -506,7 +536,7 @@ Mỗi hàng là một tài khoản. username dùng để đăng nhập, fullname
 | --- | --- |
 | id | UUID, PK |
 | username | VARCHAR(32), NOT NULL, UNIQUE; CHECK khớp `^[a-z0-9]{3,32}$` |
-| password_hash | TEXT, NOT NULL; chuỗi Argon2id hoàn chỉnh gồm tham số và salt |
+| password_hash | TEXT, nullable; khi có mật khẩu thì lưu hash Argon2id hoàn chỉnh gồm tham số và salt. Tài khoản chỉ đăng nhập Google có thể để NULL. |
 | fullname | VARCHAR(100), NOT NULL; CHECK độ dài sau trim 1–100 |
 | dob | DATE, nullable; kiểm ngày quá khứ trong service, không dùng CHECK phụ thuộc ngày hiện tại |
 | avatar_media_id | UUID, nullable, UNIQUE, FK media_assets ON DELETE SET NULL |
@@ -910,7 +940,7 @@ Các query đọc dựng BlogDTO dùng JOIN users, batch lấy ảnh và trạng
 
 Migration [V5__read_views.sql](../../soulspace/src/main/resources/db/migration/V5__read_views.sql) tạo view
 thường `public.v_public_blog_feed`. View JOIN blogs với users và lọc `blogs.published=true`, mỗi blog public đúng một
-hàng. View không thêm bảng hoặc dữ liệu sao chép; schema có 12 bảng/73 cột, cộng 1 view có 11 cột; view không thay đổi
+hàng. View không thêm bảng hoặc dữ liệu sao chép; V1 định nghĩa 13 bảng/76 cột, cộng 1 view có 11 cột; view không thay đổi
 số cột của bảng gốc.
 
 | Cột view                                  | Nguồn và công dụng                                            |
@@ -981,7 +1011,7 @@ repository/service đọc view trong backend; nghiệm thu sử dụng thật đ
 
 | Migration dự kiến               | Nội dung                                                                                                                  |
 |---------------------------------|---------------------------------------------------------------------------------------------------------------------------|
-| V1__core_schema.sql             | Mười hai bảng/73 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
+| V1__core_schema.sql             | Mười ba bảng/76 cột, gồm category_mode, category_source, confidence, PK/FK/UNIQUE/CHECK và FK avatar bổ sung sau.        |
 | V2__query_indexes.sql           | Các index bổ sung có mục đích ở trên.                                                                                     |
 | V3__counters_and_invariants.sql | Trigger counters hỗ trợ soft delete, parent hợp lệ/cây không vòng không lưu depth hoặc giới hạn cứng độ sâu, field bất biến, nonempty blog deferred constraint và thông báo tương tác. |
 | V4__interaction_procedures.sql  | Bốn stored procedure, quyền EXECUTE và SELECT/INSERT/UPDATE(read_at) cho notifications.                                                                                    |
@@ -991,7 +1021,7 @@ repository/service đọc view trong backend; nghiệm thu sử dụng thật đ
 
 Database riêng cho dự án, schema public do role migrator quản lý. Role runtime không là superuser/owner, không có CREATE/ALTER/DROP, chỉ được DML/SELECT/EXECUTE cần thiết và không được sửa Flyway history. Thu hồi CREATE mặc định trên schema khỏi PUBLIC. Docker bootstrap tạo role/schema trước Flyway; Neon được provision bằng quyền owner của project, không yêu cầu quyền superuser thực. Mật khẩu do môi trường cấp, không nhúng vào SQL. Giữ quyền mặc định cho các bảng/sequence/function tạo bởi migration tiếp theo.
 
-Neon không cần extension cho schema giai đoạn đầu: UUID được Java sinh, procedure/trigger dùng PL/pgSQL chuẩn. Flyway dùng direct endpoint và credentials migrator; runtime mặc định cũng dùng direct endpoint với Hikari tối đa 5 connections cho một backend. Chi tiết TLS, pool và profile ở [triển khai](05-trien-khai.md). [Neon pooling và migrations](https://neon.com/docs/connect/connection-pooling).
+Neon không cần extension cho schema giai đoạn đầu: ID mới dùng UUID v7; generator Java cần được kiểm chứng và hàm sinh v7 tại database đã định nghĩa trong V1, không yêu cầu extension mới. `notifications.id` dùng DEFAULT `uuid_v7()`; procedure/trigger dùng PL/pgSQL chuẩn. Xem [chính sách sinh UUID](#chính-sách-sinh-uuid). Flyway dùng direct endpoint và credentials migrator; runtime mặc định cũng dùng direct endpoint với Hikari tối đa 5 connections cho một backend. Chi tiết TLS, pool và profile ở [triển khai](05-trien-khai.md). [Neon pooling và migrations](https://neon.com/docs/connect/connection-pooling).
 
 ## Đối soát
 
@@ -1009,9 +1039,9 @@ Tương tự cho comments theo blog_id nhưng chỉ COUNT các hàng deleted_at 
 
 ## Bổ sung thông báo trước lần migration đầu tiên — 12/11/2026
 
-V1 bổ sung notifications (8 cột), đưa tổng lên 12 bảng/73 cột. V2 có 19 index tường minh, gồm 5 index thông báo. V3 có 10 function/18 trigger, bổ sung create_interaction_notification và 4 AFTER INSERT trigger trên blog_likes, comment_likes, blog_shares, comments. V4 giữ 4 procedure; bổ sung quyền SELECT/INSERT và UPDATE riêng read_at. V5 không đổi. Đây là thay đổi nghiệp vụ bổ sung, không chỉ định dạng SQL.
+V1 bổ sung notifications (8 cột) và external_identities (3 cột), đưa tổng lên 13 bảng/76 cột. V2 có 19 index tường minh, gồm 5 index thông báo. V3 có 10 function/18 trigger, bổ sung create_interaction_notification và 4 AFTER INSERT trigger trên blog_likes, comment_likes, blog_shares, comments. V4 giữ 4 procedure; bổ sung quyền SELECT/INSERT và UPDATE riêng read_at. V5 không đổi. Đây là thay đổi nghiệp vụ bổ sung, không chỉ định dạng SQL.
 
-UNIQUE NULLS NOT DISTINCT(recipient_id, actor_id, blog_id, type, comment_id) chống trùng cả khi comment_id NULL. CHECK ràng buộc type với comment_id; FK(comment_id,blog_id) bảo đảm bình luận đúng bài. UUID thông báo do gen_random_uuid() tạo. Chi tiết cột, người nhận, quyền, truy vấn, xóa và retry xem [10 thông báo](10-thong-bao.md).
+UNIQUE NULLS NOT DISTINCT(recipient_id, actor_id, blog_id, type, comment_id) chống trùng cả khi comment_id NULL. CHECK ràng buộc type với comment_id; FK(comment_id,blog_id) bảo đảm bình luận đúng bài. UUID thông báo được chốt dùng v7 do database sinh; V1 dùng DEFAULT `uuid_v7()` theo chính sách UUID. Chi tiết cột, người nhận, quyền, truy vấn, xóa và retry xem [10 thông báo](10-thong-bao.md).
 
 ```sql
 CREATE INDEX notifications_recipient_time_idx ON notifications (recipient_id, created_at DESC, id DESC);
@@ -1023,4 +1053,4 @@ CREATE INDEX notifications_actor_idx ON notifications (actor_id);
 
 Index UNIQUE có recipient_id đứng đầu nên không thay thế index actor_id cho xóa tài khoản. notifications_actor_idx hỗ trợ FK actor. Khi SELECT vẫn phải ghi ORDER BY created_at DESC, id DESC. Diagram thông báo: [luồng trigger](../diagram/v4/05-interaction-notification.drawio.png).
 
-Từ bản trình bày ngày 12/11/2026, [tong-quan.svg](assets/erd/tong-quan.svg) là ERD gọn với PK/FK. Toàn bộ 73 cột vẫn nằm trong nguồn Mermaid bên trên và [tong-quan-day-du.svg](assets/erd/tong-quan-day-du.svg); đây chỉ là tách cách trình bày, không thay đổi schema.
+Từ bản trình bày ngày 12/11/2026, [tong-quan.svg](assets/erd/tong-quan.svg) là ERD gọn với PK/FK. Bản đầy đủ có 76 cột, gồm ba cột của `external_identities`; xem thêm [ERD đăng nhập](assets/erd/dang-nhap-google.svg).

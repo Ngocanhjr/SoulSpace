@@ -1,6 +1,6 @@
 <svg id="erdFinal3" width="1911" xmlns="http://www.w3.org/2000/svg" class="erDiagram"
-     style="max-width: 100%; background-color: white; height: auto;" viewBox="4 4 1910.8046875 1045.291748046875"
-     role="graphics-document document" aria-roledescription="er" height="1046">
+     style="max-width: 100%; background-color: white; height: auto;" viewBox="4 4 1910.8 1097.29"
+     role="graphics-document document" aria-roledescription="er" height="1098">
     <rect x="4" y="4" width="1910.8046875" height="1045.291748046875" fill="white"></rect>
     <g class="edges edgePaths">
         <path d="M1242.219,321.083L1259.602,321.083C1276.984,321.083,1311.75,321.083,1329.604,320.721C1347.458,320.359,1348.401,319.636,1349.235,318.802C1350.068,317.969,1350.792,317.026,1351.154,288.555C1351.516,260.083,1351.516,204.083,1351.878,175.612C1352.239,147.141,1352.963,146.198,1353.797,145.364C1354.63,144.531,1355.573,143.807,1358.128,143.445C1360.682,143.083,1364.849,143.083,1366.932,143.083L1369.016,143.083"
@@ -2483,4 +2483,4 @@
             </g>
         </g>
     </g>
-</svg>
+<text xmlns="http://www.w3.org/2000/svg" x="20" y="1081.29" font-family="Arial, sans-serif" font-size="18" fill="#111827">Ghi chú: users.password_hash có thể NULL.</text></svg>

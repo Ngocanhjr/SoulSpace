@@ -1,6 +1,6 @@
 # Rà soát và chốt thiết kế database SoulSpace
 
-Cập nhật 12/11/2026: thiết kế hiện hành là v1.5, 12 bảng/73 cột và 39 route dự kiến (35 core + 2 chủ đề + 2 thông báo). SQL đã bổ sung V1–V4; API/UI chưa triển khai. Các kết quả v1.1/v1.4 bên dưới giữ nguyên như hồ sơ lịch sử; kiểm chứng mới xem [10 thông báo](10-thong-bao.md).
+Cập nhật 13/11/2026: V1 định nghĩa 13 bảng/76 cột, gồm external_identities và hàm uuid_v7() cho notifications.id. Migration, quyền và generator cần được kiểm chứng trên PostgreSQL thật; API/UI Google chưa triển khai. Quyết định và nghiệm thu xem [đăng nhập Google](11-dang-nhap-google.md) và [thông báo](10-thong-bao.md). Các kết quả v1.1/v1.4 bên dưới là hồ sơ lịch sử.
 
 Ghi chú 31/10/2026: báo cáo dưới đây giữ nguyên phạm vi core phiên bản 1.1 (9 bảng/57 cột, 35 endpoint). Spec hiện tại
 phiên bản 1.4 có [thiết kế phân loại chủ đề](07-phan-loai-chu-de.md), [ERD đầy đủ](erd.md), tổng 11 bảng/65 cột và 37
