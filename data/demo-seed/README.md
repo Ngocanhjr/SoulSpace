@@ -122,6 +122,19 @@ Mỗi người có PostgreSQL riêng thì thực hiện bước 1–4 trên máy
 
 ## 7. Tạo lại CSV và kiểm tra
 
+### Thử hồ sơ demo01 với 1.300 bài
+
+Thêm `--extend-demo01` khi nạp cả ba đợt. Tùy chọn dùng được trên database demo trống đã migrate hoặc database đang chứa bộ seed nguyên bản. Với bộ seed nguyên bản, runner chỉ thêm 988 bài công khai và 296 bài riêng tư, đưa riêng `demo01` lên đúng 1.000 bài công khai và 300 bài riêng tư. Cả database có 1.684 bài. Các bài bổ sung là dữ liệu mô phỏng từ mẫu câu tiếng Việt để thử phân trang, không có ảnh, nhãn hoặc tương tác bổ sung.
+
+```powershell
+.\data\demo-seed\.venv\Scripts\python.exe data/demo-seed/seed.py --apply --extend-demo01 --env-file .env.demo-seed --target-database soulspace_demo
+.\data\demo-seed\.venv\Scripts\python.exe data/demo-seed/seed.py --verify --extend-demo01 --env-file .env.demo-seed --target-database soulspace_demo
+```
+
+Runner nạp trong cùng transaction và đối soát nội dung trước khi commit. Chạy lại không thêm bản ghi. Nếu dữ liệu demo đã bị sửa hoặc có thêm dữ liệu của nhóm, dùng database demo riêng mới.
+
+### Tái tạo bộ CSV gốc
+
 `content.txt` chứa 400 bài cùng đối thoại được biên soạn; `generate.py` đặt seed ngẫu nhiên cố định, tác giả, thời gian, UUID v7 và quan hệ. Sửa nội dung tại nguồn rồi tạo lại và xem diff trước khi chia sẻ. Không thay CSV thủ công vì runner kiểm khớp nguồn.
 
 ```powershell
