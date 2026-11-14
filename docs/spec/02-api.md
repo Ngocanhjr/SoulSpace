@@ -41,7 +41,7 @@ Ví dụ đăng nhập thành công:
   "user": {
     "id": "10000000-0000-4000-8000-000000000001",
     "username": "demo01",
-    "avatarUrl": "/default-avatar.svg"
+    "avatarUrl": "/default-avatar.png"
   },
   "message": "Log in successfully"
 }
@@ -54,7 +54,7 @@ Ví dụ `BlogDTO`:
   "id": "20000000-0000-4000-8000-000000000001",
   "userId": "10000000-0000-4000-8000-000000000001",
   "username": "demo01",
-  "userAvatarUrl": "/default-avatar.svg",
+  "userAvatarUrl": "/default-avatar.png",
   "content": "Một bài viết demo",
   "imageContentUrls": [],
   "likesCount": 2,

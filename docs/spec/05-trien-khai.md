@@ -180,6 +180,22 @@ Compose bind cổng database vào `127.0.0.1`, có healthcheck, volume lưu dữ
 
 ## Bàn giao
 
+### Triển khai xác thực local
+
+UI đăng ký/đăng nhập dùng Axios client chung có cookie và CSRF. Vite dev/preview proxy `/api` sang backend `127.0.0.1:8080`; VITE_API_BASE_URL để trống khi dùng proxy. Tải lại trang gọi `/auth/me` để xác nhận session, localStorage chỉ giữ dữ liệu tương thích cho những trang chưa migrate. Sidebar hiển thị username và nút logout gọi backend. Hồ sơ/feed/media vẫn chưa có API đầy đủ, không dùng trạng thái của các màn hình đó để kết luận đăng nhập thất bại.
+
+Log backend có các event user_registered/login_success/authentication_rejected/logout; event thành công có UUID nội bộ, không ghi mật khẩu/hash/token/session ID. Profile db-local bật DEBUG riêng JpaTransactionManager để xem ranh giới transaction, không bật log SQL bind parameters. Các form xác thực không log toàn bộ lỗi Axios. SQL chỉ đọc để xem user mới và metadata nằm tại `infra/postgres/check-auth.sql` (chạy bằng psql, truyền `-v username=testuser01`).
+
+Source đã có `UserRepository`, DTO request/response, `UserService`, `UserDetailsService`, `AuthenticationService`, cấu hình encoder Argon2id và security chain. API hiện triển khai U01 đăng ký và A01–A04 (đăng nhập, CSRF, user hiện tại và đăng xuất). Đăng ký chỉ ghi một hàng users, dùng transaction của repository; không bọc thêm TransactionTemplate. Băm mật khẩu trước thao tác ghi, UNIQUE username là chốt chống trùng đồng thời. Không dùng blocklist theo quyết định hiện tại.
+
+Controller đăng nhập gọi SessionAuthenticationStrategy, đổi session ID, xóa CSRF cũ, đăng ký session rồi lưu SecurityContext qua repository. SessionGuardFilter kiểm tuổi tối đa 8 giờ, trạng thái thu hồi và user còn tồn tại; idle timeout 30 phút do servlet container quản lý. Runtime lỗi database trả 503, không coi là user đã bị xóa. Cần lấy lại CSRF sau login/logout. Trạng thái session/rate limit lưu trong bộ nhớ của một backend.
+
+Rate limit local dùng chung cho đăng nhập/đăng ký: 10 request trong 5 phút trên mỗi remote IP, tối đa 4096 IP đang theo dõi; request vượt hạn mức trả 429 và Retry-After. Các client sau cùng NAT/proxy chia sẻ hạn mức; chưa nhận IP từ X-Forwarded-For. Exception nghiệp vụ và thông báo dùng ErrorCode/constant; filter bảo mật có handler riêng dùng cùng ErrorResponse. Mật khẩu/hash không nằm trong DTO response, không được đưa vào log lỗi. JSON ngoài danh sách field được phép bị từ chối.
+
+`LocalAuthenticationTests` chạy toàn bộ security filter cùng encoder Argon2id thật và repository giả lập, không kết nối database hoặc chạy Flyway. Chạy từ thư mục `soulspace`: `mvn -Dtest=LocalAuthenticationTests test` (hoặc Maven Wrapper đã hoạt động). Bộ test này không thay thế kiểm thử PostgreSQL, constraint race, idle timeout của container, cookie trên browser hay tích hợp frontend. Frontend cần gửi cookie/CSRF theo hợp đồng trước khi coi luồng giao diện hoạt động. Google OIDC, đổi mật khẩu/xóa tài khoản và thu hồi toàn bộ session từ các nghiệp vụ đó chưa triển khai.
+
+Kiểm tra ngày 14/11/2026: Maven trên Java 21 biên dịch thành công; 12 test trong LocalAuthenticationTests đạt. Bao gồm đăng ký/hash/DTO an toàn, login và context giữa request, session ID mới, CSRF, logout, thu hồi/giới hạn tuổi session, tài khoản đã xóa, lỗi database 503, lỗi đăng nhập chung, validation/field lạ, chuyển lỗi unique giả lập thành 409 và rate limit. Lỗi unique ở đây là exception do mock tạo, chưa chứng minh constraint hoặc race trên PostgreSQL thật.
+
 Cần source, secret examples, Flyway, seed runner, ERD/API cập nhật, bộ test và báo cáo kết quả riêng cho Docker, Neon, media thật và LAN. Runbook phải nêu đúng cách nạp env, xem job DEAD và requeue ID cụ thể, đổi database, phục hồi kết nối và giới hạn session sau restart. Không đưa credential, bản dump dữ liệu cá nhân hoặc URL ký media vào báo cáo.
 
 V1 định nghĩa 13 bảng/76 cột, gồm `external_identities` (3 cột); cần chạy migration và nghiệm thu theo [tài liệu 11](11-dang-nhap-google.md). Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng

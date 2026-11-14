@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { buildApiUrl, apiErrorMessage } from "../../config/api";
+import { signOut } from "../../config/auth";
 import { assetUrl } from "../../config/assets";
 import Timestamp from "../../Components/Timestamp";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ export default function UserPage() {
   const [showEditAvt, setShowEditAvt] = useState(false);
   const [dataUser, setDataUser] = useState(null);
   const [isLogin, setIsLogin] = useState(false);
+  const [profileError, setProfileError] = useState("");
   const navigate = useNavigate();
   const [isDelete, setIsDelete] = useState(false);
   const [userBlog, setUserBlogs] = useState([]);
@@ -82,11 +84,9 @@ export default function UserPage() {
       setDataUser(tempData.data);
       console.log("Lấy dữ liệu user thành công");
     } catch (error) {
-      console.log("Lỗi khi lấy dữ liệu user", error);
-      toast.error("Cannot get data user");
-      setIsLogin(false);
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userId");
+      // A missing profile endpoint does not mean that the login session expired.
+      setIsLogin(localStorage.getItem("isLoggedIn") === "true");
+      setProfileError(apiErrorMessage(error, "Profile is not available yet."));
     }
   };
 
@@ -214,15 +214,18 @@ export default function UserPage() {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    localStorage.removeItem("userId");
-    setIsLogin(false);
-    setDataUser(null);
-    setUserBlogs([]);
-    setSharedBlogs([]);
-    toast.success("Signed out successfully!");
-    navigate("/");
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      setIsLogin(false);
+      setDataUser(null);
+      setUserBlogs([]);
+      setSharedBlogs([]);
+      toast.success("Signed out successfully!");
+      navigate("/");
+    } catch (error) {
+      toast.error(apiErrorMessage(error));
+    }
   };
 
   const handleDeletePost = async (blogId) => {
@@ -337,7 +340,7 @@ export default function UserPage() {
         <>
           {!dataUser ? (
             <div className="loading-container">
-              <p>Loading profile...</p>
+              <p>{profileError || "Loading profile..."}</p>
             </div>
           ) : (
             <>
