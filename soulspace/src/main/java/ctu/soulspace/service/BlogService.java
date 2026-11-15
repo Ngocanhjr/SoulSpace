@@ -53,7 +53,7 @@ public class BlogService {
         this.users = users;
         this.media = media;
         this.embeddingJobs = embeddingJobs;
-        transactions = new TransactionTemplate(transactionManager);
+        transactions = new WriteTransaction(transactionManager);
     }
 
     public BlogCreateResponse create(

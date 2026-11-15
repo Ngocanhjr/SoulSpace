@@ -1,57 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  horizontalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { SortableItem } from "./Components/SortableItem";
 import appCSS from "./App.module.css";
 import Navigation from "./Components/Navigation/Navigation";
 import Router from "./routes/Routes";
 import Login from "./Components/Login/Login";
-import Explore from "./page/ExplorePage/Explore";
 import { refreshSession, useAuth } from "./config/auth";
 
 function App() {
-  const [showSecond, setShowSecond] = useState(false);
   const [isGuest, setGuest] = useState(false);
+  const [isFeedScrolling, setIsFeedScrolling] = useState(false);
+  const pageRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const auth = useAuth();
+  const isHome = location.pathname === "/" || location.pathname === "/home";
 
   useEffect(() => {
     refreshSession().catch(() => {});
   }, []);
 
-  const [items, setItems] = useState(["page", "explore"]);
-
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    setItems((items) => {
-      const oldIndex = items.indexOf(active.id);
-      const newIndex = items.indexOf(over.id);
-      return arrayMove(items, oldIndex, newIndex);
-    });
-  };
+  useEffect(() => {
+    const page = pageRef.current;
+    if (!isHome || !page) return;
+    let stopTimer;
+    const stop = () => {
+      clearTimeout(stopTimer);
+      setIsFeedScrolling(false);
+    };
+    const onScroll = (event) => {
+      // Feed scrolls inside the page; ignore scrolling nested comments or dialogs.
+      if (event.target !== page && event.target.parentElement !== page) return;
+      if (document.hidden || !document.hasFocus()) return;
+      setIsFeedScrolling(true);
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(stop, 150);
+    };
+    page.addEventListener("scroll", onScroll, true);
+    window.addEventListener("blur", stop);
+    document.addEventListener("visibilitychange", stop);
+    return () => {
+      page.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("blur", stop);
+      document.removeEventListener("visibilitychange", stop);
+      stop();
+    };
+  }, [isHome]);
 
   // Nếu đang ở /signin thì chỉ render SignIn
   if (location.pathname === "/signin") {
@@ -79,62 +72,41 @@ function App() {
   return (
     <div className={appCSS["layout-web"]}>
       <div className={appCSS["nav"]}>
-        <Navigation showPage={() => setShowSecond(!showSecond)} />
+        <Navigation feedScrolling={isHome && isFeedScrolling} />
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext items={items} strategy={horizontalListSortingStrategy}>
-          <div
-            className={`${appCSS["pages-container"]} ${
-              showSecond ? appCSS["two"] : appCSS["one"]
-            }`}
-          >
-            {items.map((id) =>
-              id === "page"
-                ? !showLogin && (
-                    <SortableItem key="page" id="page">
-                      <div
-                        className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}
-                      >
-                        <Router />
-                      </div>
-                    </SortableItem>
-                  )
-                : showSecond && (
-                    <SortableItem key="explore" id="explore">
-                      <div className={appCSS["box-explore"]}>
-                        <Explore />
-                      </div>
-                    </SortableItem>
-                  ),
-            )}
-
-            {auth.error && !isPostPage && (
-              <div role="alert">
-                {auth.error}
-                <button onClick={() => refreshSession().catch(() => {})}>
-                  Retry
-                </button>
-              </div>
-            )}
-            {auth.ready &&
-              !auth.error &&
-              !isLoggedIn &&
-              (!isGuest || requiresLogin) && (
-                <Login
-                  guest={(value) => {
-                    setGuest(value);
-                    if (requiresLogin) navigate("/");
-                  }}
-                />
-              )}
+      <div className={appCSS["pages-container"]}>
+        {!showLogin && (
+          <div className={appCSS["page-slot"]}>
+            <div
+              ref={pageRef}
+              className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}
+            >
+              <Router />
+            </div>
           </div>
-        </SortableContext>
-      </DndContext>
+        )}
+
+        {auth.error && !isPostPage && (
+          <div role="alert">
+            {auth.error}
+            <button onClick={() => refreshSession().catch(() => {})}>
+              Retry
+            </button>
+          </div>
+        )}
+        {auth.ready &&
+          !auth.error &&
+          !isLoggedIn &&
+          (!isGuest || requiresLogin) && (
+            <Login
+              guest={(value) => {
+                setGuest(value);
+                if (requiresLogin) navigate("/");
+              }}
+            />
+          )}
+      </div>
     </div>
   );
 }

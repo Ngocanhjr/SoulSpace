@@ -4,6 +4,7 @@ import ctu.soulspace.constants.ErrorCode;
 import ctu.soulspace.dto.request.SignUpRequest;
 import ctu.soulspace.dto.response.ProfileResponse;
 import ctu.soulspace.dto.response.UserResponse;
+import ctu.soulspace.dto.response.UserSearchResponse;
 import ctu.soulspace.exception.AppException;
 import ctu.soulspace.service.ProfileService;
 import ctu.soulspace.service.UserService;

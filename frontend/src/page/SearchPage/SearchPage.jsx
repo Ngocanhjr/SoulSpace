@@ -1,17 +1,22 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api, buildApiUrl } from "../../config/api";
 import { Search, X } from "lucide-react";
 import style from "./SearchPage.module.css";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
+import { useAuth } from "../../config/auth";
+import {
+  readSearchHistory,
+  writeSearchHistory,
+} from "../../config/searchHistory.js";
 
 const PEOPLE_SUGGESTION_LIMIT = 4;
+const POST_SUGGESTION_LIMIT = 8;
+const POST_RESULT_LIMIT = 50;
 
 function normalizeText(value) {
-  return String(value || "")
-    .trim()
-    .toLowerCase();
+  return String(value || "").trim().toLowerCase();
 }
 
 function getPostPreview(content) {
@@ -22,9 +27,34 @@ function getPostPreview(content) {
   return `${safeContent.slice(0, 120)}...`;
 }
 
+async function searchPeople(query, signal) {
+  const { data } = await api.get("/api/v1/users", { params: { q: query }, signal });
+  if (!Array.isArray(data)) throw new Error("Invalid users response");
+  return data;
+}
+
+async function searchPosts(query, limit, signal) {
+  const { data } = await api.get("/api/v1/search", { params: { q: query, limit }, signal });
+  if (!Array.isArray(data)) throw new Error("Invalid search response");
+  return data;
+}
+
+function postSearchError(error) {
+  const status = error.response?.status;
+  return status === 401 ? "Bạn cần đăng nhập để tìm bài viết." :
+    status === 400 ? "Câu tìm kiếm cần có từ 1 đến 2000 ký tự." :
+      status === 503 ? "Dịch vụ tìm kiếm đang bận. Hãy thử lại." :
+        "Không thể tìm bài viết lúc này.";
+}
+
 export default function SearchPage() {
   const navigate = useNavigate();
-  const [users, setUsers] = useState([]);
+  const [suggestions, setSuggestions] = useState({ query: "", users: [], error: "" });
+  const [searchedPeopleResults, setSearchedPeopleResults] = useState([]);
+  const [peopleSearching, setPeopleSearching] = useState(false);
+  const [postSuggestions, setPostSuggestions] = useState({
+    query: "", posts: [], error: "", loading: false,
+  });
   const [posts, setPosts] = useState([]);
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
@@ -34,75 +64,99 @@ export default function SearchPage() {
   const [needsLogin, setNeedsLogin] = useState(false);
   const activeRequest = useRef(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const normalizedQuery = normalizeText(query);
+  const { user, ready } = useAuth();
+  const historyOwner = user?.id || "guest";
+
+  const [historyByUser, setHistoryByUser] = useState({});
+
+  const searchHistory = ready
+    ? (historyByUser[historyOwner] ?? readSearchHistory(historyOwner))
+    : [];
+
+  const updateSearchHistory = (items) => {
+    if (!ready) return;
+
+    const next = writeSearchHistory(historyOwner, items);
+    setHistoryByUser((current) => ({
+      ...current,
+      [historyOwner]: next,
+    }));
+  };
 
   useEffect(() => {
+    if (!normalizedQuery) return;
     const request = new AbortController();
-    const fetchSearchSources = async () => {
+    const timeout = setTimeout(async () => {
       try {
-        const response = await axios.get(buildApiUrl("/api/v1/users"), {
-          signal: request.signal
-        });
-        if (!Array.isArray(response.data)) throw new Error("Invalid users response");
-        setUsers(response.data);
+        const users = await searchPeople(normalizedQuery, request.signal);
+        if (!request.signal.aborted) {
+          setSuggestions({ query: normalizedQuery, users, error: "" });
+        }
       } catch (error) {
-        if (!axios.isCancel(error)) setPeopleError("Chưa tải được danh sách người dùng.");
+        if (!request.signal.aborted && !axios.isCancel(error)) {
+          setSuggestions({
+            query: normalizedQuery,
+            users: [],
+            error: "Chưa tìm được người dùng. Hãy thử lại.",
+          });
+        }
       }
+    }, 300);
+    return () => {
+      clearTimeout(timeout);
+      request.abort();
     };
+  }, [normalizedQuery]);
 
-    fetchSearchSources();
-    return () => request.abort();
-  }, []);
+  useEffect(() => {
+    if (!normalizedQuery || !isInputFocused) return;
+    const request = new AbortController();
+    const timeout = setTimeout(async () => {
+      setPostSuggestions({ query: normalizedQuery, posts: [], error: "", loading: true });
+      try {
+        const results = await searchPosts(normalizedQuery, POST_SUGGESTION_LIMIT, request.signal);
+        if (!request.signal.aborted) {
+          setPostSuggestions({ query: normalizedQuery, posts: results, error: "", loading: false });
+        }
+      } catch (error) {
+        if (!request.signal.aborted && !axios.isCancel(error)) {
+          setPostSuggestions({
+            query: normalizedQuery, posts: [], error: postSearchError(error), loading: false,
+          });
+        }
+      }
+    }, 600);
+    return () => {
+      clearTimeout(timeout);
+      request.abort();
+    };
+  }, [normalizedQuery, isInputFocused]);
 
   useEffect(() => () => activeRequest.current?.abort(), []);
 
-  const normalizedQuery = useMemo(() => normalizeText(query), [query]);
-  const normalizedSubmittedQuery = useMemo(
-    () => normalizeText(submittedQuery),
-    [submittedQuery],
-  );
-
-  const matchedPeople = useMemo(() => {
-    if (!normalizedQuery) {
-      return [];
-    }
-
-    return users.filter((user) => {
-      const fullname = normalizeText(user.fullname);
-      const username = normalizeText(user.username);
-      return (
-        fullname.includes(normalizedQuery) || username.includes(normalizedQuery)
-      );
-    });
-  }, [users, normalizedQuery]);
-
-  const peopleSuggestions = matchedPeople.slice(0, PEOPLE_SUGGESTION_LIMIT);
-
-  const searchedPeopleResults = useMemo(() => {
-    if (!normalizedSubmittedQuery) {
-      return [];
-    }
-
-    return users.filter((user) => {
-      const fullname = normalizeText(user.fullname);
-      const username = normalizeText(user.username);
-      return (
-        fullname.includes(normalizedSubmittedQuery) ||
-        username.includes(normalizedSubmittedQuery)
-      );
-    });
-  }, [users, normalizedSubmittedQuery]);
+  const peopleSuggestions = suggestions.query === normalizedQuery
+    ? suggestions.users.slice(0, PEOPLE_SUGGESTION_LIMIT)
+    : [];
+  const suggestionError = suggestions.query === normalizedQuery ? suggestions.error : "";
+  const suggestedPosts = postSuggestions.query === normalizedQuery ? postSuggestions.posts : [];
+  const postSuggestionError = postSuggestions.query === normalizedQuery ? postSuggestions.error : "";
+  const postSuggestionsLoading = postSuggestions.query === normalizedQuery && postSuggestions.loading;
 
   const searchedPostResults = posts;
 
   const showSuggestions =
     !!normalizedQuery &&
     isInputFocused &&
-    peopleSuggestions.length > 0;
+    (peopleSuggestions.length > 0 || !!suggestionError || suggestedPosts.length > 0 ||
+      !!postSuggestionError || postSuggestionsLoading);
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const safeQuery = query.trim();
+  const runSearch = async (rawQuery) => {
+    const safeQuery = rawQuery.trim();
     activeRequest.current?.abort();
+    setSearchedPeopleResults([]);
+    setPeopleError("");
+    setPeopleSearching(false);
     setPosts([]);
     setSearchError("");
     setNeedsLogin(false);
@@ -112,35 +166,50 @@ export default function SearchPage() {
     if (!safeQuery) {
       return;
     }
+    updateSearchHistory([safeQuery, ...searchHistory]);
     const request = new AbortController();
     activeRequest.current = request;
+    setPeopleSearching(true);
+    searchPeople(safeQuery, request.signal)
+      .then((users) => {
+        if (!request.signal.aborted) setSearchedPeopleResults(users);
+      })
+      .catch((error) => {
+        if (!request.signal.aborted && !axios.isCancel(error)) {
+          setPeopleError("Không thể tìm người dùng lúc này. Hãy thử lại.");
+        }
+      })
+      .finally(() => {
+        if (activeRequest.current === request) setPeopleSearching(false);
+      });
     setSearching(true);
     try {
-      const response = await axios.get(buildApiUrl("/api/v1/search"), {
-        params: { q: safeQuery },
-        signal: request.signal
-      });
+      const results = await searchPosts(safeQuery, POST_RESULT_LIMIT, request.signal);
       if (request.signal.aborted) return;
-      if (!Array.isArray(response.data)) throw new Error("Invalid search response");
-      setPosts(response.data);
+      setPosts(results);
     } catch (error) {
       if (request.signal.aborted) return;
       const status = error.response?.status;
       setNeedsLogin(status === 401);
-      setSearchError(
-        status === 401 ? "Bạn cần đăng nhập để tìm kiếm." :
-        status === 400 ? "Câu tìm kiếm cần có từ 1 đến 2000 ký tự." :
-        status === 503 ? "Dịch vụ tìm kiếm đang bận. Hãy thử lại." :
-        "Không thể tìm kiếm lúc này."
-      );
+      setSearchError(postSearchError(error));
     } finally {
       if (activeRequest.current === request) setSearching(false);
     }
   };
 
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    void runSearch(query);
+  };
+
   const handleClear = () => {
     activeRequest.current?.abort();
     activeRequest.current = null;
+    setSearchedPeopleResults([]);
+    setPeopleError("");
+    setPeopleSearching(false);
+    setSuggestions({ query: "", users: [], error: "" });
+    setPostSuggestions({ query: "", posts: [], error: "", loading: false });
     setPosts([]);
     setSearching(false);
     setSearchError("");
@@ -150,11 +219,13 @@ export default function SearchPage() {
     setIsInputFocused(false);
   };
 
-  const handleOpenProfile = (userId) => {
+  const handleOpenProfile = (userId, fromSuggestion = false) => {
+    if (fromSuggestion) updateSearchHistory([query, ...searchHistory]);
     navigate(`/search/user/${userId}`);
   };
 
-  const handleOpenPost = (postId) => {
+  const handleOpenPost = (postId, fromSuggestion = false) => {
+    if (fromSuggestion) updateSearchHistory([query, ...searchHistory]);
     navigate(`/search/post/${postId}`);
   };
 
@@ -190,118 +261,174 @@ export default function SearchPage() {
       </form>
 
       <div className={style.body}>
-            {showSuggestions && (
-              <div className={style.suggestionsPanel}>
-                <SearchSection
-                  title="People"
-                  count={peopleSuggestions.length}
-                  emptyMessage="No matching people suggestions."
+        {showSuggestions && (
+          <div className={style.suggestionsPanel}>
+            <SearchSection
+              title="People"
+              count={peopleSuggestions.length}
+              emptyMessage={suggestionError || "No matching people suggestions."}
+            >
+              {peopleSuggestions.map((user) => (
+                <button
+                  type="button"
+                  key={user.id}
+                  className={style.resultItem}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => handleOpenProfile(user.id, true)}
                 >
-                  {peopleSuggestions.map((user) => (
+                  <img
+                    src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
+                    alt={user.username || user.fullname || "User avatar"}
+                    className={style.avatar}
+                  />
+                  <div className={style.resultTextGroup}>
+                    <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                    <span>@{user.username || "unknown"}</span>
+                  </div>
+                </button>
+              ))}
+            </SearchSection>
+            <SearchSection
+              title="Posts"
+              count={suggestedPosts.length}
+              emptyMessage={postSuggestionsLoading
+                ? "Đang tìm bài gần nghĩa..."
+                : postSuggestionError || "Không có gợi ý bài viết phù hợp."}
+            >
+              {suggestedPosts.map((post) => (
+                <PostResult key={post.id} post={post} onOpen={(postId) => handleOpenPost(postId, true)} />
+              ))}
+            </SearchSection>
+          </div>
+        )}
+
+        {(!normalizedQuery || !submittedQuery) ? (
+          !normalizedQuery && searchHistory.length > 0 ? (
+            <section className={style.historyPanel}>
+              <div className={style.historyHeader}>
+                <h2>Tìm kiếm gần đây</h2>
+
+                <button
+                  type="button"
+                  onClick={() => updateSearchHistory([])}
+                >
+                  Xóa tất cả
+                </button>
+              </div>
+
+              <ul className={style.historyList}>
+                {searchHistory.map((term) => (
+                  <li key={term} className={style.historyRow}>
                     <button
                       type="button"
-                      key={user.id}
-                      className={style.resultItem}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={() => handleOpenProfile(user.id)}
+                      className={style.historyQuery}
+                      title={term}
+                      onClick={() => {
+                        setQuery(term);
+                        void runSearch(term);
+                      }}
                     >
-                      <img
-                        src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
-                        alt={user.username || user.fullname || "User avatar"}
-                        className={style.avatar}
-                      />
-                      <div className={style.resultTextGroup}>
-                        <strong>
-                          {user.fullname || user.username || "Unknown user"}
-                        </strong>
-                        <span>@{user.username || "unknown"}</span>
-                      </div>
+                      🕘 {term}
                     </button>
-                  ))}
-                </SearchSection>
 
-              </div>
+                    <button
+                      type="button"
+                      className={style.historyRemove}
+                      aria-label={`Xóa tìm kiếm ${term}`}
+                      onClick={() => {
+                        updateSearchHistory(
+                          searchHistory.filter((item) => item !== term)
+                        );
+                      }}
+                    >
+                      <X size={16} />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <div className={style.emptyArea}>
+              <p className={style.emptyTitle}>
+                No search yet.
+              </p>
+              <span className={style.emptySubtitle}>
+                Nhập tên người dùng hoặc câu tìm kiếm, rồi nhấn Enter.
+              </span>
+            </div>
+          )
+        ) : (
+          <div className={style.resultsPanel}>
+            <div className={style.resultSummary}>
+              Results for <strong>"{submittedQuery}"</strong>
+            </div>
+
+            <SearchSection
+              title="People"
+              count={searchedPeopleResults.length}
+              emptyMessage={peopleSearching
+                ? "Đang tìm người dùng..."
+                : peopleError || "Không tìm thấy người dùng phù hợp."}
+            >
+              {searchedPeopleResults.map((user) => (
+                <button
+                  type="button"
+                  key={user.id}
+                  className={style.resultItem}
+                  onClick={() => handleOpenProfile(user.id)}
+                >
+                  <img
+                    src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
+                    alt={user.username || user.fullname || "User avatar"}
+                    className={style.avatar}
+                  />
+                  <div className={style.resultTextGroup}>
+                    <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                    <span>@{user.username || "unknown"}</span>
+                  </div>
+                </button>
+              ))}
+            </SearchSection>
+
+            {searching && <p role="status">Đang tìm bài gần nghĩa...</p>}
+            {searchError && <p role="alert">{searchError}</p>}
+            {needsLogin && <a href={buildApiUrl("/login")}>Đăng nhập backend</a>}
+            {!searching && !searchError && (
+              <SearchSection
+                title="Posts"
+                count={searchedPostResults.length}
+                emptyMessage="No matching posts found."
+              >
+                {searchedPostResults.map((post) => (
+                  <PostResult key={post.id} post={post} onOpen={handleOpenPost} />
+                ))}
+              </SearchSection>
             )}
-
-            {!submittedQuery ? (
-              <div className={style.emptyArea}>
-                <p className={style.emptyTitle}>No search yet.</p>
-                <span className={style.emptySubtitle}>
-                  Nhập tên người dùng hoặc câu tìm kiếm, rồi nhấn Enter.
-                </span>
-              </div>
-            ) : (
-              <div className={style.resultsPanel}>
-                <div className={style.resultSummary}>
-                  Results for <strong>"{submittedQuery}"</strong>
-                </div>
-
-                <SearchSection
-                  title="People"
-                  count={searchedPeopleResults.length}
-                  emptyMessage={peopleError || "Không tìm thấy người dùng phù hợp."}
-                >
-                  {searchedPeopleResults.map((user) => (
-                    <button
-                      type="button"
-                      key={user.id}
-                      className={style.resultItem}
-                      onClick={() => handleOpenProfile(user.id)}
-                    >
-                      <img
-                        src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
-                        alt={user.username || user.fullname || "User avatar"}
-                        className={style.avatar}
-                      />
-                      <div className={style.resultTextGroup}>
-                        <strong>
-                          {user.fullname || user.username || "Unknown user"}
-                        </strong>
-                        <span>@{user.username || "unknown"}</span>
-                      </div>
-                    </button>
-                  ))}
-                </SearchSection>
-
-                {searching && <p role="status">Đang tìm bài gần nghĩa...</p>}
-                {searchError && <p role="alert">{searchError}</p>}
-                {needsLogin && <a href={buildApiUrl("/login")}>Đăng nhập backend</a>}
-                {!searching && !searchError && (
-                <SearchSection
-                  title="Posts"
-                  count={searchedPostResults.length}
-                  emptyMessage="No matching posts found."
-                >
-                  {searchedPostResults.map((post) => (
-                    <button
-                      type="button"
-                      key={post.id}
-                      className={style.resultItem}
-                      onClick={() => handleOpenPost(post.id)}
-                    >
-                      <img
-                        src={
-                          post.imageContentUrls?.[0] ||
-                          post.userAvatarUrl ||
-                          DEFAULT_AVATAR_URL
-                        }
-                        alt={post.content || "Post preview"}
-                        className={style.previewImage}
-                      />
-                      <div className={style.resultTextGroup}>
-                        <strong>
-                          {post.username ? `@${post.username}` : "Unknown user"}
-                        </strong>
-                        <span>{getPostPreview(post.content)}</span>
-                      </div>
-                    </button>
-                  ))}
-                </SearchSection>
-                )}
-              </div>
-            )}
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function PostResult({ post, onOpen }) {
+  return (
+    <button
+      type="button"
+      className={style.resultItem}
+      onMouseDown={(event) => event.preventDefault()}
+      onClick={() => onOpen(post.id)}
+    >
+      <img
+        src={post.imageContentUrls?.[0] || post.userAvatarUrl || DEFAULT_AVATAR_URL}
+        alt={post.content || "Post preview"}
+        className={style.previewImage}
+      />
+      <div className={style.resultTextGroup}>
+        <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
+        <span>{getPostPreview(post.content)}</span>
+      </div>
+    </button>
   );
 }
 
@@ -317,11 +444,7 @@ function SearchSection({ title, count, children, emptyMessage }) {
         <span>{count}</span>
       </div>
 
-      {hasContent ? (
-        children
-      ) : (
-        <div className={style.emptySection}>{emptyMessage}</div>
-      )}
+      {hasContent ? children : <div className={style.emptySection}>{emptyMessage}</div>}
     </section>
   );
 }

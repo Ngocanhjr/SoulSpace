@@ -114,7 +114,7 @@ public class UserService {
                 .toList();
     }
 
-    private String normalizeUsername(String value) {
+    String normalizeUsername(String value) {
         if (value == null) {
             throw invalid("username", "Username is required");
         }

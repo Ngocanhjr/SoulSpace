@@ -227,3 +227,77 @@
     padding: 12px 14px;
   }
 }
+
+
+.historyPanel {
+  border: 1px solid #e5e7eb;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.historyHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+}
+
+.historyHeader h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.historyHeader button,
+.historyRemove {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.historyList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.historyRow {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #f3f4f6;
+}
+
+.historyQuery {
+  flex: 1;
+  min-width: 0;
+  padding: 14px 16px;
+  border: none;
+  background: transparent;
+  color: #111827;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.historyRemove {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  flex-shrink: 0;
+}
+
+.historyQuery:hover,
+.historyRemove:hover {
+  background: #f9fafb;
+}
+
+.historyQuery:focus-visible,
+.historyRemove:focus-visible,
+.historyHeader button:focus-visible {
+  outline: 2px solid #111827;
+  outline-offset: -2px;
+}

@@ -22,12 +22,13 @@ Request chỉ bind vào DTO có danh sách field cho phép. Các field compatibi
 | `AuthResponse` | `authentication:boolean`, `user:LoginUser hoặc null`, `message:string` |
 | `LoginUser` | `id`, `username`, `avatarUrl` |
 | `UserResponse` | `id`, `username`, `fullname`, `dob`, `userAvatarUrl`; không có password |
+| `UserSearchResponse` | `id`, `username`, `fullname`, `userAvatarUrl`; không có ngày sinh hoặc password |
 | `UserResponsePatch` | `username`, `fullname`, `dob`, `userAvatarUrl` |
 | `BlogDTO` | `id`, `userId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls:string[]`, `likesCount:long`, `commentsCount:long`, `sharesCount:long`, `sharedByMe:boolean`, `likedUserIds:string[]`, `published:boolean`, `createdAt`, `updatedAt` |
 | `CommentDTO` | `id`, `userId:string hoặc null`, `username:string hoặc null`, `userAvatarUrl:string hoặc null`, `content:string hoặc null`, `likesCount`, `likedUserIds:string[]`, `replies:CommentDTO[]`, `createdAt`, `updatedAt`, `isDeleted:boolean`, `version:long` |
 | `SharedBlogDTO` | `blogId`, `originalUserId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls`, `published`, `originalCreatedAt`, `likesCount`, `commentsCount`, `sharesCount`, `sharedByMe:boolean`, `likedUserIds:string[]`, `sharedAt` |
 
-`LoginUser.avatarUrl` giữ tên mà SignIn đang đọc; profile dùng `userAvatarUrl`. `dob` chỉ có giá trị trong response xem/sửa chính mình; danh sách users và hồ sơ người khác trả null. `likedUserIds` chứa tối đa ID viewer; tổng like lấy từ `likesCount`.
+`LoginUser.avatarUrl` giữ tên mà SignIn đang đọc; profile dùng `userAvatarUrl`. `dob` chỉ có giá trị trong response xem/sửa chính mình; hồ sơ người khác trả null, kết quả tìm người dùng không chứa field này. `likedUserIds` chứa tối đa ID viewer; tổng like lấy từ `likesCount`.
 
 `sharedByMe` cho biết viewer hiện tại có quan hệ trong blog_shares, guest luôn nhận false. Trường này được tính theo session khi đọc feed, hồ sơ và chi tiết, không phải cột mới trong blogs hoặc snapshot lưu trên client. UI dùng nó để chọn POST share hoặc DELETE unshare; sau unshare đọc lại chi tiết để lấy count/trạng thái chuẩn. U11 giữ response text/plain hiện tại. ALREADY_SHARED do trạng thái cũ ở tab khác được xử lý bằng GET đọc lại, không tự gỡ share. Tooltip của các nút tương tác được hiển thị đồng bộ: Thích/Bỏ thích, Bình luận và Chia sẻ lại/Đã chia sẻ · Bấm để gỡ.
 
@@ -70,6 +71,12 @@ Ví dụ `BlogDTO`:
 }
 ```
 
+## Tìm kiếm bài viết gần nghĩa
+
+`GET /api/v1/search?q=...&limit=...` yêu cầu session đăng nhập; trả array các field `id`, `content`, `username`, `similarity`. `limit` nhận số nguyên 1–50, mặc định 50; giới hạn sai trả 400 trước khi gọi Jina. Chỉ lấy bài public có hash embedding khớp nội dung hiện tại, sắp theo cosine similarity giảm dần rồi ID. Đây là endpoint semantic search ngoài nhóm migration core bên dưới.
+
+SearchPage gọi `limit=8` để gợi ý khi ngừng gõ 600 ms và `limit=50` khi nhấn Enter. Gợi ý và kết quả đã gửi có state/request riêng; đổi từ khóa, gửi lại, xóa ô hoặc rời trang sẽ hủy request cũ tương ứng. Gợi ý bài viết sử dụng Jina nên mỗi lượt tìm được xử lý có thể sử dụng quota API.
+
 ## Session và đăng nhập
 
 | Mã | Method | Route | Request | Thành công và quyền |
@@ -90,7 +97,7 @@ Sai thông tin đăng nhập trả 401, gồm `authentication=false`, `user=null
 | Mã | Method | Route | Request | Thành công và quyền |
 | --- | --- | --- | --- | --- |
 | U01 | POST | `/api/v1/users/sign-up` | JSON `{username,password,fullname,dob? hoặc birthday?}` | `UserResponse`, chưa đăng nhập; Guest có CSRF. |
-| U02 | GET | `/api/v1/users` | Không có body | `UserResponse[]`, công khai; dob đều null. |
+| U02 | GET | `/api/v1/users?q=...` | Từ khóa query, không có body | `UserSearchResponse[]`, công khai; tối đa 20 người khớp username hoặc fullname. |
 | U03 | GET | `/api/v1/users/{userId}/shared-blogs` | UUID path | `SharedBlogDTO[]`, chỉ các bài còn public. |
 | U04 | GET | `/api/v1/users/{userId}` | UUID path | `UserResponse`; dob chỉ trả cho chính user. |
 | U05 | GET | `/api/v1/users/patch/{userId}` | UUID path | `UserResponsePatch`, chính chủ. |
@@ -102,6 +109,8 @@ Sai thông tin đăng nhập trả 401, gồm `authentication=false`, `user=null
 | U11 | DELETE | `/api/v1/users/{userId}/shared-blogs/{blogId}` | UUID path | Chuỗi `Shared blog removed successfully`, chính chủ. |
 
 U01 hỗ trợ `birthday` vì frontend cũ đang gửi tên này; response thống nhất `dob`. Nếu gửi cả hai khác nhau thì 400. Ngày sinh có thể vắng mặt/null; nếu có phải là ngày trước hôm nay. `userAvatarUrl` khi tạo user không được dùng để gán asset tùy ý.
+
+U02 đã triển khai ngày 15/11/2026 cho mục People trên SearchPage. Tìm chuỗi con trong username/fullname, không phân biệt hoa thường, sắp xếp username rồi ID; `%` và `_` là ký tự thường. `q` được trim, thiếu/rỗng trả `[]`, quá 2000 ký tự hoặc có NUL trả 400. Response chỉ có bốn field công khai trong `UserSearchResponse`, kèm `Cache-Control: no-store`. Frontend gọi gợi ý sau 300 ms (hiển thị tối đa 4 người), tìm lại khi nhấn Enter và giữ riêng kết quả đã gửi; các request cũ bị hủy khi tìm lại hoặc xóa từ khóa. Kết quả People và semantic Posts được tải độc lập.
 
 Username canonical dài 3–32, chỉ `a-z` và `0-9`; fullname sau trim dài 1–100. Password mới theo [chính sách mật khẩu](04-bao-mat-media.md#mật-khẩu). Trùng username trả 409. Response đăng ký giữ ngày sinh của user vừa tạo, nhưng không trả dữ liệu xác thực.
 

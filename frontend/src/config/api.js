@@ -1,3 +1,5 @@
+import axios from "axios";
+
 const defaultBaseUrl = import.meta.env.DEV ? "" : "http://localhost:8080";
 const rawBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? defaultBaseUrl).trim();
 
