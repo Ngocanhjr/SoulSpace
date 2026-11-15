@@ -11,7 +11,7 @@ function Login({ guest }) {
                 Sign in
             </button>
             <button onClick={() => navigate("/signup")} className="buttonLogin">Sign up</button><br />
-            <a onClick={() => guest(true)} href='#' >Continue as guest</a>
+            <a onClick={(event) => { event.preventDefault(); guest(true); }} href='#' >Continue as guest</a>
         </div>
     );
 }

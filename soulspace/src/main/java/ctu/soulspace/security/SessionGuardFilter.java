@@ -22,9 +22,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class SessionGuardFilter extends OncePerRequestFilter {
 
-    public static final String AUTHENTICATED_AT = "SOULSPACE_AUTHENTICATED_AT";
-
-    private static final long MAX_SESSION_AGE = Duration.ofHours(8).toMillis();
     private static final long RATE_WINDOW = Duration.ofMinutes(5).toMillis();
     private static final long WRITE_WINDOW_MS = Duration.ofMinutes(1).toMillis();
     private static final int MAX_WRITES_PER_WINDOW = 60;
@@ -108,11 +105,6 @@ public class SessionGuardFilter extends OncePerRequestFilter {
         if (session == null) {
             return false;
         }
-        Object value = session.getAttribute(AUTHENTICATED_AT);
-        if (!(value instanceof Long authenticatedAt)
-                || System.currentTimeMillis() - authenticatedAt >= MAX_SESSION_AGE) {
-            return false;
-        }
         SessionInformation info = sessionRegistry.getSessionInformation(session.getId());
         if (info == null || info.isExpired()) {
             return false;
@@ -141,7 +133,7 @@ public class SessionGuardFilter extends OncePerRequestFilter {
         return path.equals("/api/v1/blogs")
                 || path.startsWith("/api/v1/blogs/")
                 || path.equals("/api/v1/blogs-details")
-                || (path.startsWith("/api/v1/users/") && path.contains("/shared-blogs/"));
+                || path.startsWith("/api/v1/users/");
     }
 
     private synchronized boolean allowAttempt(

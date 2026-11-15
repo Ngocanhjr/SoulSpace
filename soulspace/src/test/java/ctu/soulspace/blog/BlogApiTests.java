@@ -514,7 +514,14 @@ class BlogApiTests {
         mvc.perform(client(get(listing)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].content").value("current content"))
-                .andExpect(jsonPath("$[0].sharesCount").value(2));
+                .andExpect(jsonPath("$[0].sharesCount").value(2))
+                .andExpect(jsonPath("$[0].sharedByMe").value(false))
+                .andExpect(jsonPath("$[0].likedUserIds").isEmpty());
+        write(visitor, post(BLOGS + "/" + blog + "/like"), "{\"liked\":true}", 200);
+        mvc.perform(client(get(listing)).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].sharedByMe").value(true))
+                .andExpect(jsonPath("$[0].likedUserIds[0]").value(other.getId().toString()));
         jdbc.update("update blogs set published = false where id = ?", UUID.fromString(blog));
         mvc.perform(client(get(listing)))
                 .andExpect(status().isOk())
@@ -535,6 +542,65 @@ class BlogApiTests {
                 .andExpect(jsonPath("$[0].blogId").value(blog));
         jdbc.update("delete from blogs where id = ?", UUID.fromString(blog));
         write(visitor, delete(listing + "/" + blog), null, 200);
+    }
+
+    @Test
+    void shareStateIsViewerSpecificAcrossFeedProfilesAndReloadedDetail() throws Exception {
+        Session author = login(owner);
+        Session visitor = login(other);
+        String blog = create(author, "share state", true, null);
+        String detail = BLOGS + "/" + blog;
+        mvc.perform(client(get(detail)).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(false));
+        write(visitor, post(detail + "/share"), "{}", 200);
+        mvc.perform(client(get(detail)).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(true))
+                .andExpect(jsonPath("$.sharesCount").value(1));
+        mvc.perform(client(get(detail)).session(author.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(false));
+        mvc.perform(client(get(detail)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(false));
+        mvc.perform(client(get(BLOGS + "/" + owner.getId() + "/blogs")).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].sharedByMe").value(true));
+        var feed =
+                json(
+                        mvc.perform(client(get("/api/v1/soulspaces")).session(visitor.session()))
+                                .andExpect(status().isOk())
+                                .andReturn());
+        boolean found = false;
+        for (var row : feed)
+            if (row.get("id").asText().equals(blog)) {
+                assertThat(row.get("sharedByMe").asBoolean()).isTrue();
+                found = true;
+            }
+        assertThat(found).isTrue();
+        write(
+                visitor,
+                delete("/api/v1/users/" + other.getId() + "/shared-blogs/" + blog),
+                null,
+                200);
+        mvc.perform(client(get(detail)).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(false))
+                .andExpect(jsonPath("$.sharesCount").value(0));
+        write(author, post(detail + "/share"), "{}", 200);
+        jdbc.update("update blogs set published = false where id = ?", UUID.fromString(blog));
+        mvc.perform(client(get(detail)).session(author.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(true));
+        write(
+                author,
+                delete("/api/v1/users/" + owner.getId() + "/shared-blogs/" + blog),
+                null,
+                200);
+        mvc.perform(client(get(detail)).session(author.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sharedByMe").value(false));
     }
 
     @Test

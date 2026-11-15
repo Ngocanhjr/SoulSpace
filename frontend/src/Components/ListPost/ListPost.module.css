@@ -133,8 +133,28 @@
   background-image: url("/comment.svg");
 }
 
-.btn-share .icon{
-  background-image: url("/share.svg");
+.btn-share {
+  color: #5b5b5b;
+}
+
+.btn-share-active{
+  background-color: #e8f5ee;
+  color: #167044;
+}
+
+.btn-share-active:hover{
+  background-color: #d9f0e1;
+  color: #105333;
+}
+
+.btn-share:focus-visible{
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.btn-share:disabled{
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .picture {

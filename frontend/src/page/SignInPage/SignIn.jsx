@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import './SignIn.css';
+import "./SignIn.css";
 import { apiErrorMessage } from "../../config/api";
 import { signIn } from "../../config/auth";
 import { toast } from "sonner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const SignIn = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
-    e.preventDefault();  //ngăn form reload page khi submit
+    e.preventDefault(); //ngăn form reload page khi submit
 
     if (isSubmitting) return;
     setIsSubmitting(true);
@@ -57,14 +57,18 @@ const SignIn = () => {
 
             <span
               className="toggle-password"
-              onMouseDown={(e) => e.preventDefault()}  // chặn khi click quá nhiều nó sẽ focus vào chỗ khác
+              onMouseDown={(e) => e.preventDefault()} // chặn khi click quá nhiều nó sẽ focus vào chỗ khác
               onClick={() => setShowPassword(!showPassword)}
             >
               {showPassword ? <FaEyeSlash /> : <FaEye />}
             </span>
           </div>
 
-          <button type="submit" className="signin-button" disabled={isSubmitting}>
+          <button
+            type="submit"
+            className="signin-button"
+            disabled={isSubmitting}
+          >
             {isSubmitting ? "Signing in…" : "Sign In"}
           </button>
         </form>
@@ -72,8 +76,7 @@ const SignIn = () => {
           Forgot password?
         </a>
         <p className="signup-text">
-          Don’t have an account?{' '}
-          <Link to="/signup">Sign Up</Link>
+          Don’t have an account? <Link to="/signup">Sign Up</Link>
         </p>
       </div>
     </div>

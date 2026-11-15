@@ -125,7 +125,7 @@ public class UserService {
         return username;
     }
 
-    private String normalizeFullname(String value) {
+    String normalizeFullname(String value) {
         if (value == null) {
             throw invalid("fullname", "Fullname is required");
         }
@@ -137,7 +137,7 @@ public class UserService {
         return fullname;
     }
 
-    private LocalDate resolveDob(LocalDate dob, LocalDate birthday) {
+    LocalDate resolveDob(LocalDate dob, LocalDate birthday) {
         if (dob != null && birthday != null && !dob.equals(birthday)) {
             throw invalid("dob", "dob and birthday must match");
         }
@@ -148,7 +148,7 @@ public class UserService {
         return result;
     }
 
-    private void validatePassword(String password) {
+    void validatePassword(String password) {
         if (password == null) {
             throw invalid("password", "Password is required");
         }
@@ -163,7 +163,7 @@ public class UserService {
         }
     }
 
-    private String avatarUrl(User user) {
+    String avatarUrl(User user) {
         return user.getAvatarMediaId() == null
                 ? MediaConstants.DEFAULT_AVATAR_URL
                 : "/api/v1/media/" + user.getAvatarMediaId();

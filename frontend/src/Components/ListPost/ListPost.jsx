@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import style from "./ListPost.module.css";
 import { toast } from "sonner";
 import CommentPopup from "../Comment/CommentPopup.jsx";
@@ -8,9 +8,11 @@ import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../../config/api";
 import { useAuth } from "../../config/auth";
 import { useLikes } from "../../config/useLikes";
+import { toggleShare } from "../../config/shares";
+import { Repeat2 } from "lucide-react";
 const CONTENT_PREVIEW_LENGTH = 220;
 
-export default function ListPost() {
+export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoaded }) {
   const [data, setData] = useState([]);
   const [isCommentPopupOpen, setIsCommentPopupOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -21,6 +23,9 @@ export default function ListPost() {
   const { user } = useAuth();
   const currentUserId = user?.id || "";
   const [sharing, setSharing] = useState({});
+  const shareRequests = useRef(new Set());
+  const shareActor = useRef(currentUserId);
+  useEffect(() => { shareActor.current = currentUserId; }, [currentUserId]);
   const likes = useLikes(currentUserId, (path, next) => {
     setData((rows) => rows.map((post) => path === "/api/v1/blogs/" + post.id + "/like" ? { ...post, ...next } : post));
   });
@@ -30,7 +35,7 @@ export default function ListPost() {
     setLoading(true);
     setLoadError("");
     try {
-      const rs = await api.get("/api/v1/soulspaces", { signal });
+      const rs = await api.get(sourceUrl, { signal });
       if (signal?.aborted) return;
 
       if (!Array.isArray(rs.data)) {
@@ -51,13 +56,14 @@ export default function ListPost() {
       }, read));
 
       setData(processedData);
+      onPostsLoaded?.(processedData);
     } catch (error) {
       if (signal?.aborted) return;
-      setLoadError(apiErrorMessage(error, "Không thể tải bài viết."));
+      setLoadError(apiErrorMessage(error, "Unable to load posts."));
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [currentUserId, likes]);
+  }, [currentUserId, likes, sourceUrl, onPostsLoaded]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -95,7 +101,7 @@ export default function ListPost() {
       return;
     }
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập để tương tác.");
+      toast.error("Please sign in to interact.");
       return;
     }
     if (type === "LIKE") {
@@ -103,15 +109,26 @@ export default function ListPost() {
       if (post) likes.toggle("/api/v1/blogs/" + postId + "/like", post.liked, post.likesCount);
       return;
     }
-    if (sharing[postId]) return;
+    const post = data.find((item) => item.id === postId);
+    if (!post || shareRequests.current.has(postId)) return;
+    shareRequests.current.add(postId);
     setSharing((pending) => ({ ...pending, [postId]: true }));
     try {
-      const { data: result } = await api.post("/api/v1/blogs/" + postId + "/share", {});
-      setData((rows) => rows.map((post) => post.id === postId ? { ...post, sharesCount: result.sharesCount } : post));
-      toast.success(result.message);
+      const result = await toggleShare(post, currentUserId, (next) => {
+        if (shareActor.current === currentUserId) {
+          setData((rows) => rows.map((row) => row.id === postId ? { ...row, ...next } : row));
+        }
+      });
+      if (shareActor.current !== currentUserId) return;
+      if (result.unavailable) setData((rows) => rows.filter((row) => row.id !== postId));
+      if (result.warning) toast.warning(result.message);
+      else toast.success(result.message);
     } catch (error) {
-      toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
+      if (shareActor.current !== currentUserId) return;
+      if (error.response?.status === 404) setData((rows) => rows.filter((row) => row.id !== postId));
+      toast.error(apiErrorMessage(error, "Unable to repost this post."));
     } finally {
+      shareRequests.current.delete(postId);
       setSharing((pending) => ({ ...pending, [postId]: false }));
     }
   };
@@ -124,8 +141,8 @@ export default function ListPost() {
   return (
     <>
       <div className={style.layout}>
-        {loading ? <p>Đang tải bài viết...</p> : loadError ? (
-          <div role="alert"><p>{loadError}</p><button onClick={() => fetchPosts()}>Thử lại</button></div>
+        {loading ? <p>Loading posts...</p> : loadError ? (
+          <div role="alert"><p>{loadError}</p><button onClick={() => fetchPosts()}>Try again</button></div>
         ) : data.length > 0 ? (
           data.map((post) => {
             const isExpanded = !!expandedPosts[post.id];
@@ -135,7 +152,7 @@ export default function ListPost() {
               <div key={post.id} className={style.box}>
                 <div className={style["post-content"]}>
                   <div className={style.header_post}>
-                    <Link to={`/user/${post.userId}`} className={style.avatar_mini_wrapper} aria-label={`Xem trang của ${post.username}`}>
+                    <Link to={`/user/${post.userId}`} className={style.avatar_mini_wrapper} aria-label={`View profile of ${post.username}`}>
                       <img
                         src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
                         alt="User Avatar"
@@ -188,7 +205,8 @@ export default function ListPost() {
                     className={`${style.btn} ${style["btn-like"]} ${
                       post.liked ? style["btn-like-active"] : ""
                     }`}
-                    aria-label="Like"
+                    aria-label={post.liked ? "Unlike" : "Like"}
+                    title={post.liked ? "Unlike" : "Like"}
                     aria-pressed={post.liked}
                     onClick={() => handleAction(post.id, "LIKE")}
                   >
@@ -199,7 +217,8 @@ export default function ListPost() {
                   <button
                     type="button"
                     className={`${style.btn} ${style["btn-comment"]}`}
-                    aria-label="Comment"
+                    aria-label="Comments"
+                    title="Comments"
                     onClick={() => handleAction(post.id, "COMMENT")}
                   >
                     <span className={style.icon} />
@@ -208,12 +227,15 @@ export default function ListPost() {
 
                   <button
                     type="button"
-                    className={`${style.btn} ${style["btn-share"]}`}
-                    aria-label="Share"
+                    className={`${style.btn} ${style["btn-share"]} ${post.sharedByMe ? style["btn-share-active"] : ""}`}
+                    aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
+                    aria-pressed={Boolean(post.sharedByMe)}
+                    aria-busy={Boolean(sharing[post.id])}
+                    title={post.sharedByMe ? "Reposted · Click to remove" : "Repost"}
                     disabled={Boolean(sharing[post.id])}
                     onClick={() => handleAction(post.id, "SHARE")}
                   >
-                    <span className={style.icon} />
+                    <Repeat2 className={style.icon} aria-hidden="true" />
                   </button>
                   <span>{post.sharesCount}</span>
                 </div>

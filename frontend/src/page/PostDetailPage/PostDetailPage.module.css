@@ -141,8 +141,24 @@
   background-image: url("/comment.svg");
 }
 
-.btnShare .icon {
-  background-image: url("/share.svg");
+.btnShare {
+  color: #5b5b5b;
+  border-radius: 6px;
+}
+
+.btnShareActive {
+  color: #167044;
+  background: #e8f5ee;
+}
+
+.btnShare:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.btnShare:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .state {

@@ -1,4 +1,4 @@
-const fullDateFormat = new Intl.DateTimeFormat("vi-VN", {
+const fullDateFormat = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Ho_Chi_Minh",
   year: "numeric",
   month: "2-digit",
@@ -8,7 +8,7 @@ const fullDateFormat = new Intl.DateTimeFormat("vi-VN", {
   second: "2-digit",
   hour12: false,
 });
-const relativeDateFormat = new Intl.RelativeTimeFormat("vi-VN", { numeric: "always" });
+const relativeDateFormat = new Intl.RelativeTimeFormat("en-GB", { numeric: "always" });
 // shortcut: months/years use 30/365 days; use calendar differences if exact boundaries are needed.
 const units = [
   [31536000, "year"],
@@ -39,5 +39,5 @@ export function formatRelativeTime(value, now = Date.now()) {
       return relativeDateFormat.format(Math.trunc(seconds / duration), unit);
     }
   }
-  return "Vừa xong";
+  return "Just now";
 }

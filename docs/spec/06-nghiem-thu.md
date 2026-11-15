@@ -2,7 +2,7 @@
 
 Đây là kế hoạch kiểm chứng cho implementation tương lai. Không có test, benchmark, kết nối Neon, Docker hoặc Cloudinary thực tế nào được xác nhận PASS bởi việc tạo bộ spec.
 
-Kết quả implementation cập nhật ngày 15/11/2026 được ghi riêng tại [triển khai và kiểm chứng](05-trien-khai.md#bình-luận-lượt-thích-và-chia-sẻ-ngày-15112026): 32 test backend và 7 test frontend đã đạt trong phạm vi mô tả. Các bảng nghiệm thu dưới đây vẫn là tiêu chí tổng thể; không coi toàn bộ Neon/LAN, benchmark hoặc UI đã PASS chỉ từ các test tự động đó.
+Kết quả implementation cập nhật ngày 15/11/2026 được ghi riêng tại [triển khai profile và kiểm chứng](05-trien-khai.md#hoàn-thiện-trang-cá-nhân-local-ngày-15112026): 46 test backend và 10 test frontend đã đạt trong phạm vi mô tả. Trong đó có 14 ca ProfileApiTests trên PostgreSQL riêng, kiểm quyền, session, queue và rollback. Các bảng nghiệm thu dưới đây vẫn là tiêu chí tổng thể; không coi toàn bộ Neon/LAN, benchmark hoặc UI đã PASS chỉ từ các test tự động đó.
 
 ## Dữ liệu seed chức năng
 
@@ -36,7 +36,7 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | AUTH04 | Login rồi gọi me ở request mới/reload browser | Đăng nhập thật được giữ qua cookie; không phụ thuộc localStorage. |
 | AUTH05 | Cookie trước/sau login; CSRF trước/sau login/logout | Session ID thay đổi; token mới dùng được; token cũ không làm phát sinh ghi trái phép. |
 | AUTH06 | POST/PATCH/multipart không có/sai CSRF | 403, không đổi DB và không bắt đầu upload. |
-| AUTH07 | Idle timeout, tuổi tối đa, logout, restart backend | Session không còn được chấp nhận theo policy; UI clear trạng thái đúng mã lỗi. |
+| AUTH07 | Idle timeout 1 giờ, hoạt động liên tục quá 8 giờ, logout, restart backend | Không có request trong 1 giờ thì hết phiên; phiên hoạt động không bị kết thúc chỉ vì quá 8 giờ. Logout/restart làm mất hiệu lực session; UI clear trạng thái đúng mã lỗi. |
 | AUTH08 | Đặt/đổi password và xóa account khi đang có nhiều session | Thu hồi tất cả session, Google flow và proof; password mới hoạt động, password cũ không hoạt động. |
 | ACL01 | Đổi userId body/path thành người khác | 403 ở route owner/actor; không giả tác giả, không chỉnh profile hoặc xóa tài sản của người khác. |
 | ACL02 | Guest/user khác đọc chi tiết/comments/ảnh của bài private | 404 tại tài nguyên private; không lộ qua feed/profile/shared list. |
@@ -185,6 +185,8 @@ không phải kết quả đã chạy.
 Benchmark index dùng database local riêng, tạo dữ liệu 1.000 users, 10.000 blogs, 10.000 comments và 50.000 blog likes, có seed tái lập và độ chọn lọc public/author rõ. Đây là kích thước thiết kế, không phải số liệu đã chạy. Giữ PK/unique/constraint ở baseline; đo trước/sau thêm index nghiệp vụ trên bản dữ liệu benchmark, không gỡ index ở database đang demo/dùng chung. Chạy ANALYZE, warmup và nhiều lượt đo; ghi CPU/RAM/Postgres/image/commit/query/parameters/row count.
 
 Đo index local và latency kết nối/query Neon thành hai báo cáo để không quy lợi ích/chi phí mạng cho index. Không ép planner dùng index với dữ liệu nhỏ. Không đặt mục tiêu p95 chưa được đo thành kết quả đã đạt; ghi p50/p95/query plan và hạn chế của phép đo.
+
+Quy trình chuẩn bị hai database giống dữ liệu, bỏ riêng index V2 và ghi kết quả đo nằm tại [hướng dẫn so sánh index](../index/README.md). Hướng dẫn này không thay migration hoặc xác nhận benchmark đã chạy.
 
 ## Neon và local phải được nghiệm thu riêng
 

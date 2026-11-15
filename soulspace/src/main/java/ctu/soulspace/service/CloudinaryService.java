@@ -67,8 +67,18 @@ public class CloudinaryService {
     }
 
     public String publicId(String id) {
+        return publicId(id, "BLOG");
+    }
+
+    public String publicId(String id, String purpose) {
         requireConfigured();
-        return namespace + "/blogs/" + id;
+        String folder =
+                switch (purpose) {
+                    case "BLOG" -> "blogs";
+                    case "AVATAR" -> "avatars";
+                    default -> throw new IllegalArgumentException("Unsupported media purpose");
+                };
+        return namespace + "/" + folder + "/" + id;
     }
 
     public Upload upload(byte[] bytes, String publicId) {
@@ -89,7 +99,7 @@ public class CloudinaryService {
                                     "unique_filename",
                                     false,
                                     "asset_folder",
-                                    namespace + "/blogs"));
+                                    publicId.substring(0, publicId.lastIndexOf('/'))));
             String format =
                     "jpg".equals(result.get("format"))
                             ? "jpeg"
@@ -184,7 +194,10 @@ public class CloudinaryService {
     }
 
     public boolean owns(String publicId) {
-        return configured() && publicId != null && publicId.startsWith(namespace + "/blogs/");
+        return configured()
+                && publicId != null
+                && (publicId.startsWith(namespace + "/blogs/")
+                        || publicId.startsWith(namespace + "/avatars/"));
     }
 
     public record Upload(String assetId, String format, long size) {}

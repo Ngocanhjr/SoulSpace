@@ -16,4 +16,6 @@ public record SharedBlogResponse(
         long likesCount,
         long commentsCount,
         long sharesCount,
+        boolean sharedByMe,
+        List<UUID> likedUserIds,
         Instant sharedAt) {}

@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { formatDateTime, formatRelativeTime } from "../lib/time";
 
-export default function Timestamp({ value, relative = true, className, style }) {
+export default function Timestamp({
+  value,
+  relative = true,
+  className,
+  style,
+}) {
   const [now, setNow] = useState(Date.now);
   const fullDate = formatDateTime(value);
 
@@ -16,9 +21,9 @@ export default function Timestamp({ value, relative = true, className, style }) 
       className={className}
       style={style}
       dateTime={fullDate ? new Date(value).toISOString() : undefined}
-      title={fullDate ? `${fullDate} (giờ Việt Nam)` : undefined}
+      title={fullDate ? `${fullDate} (Vietnam time)` : undefined}
     >
-      {(relative ? formatRelativeTime(value, now) : fullDate) || "Không rõ thời gian"}
+      {(relative ? formatRelativeTime(value, now) : fullDate) || "Unknown time"}
     </time>
   );
 }

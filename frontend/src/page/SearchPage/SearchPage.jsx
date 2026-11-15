@@ -9,7 +9,9 @@ import { DEFAULT_AVATAR_URL } from "../../config/assets";
 const PEOPLE_SUGGESTION_LIMIT = 4;
 
 function normalizeText(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function getPostPreview(content) {
@@ -56,7 +58,7 @@ export default function SearchPage() {
   const normalizedQuery = useMemo(() => normalizeText(query), [query]);
   const normalizedSubmittedQuery = useMemo(
     () => normalizeText(submittedQuery),
-    [submittedQuery]
+    [submittedQuery],
   );
 
   const matchedPeople = useMemo(() => {
@@ -67,7 +69,9 @@ export default function SearchPage() {
     return users.filter((user) => {
       const fullname = normalizeText(user.fullname);
       const username = normalizeText(user.username);
-      return fullname.includes(normalizedQuery) || username.includes(normalizedQuery);
+      return (
+        fullname.includes(normalizedQuery) || username.includes(normalizedQuery)
+      );
     });
   }, [users, normalizedQuery]);
 
@@ -191,7 +195,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="People"
                   count={peopleSuggestions.length}
-                  emptyMessage="Không có gợi ý người dùng phù hợp."
+                  emptyMessage="No matching people suggestions."
                 >
                   {peopleSuggestions.map((user) => (
                     <button
@@ -207,7 +211,9 @@ export default function SearchPage() {
                         className={style.avatar}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                        <strong>
+                          {user.fullname || user.username || "Unknown user"}
+                        </strong>
                         <span>@{user.username || "unknown"}</span>
                       </div>
                     </button>
@@ -219,7 +225,7 @@ export default function SearchPage() {
 
             {!submittedQuery ? (
               <div className={style.emptyArea}>
-                <p className={style.emptyTitle}>Chưa có nội dung tìm kiếm.</p>
+                <p className={style.emptyTitle}>No search yet.</p>
                 <span className={style.emptySubtitle}>
                   Nhập tên người dùng hoặc câu tìm kiếm, rồi nhấn Enter.
                 </span>
@@ -227,7 +233,7 @@ export default function SearchPage() {
             ) : (
               <div className={style.resultsPanel}>
                 <div className={style.resultSummary}>
-                  Kết quả cho từ khóa <strong>"{submittedQuery}"</strong>
+                  Results for <strong>"{submittedQuery}"</strong>
                 </div>
 
                 <SearchSection
@@ -248,7 +254,9 @@ export default function SearchPage() {
                         className={style.avatar}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                        <strong>
+                          {user.fullname || user.username || "Unknown user"}
+                        </strong>
                         <span>@{user.username || "unknown"}</span>
                       </div>
                     </button>
@@ -262,7 +270,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="Posts"
                   count={searchedPostResults.length}
-                  emptyMessage="Không tìm thấy bài đăng phù hợp."
+                  emptyMessage="No matching posts found."
                 >
                   {searchedPostResults.map((post) => (
                     <button
@@ -281,7 +289,9 @@ export default function SearchPage() {
                         className={style.previewImage}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
+                        <strong>
+                          {post.username ? `@${post.username}` : "Unknown user"}
+                        </strong>
                         <span>{getPostPreview(post.content)}</span>
                       </div>
                     </button>
@@ -307,7 +317,11 @@ function SearchSection({ title, count, children, emptyMessage }) {
         <span>{count}</span>
       </div>
 
-      {hasContent ? children : <div className={style.emptySection}>{emptyMessage}</div>}
+      {hasContent ? (
+        children
+      ) : (
+        <div className={style.emptySection}>{emptyMessage}</div>
+      )}
     </section>
   );
 }

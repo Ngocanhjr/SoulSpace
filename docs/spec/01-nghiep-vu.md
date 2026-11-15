@@ -77,7 +77,7 @@ UI chỉ thụt lề tối đa 3 tầng hiển thị, tính root là tầng 1. R
 
 **SHR01** Share chỉ nhận bài công khai, gồm cả bài của chính mình. Lưu quan hệ `(user, blog)` và thời gian share, không lưu snapshot nội dung/tác giả/ảnh. API lắp response từ bài gốc hiện tại. Sửa bài hoặc hồ sơ tác giả thể hiện ngay khi đọc lại share.
 
-**SHR02** Share trùng trả 409 để giữ hành vi thông báo hiện có của frontend. Unique constraint chống tăng số đếm hai lần khi request đồng thời. Unshare chỉ chủ danh sách được làm; nếu quan hệ đã mất, trả 200 với chuỗi thành công để thao tác xóa có thể lặp an toàn.
+**SHR02** API share trùng trả 409 ALREADY_SHARED; unique constraint chống tăng số đếm hai lần khi request đồng thời. UI dùng icon hai mũi tên chia sẻ lại: sharedByMe=false thì bấm để share, sharedByMe=true thì icon nổi bật và bấm lần nữa để unshare, không cần xác nhận. Nút tạm khóa trong lúc xử lý, số bên cạnh là tổng sharesCount. Unshare chỉ chủ danh sách được làm; nếu quan hệ đã mất, trả 200 với chuỗi thành công để thao tác xóa có thể lặp an toàn. Giữ thao tác gỡ trong tab Chia sẻ của trang cá nhân khi bài gốc không còn xuất hiện trên feed.
 
 **SHR03** Danh sách share sắp `sharedAt DESC, blogId DESC` và lọc bài public. `sharesCount` của blog đếm mọi quan hệ còn lưu, kể cả đang ẩn khi bài private. `totalSharedBlogs` sau một lần share đếm các share hiện hiển thị của actor.
 

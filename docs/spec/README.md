@@ -1,8 +1,10 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 12/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+Ngày lập: 24/10/2026. Cập nhật: 15/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
 giai đoạn AI cùng thông báo tương tác; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
+
+Kết quả triển khai local (gồm profile, bài viết và tương tác), phạm vi test và phần chưa nghiệm thu được ghi tại [triển khai](05-trien-khai.md#hoàn-thiện-trang-cá-nhân-local-ngày-15112026). Không cần thay schema/ERD cho các API profile vừa hoàn thiện.
 
 Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspace`, sử dụng PostgreSQL mới và tích hợp với frontend React hiện tại. Bộ tài liệu này chốt hành vi sản phẩm, hợp đồng API, dữ liệu, bảo mật và tiêu chí nghiệm thu để có thể triển khai theo từng mốc.
 
@@ -62,7 +64,7 @@ Các giá trị dưới đây là lựa chọn thiết kế cho demo, có thể 
 | Riêng tư | Giữ `published` boolean; chưa thêm quyền FOLLOWERS. |
 | Bình luận | Không giới hạn cứng độ sâu; UI thụt lề tối đa 3 tầng và chỉ rõ người được trả lời. Counter tính comment/reply chưa xóa, không tính placeholder. |
 | Ảnh | JPEG/PNG; tối đa 10 ảnh/bài, 10 MiB/file, 100 MiB/request. Chọn định dạng giải mã được bằng JDK để không thêm decoder chưa cần. |
-| Session | Idle 30 phút, tuổi tối đa 8 giờ, lưu trong bộ nhớ của một backend. |
+| Session | Idle 1 giờ, không giới hạn cứng tuổi session, lưu trong bộ nhớ của một backend. |
 | Seed chức năng | 8 users, 24 blogs, 48 comments gồm replies, 40 blog likes, 24 comment likes, 12 shares. |
 
 Quyết định ngày 31/10/2026 bỏ giới hạn độ sâu không đổi bảng/cột hoặc các hình ERD. Đã đồng bộ V3,

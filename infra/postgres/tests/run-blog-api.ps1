@@ -31,7 +31,7 @@ try {
     $env:BLOG_TEST_RUNTIME_PASSWORD = $runtimePassword
     $env:BLOG_TEST_MIGRATOR_PASSWORD = $migratorPassword
     Set-Location 'soulspace'
-    mvn.cmd -B '-Dtest=LocalAuthenticationTests,BlogApiTests,InteractionTransactionTests' test
+    mvn.cmd -B '-Dtest=LocalAuthenticationTests,BlogApiTests,InteractionTransactionTests,ProfileApiTests' test
     $exitCode = $LASTEXITCODE
 } finally {
     Set-Location $originalLocation

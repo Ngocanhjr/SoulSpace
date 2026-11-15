@@ -14,6 +14,7 @@ public record BlogResponse(
         long likesCount,
         long commentsCount,
         long sharesCount,
+        boolean sharedByMe,
         List<UUID> likedUserIds,
         boolean published,
         Instant createdAt,

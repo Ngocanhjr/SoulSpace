@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { api, apiErrorMessage } from "../../config/api";
 import { useAuth } from "../../config/auth";
 import { useLikes } from "../../config/useLikes";
+import { toggleShare } from "../../config/shares";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Repeat2 } from "lucide-react";
 import CommentPopup from "../../Components/Comment/CommentPopup.jsx";
 import style from "./PostDetailPage.module.css";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
@@ -21,6 +22,9 @@ export default function PostDetailPage() {
   const { user } = useAuth();
   const currentUserId = user?.id || "";
   const [sharing, setSharing] = useState(false);
+  const shareRequest = useRef(false);
+  const shareActor = useRef(currentUserId);
+  useEffect(() => { shareActor.current = currentUserId; }, [currentUserId]);
   const likes = useLikes(currentUserId, (path, next) => {
     setPost((current) => current && path === "/api/v1/blogs/" + current.id + "/like" ? { ...current, ...next } : current);
   });
@@ -56,7 +60,7 @@ export default function PostDetailPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error("Cannot get post detail:", error);
-        toast.error("Không thể tải chi tiết bài viết");
+        toast.error("Unable to load post details");
         setPost(null);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -99,32 +103,42 @@ export default function PostDetailPage() {
       return;
     }
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập để tương tác.");
+      toast.error("Please sign in to interact.");
       return;
     }
     if (type === "LIKE") {
       likes.toggle("/api/v1/blogs/" + post.id + "/like", post.liked, post.likesCount);
       return;
     }
-    if (sharing || !post.published) return;
+    if (shareRequest.current || (!post.published && !post.sharedByMe)) return;
+    shareRequest.current = true;
     setSharing(true);
     try {
-      const { data } = await api.post("/api/v1/blogs/" + post.id + "/share", {});
-      setPost((current) => current?.id === post.id ? { ...current, sharesCount: data.sharesCount } : current);
-      toast.success(data.message);
+      const result = await toggleShare(post, currentUserId, (next) => {
+        if (shareActor.current === currentUserId) {
+          setPost((current) => current?.id === post.id ? { ...current, ...next } : current);
+        }
+      });
+      if (shareActor.current !== currentUserId) return;
+      if (result.unavailable) setPost(null);
+      if (result.warning) toast.warning(result.message);
+      else toast.success(result.message);
     } catch (error) {
-      toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
+      if (shareActor.current !== currentUserId) return;
+      if (error.response?.status === 404) setPost(null);
+      toast.error(apiErrorMessage(error, "Unable to repost this post."));
     } finally {
+      shareRequest.current = false;
       setSharing(false);
     }
   };
 
   if (loading) {
-    return <div className={style.state}>Đang tải bài viết...</div>;
+    return <div className={style.state}>Loading posts...</div>;
   }
 
   if (!post) {
-    return <div className={style.state}>Không tìm thấy bài viết.</div>;
+    return <div className={style.state}>Post not found.</div>;
   }
 
   return (
@@ -138,7 +152,7 @@ export default function PostDetailPage() {
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className={style.title}>Bài đăng</h1>
+          <h1 className={style.title}>Posts</h1>
         </div>
 
         <div className={style.card}>
@@ -172,7 +186,8 @@ export default function PostDetailPage() {
               className={`${style.btn} ${style.btnLike} ${
                 post.liked ? style.btnLikeActive : ""
               }`}
-              aria-label="Like"
+              aria-label={post.liked ? "Unlike" : "Like"}
+              title={post.liked ? "Unlike" : "Like"}
               aria-pressed={post.liked}
               onClick={() => handleAction("LIKE")}
             >
@@ -183,7 +198,8 @@ export default function PostDetailPage() {
             <button
               type="button"
               className={`${style.btn} ${style.btnComment}`}
-              aria-label="Comment"
+              aria-label="Comments"
+              title="Comments"
               onClick={() => handleAction("COMMENT")}
             >
               <span className={style.icon} />
@@ -192,13 +208,15 @@ export default function PostDetailPage() {
 
             <button
               type="button"
-              className={`${style.btn} ${style.btnShare}`}
-              aria-label="Share"
-              disabled={sharing || !post.published}
-              title={post.published ? "Chia sẻ bài viết" : "Chỉ chia sẻ được bài công khai"}
+              className={`${style.btn} ${style.btnShare} ${post.sharedByMe ? style.btnShareActive : ""}`}
+              aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
+              aria-pressed={Boolean(post.sharedByMe)}
+              aria-busy={sharing}
+              disabled={sharing || (!post.published && !post.sharedByMe)}
+              title={post.sharedByMe ? "Reposted · Click to remove" : post.published ? "Repost" : "Only public posts can be reposted"}
               onClick={() => handleAction("SHARE")}
             >
-              <span className={style.icon} />
+              <Repeat2 className={style.icon} aria-hidden="true" />
             </button>
             <span>{post.sharesCount}</span>
           </div>

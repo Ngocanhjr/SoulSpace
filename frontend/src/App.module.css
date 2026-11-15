@@ -55,6 +55,11 @@ box-shadow: 10px 10px 46px -21px rgba(0, 0, 0, 0.75);
   scrollbar-width: none;
 }
 
+.page-render.post-state {
+  height: auto;
+  min-height: 260px;
+}
+
 @media (max-width: 768px) {
   .layout-web {
     flex-direction: column;

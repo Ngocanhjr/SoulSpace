@@ -56,6 +56,10 @@ export async function signIn(username, password) {
 
 export async function signOut() {
   await api.post("/api/v1/auth/log-out");
+  clearSession();
+}
+
+export function clearSession() {
   resetCsrf();
   update(null);
 }
