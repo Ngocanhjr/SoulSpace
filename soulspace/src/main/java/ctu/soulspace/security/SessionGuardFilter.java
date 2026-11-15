@@ -141,7 +141,7 @@ public class SessionGuardFilter extends OncePerRequestFilter {
         return path.equals("/api/v1/blogs")
                 || path.startsWith("/api/v1/blogs/")
                 || path.equals("/api/v1/blogs-details")
-                || (path.startsWith("/api/v1/users/") && path.contains("/shared-blogs/"));
+                || path.startsWith("/api/v1/users/");
     }
 
     private synchronized boolean allowAttempt(

@@ -2,7 +2,7 @@
 
 Thiết kế cập nhật ngày 31/10/2026, gồm chủ đề bài viết theo giai đoạn AI và các quyết định đã chốt về comment, xóa tài
 khoản, timestamp, media và lease cleanup. Xem [bản SVG](erd.md) và [báo cáo chốt thiết kế](erd-review.md). Đã tạo Flyway
-V1–V5 và kiểm thử SQL bằng PostgreSQL WASM; chưa chạy qua JDBC/Flyway trên Docker hoặc Neon. Hướng dẫn
+V1–V5 và kiểm thử SQL bằng PostgreSQL WASM; các API đã được kiểm chứng thêm bằng JDBC/Flyway trên PostgreSQL Docker riêng theo [nhật ký triển khai](05-trien-khai.md). Chưa nghiệm thu Neon. Hướng dẫn
 tại [database foundation](../../infra/postgres/README.md).
 
 ## Ánh xạ nghiệp vụ legacy sang kỹ thuật SQL

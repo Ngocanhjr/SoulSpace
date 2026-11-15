@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, apiErrorMessage } from "../../config/api";
-import { useAuth } from "../../config/auth";
+import { refreshSession, useAuth } from "../../config/auth";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import style from "./PostPage.module.css";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function PostPage() {
   const [files, setFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [progress, setProgress] = useState(0);
-  const { user, ready } = useAuth();
+  const { user, ready, error: authError } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isSubmit, setIsSubmit] = useState(false);
@@ -118,6 +118,20 @@ export default function PostPage() {
     postNews();
   };
 
+  if (!ready) {
+    return <section className={style.state}><p role="status">Đang kiểm tra phiên đăng nhập...</p></section>;
+  }
+  if (!user) {
+    if (!authError) return null;
+    return (
+      <section className={style.state}>
+        <h1 className={style.stateTitle}>Chưa thể kiểm tra phiên đăng nhập</h1>
+        <p className={style.stateDescription} role="alert">Vui lòng kiểm tra kết nối rồi thử lại.</p>
+        <Button onClick={() => refreshSession().catch(() => {})}>Thử lại</Button>
+      </section>
+    );
+  }
+
   return (
     <div className={style.boxlayout}>
       {/* --- Tiêu đề --- */}
@@ -128,8 +142,6 @@ export default function PostPage() {
       </div>
 
       {/* --- Nội dung post --- */}
-      {!ready ? <p>Đang kiểm tra phiên đăng nhập...</p> : user ? (
-        <>
           <div className={style["post-content"]}>
             <div className={style.header_post}>
               <div className={style.avatar_mini_wrapper}>
@@ -229,13 +241,6 @@ export default function PostPage() {
               />
             </div>
           )}
-        </>
-      ) : (
-        <div className="logged-out-container">
-          <h2>You are not signed in</h2>
-          <p>Please sign in or sign up to view your profile.</p>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { api, apiErrorMessage } from "../../config/api";
 import { useAuth } from "../../config/auth";
 import { useLikes } from "../../config/useLikes";
+import { toggleShare } from "../../config/shares";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Repeat2 } from "lucide-react";
 import CommentPopup from "../../Components/Comment/CommentPopup.jsx";
 import style from "./PostDetailPage.module.css";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
@@ -21,6 +22,9 @@ export default function PostDetailPage() {
   const { user } = useAuth();
   const currentUserId = user?.id || "";
   const [sharing, setSharing] = useState(false);
+  const shareRequest = useRef(false);
+  const shareActor = useRef(currentUserId);
+  useEffect(() => { shareActor.current = currentUserId; }, [currentUserId]);
   const likes = useLikes(currentUserId, (path, next) => {
     setPost((current) => current && path === "/api/v1/blogs/" + current.id + "/like" ? { ...current, ...next } : current);
   });
@@ -106,15 +110,25 @@ export default function PostDetailPage() {
       likes.toggle("/api/v1/blogs/" + post.id + "/like", post.liked, post.likesCount);
       return;
     }
-    if (sharing || !post.published) return;
+    if (shareRequest.current || (!post.published && !post.sharedByMe)) return;
+    shareRequest.current = true;
     setSharing(true);
     try {
-      const { data } = await api.post("/api/v1/blogs/" + post.id + "/share", {});
-      setPost((current) => current?.id === post.id ? { ...current, sharesCount: data.sharesCount } : current);
-      toast.success(data.message);
+      const result = await toggleShare(post, currentUserId, (next) => {
+        if (shareActor.current === currentUserId) {
+          setPost((current) => current?.id === post.id ? { ...current, ...next } : current);
+        }
+      });
+      if (shareActor.current !== currentUserId) return;
+      if (result.unavailable) setPost(null);
+      if (result.warning) toast.warning(result.message);
+      else toast.success(result.message);
     } catch (error) {
+      if (shareActor.current !== currentUserId) return;
+      if (error.response?.status === 404) setPost(null);
       toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
     } finally {
+      shareRequest.current = false;
       setSharing(false);
     }
   };
@@ -172,7 +186,8 @@ export default function PostDetailPage() {
               className={`${style.btn} ${style.btnLike} ${
                 post.liked ? style.btnLikeActive : ""
               }`}
-              aria-label="Like"
+              aria-label={post.liked ? "Bỏ thích" : "Thích"}
+              title={post.liked ? "Bỏ thích" : "Thích"}
               aria-pressed={post.liked}
               onClick={() => handleAction("LIKE")}
             >
@@ -183,7 +198,8 @@ export default function PostDetailPage() {
             <button
               type="button"
               className={`${style.btn} ${style.btnComment}`}
-              aria-label="Comment"
+              aria-label="Bình luận"
+              title="Bình luận"
               onClick={() => handleAction("COMMENT")}
             >
               <span className={style.icon} />
@@ -192,13 +208,15 @@ export default function PostDetailPage() {
 
             <button
               type="button"
-              className={`${style.btn} ${style.btnShare}`}
-              aria-label="Share"
-              disabled={sharing || !post.published}
-              title={post.published ? "Chia sẻ bài viết" : "Chỉ chia sẻ được bài công khai"}
+              className={`${style.btn} ${style.btnShare} ${post.sharedByMe ? style.btnShareActive : ""}`}
+              aria-label={post.sharedByMe ? "Gỡ chia sẻ" : "Chia sẻ lại"}
+              aria-pressed={Boolean(post.sharedByMe)}
+              aria-busy={sharing}
+              disabled={sharing || (!post.published && !post.sharedByMe)}
+              title={post.sharedByMe ? "Đã chia sẻ · Bấm để gỡ" : post.published ? "Chia sẻ lại" : "Chỉ chia sẻ được bài công khai"}
               onClick={() => handleAction("SHARE")}
             >
-              <span className={style.icon} />
+              <Repeat2 className={style.icon} aria-hidden="true" />
             </button>
             <span>{post.sharesCount}</span>
           </div>

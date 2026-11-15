@@ -38,9 +38,6 @@ import tools.jackson.databind.JsonNode;
 @Service
 public class InteractionService {
     private static final int MAX_COMMENT_LENGTH = 2_000;
-    private static final int MAX_TRANSACTION_ATTEMPTS = 3;
-    private static final int RETRY_DELAY_MS = 50;
-    private static final Set<String> RETRYABLE_STATES = Set.of("40P01", "40001");
     private static final Logger log = LoggerFactory.getLogger(InteractionService.class);
     @PersistenceContext private EntityManager em;
     private final UserRepository users;
@@ -51,7 +48,7 @@ public class InteractionService {
             UserRepository users, BlogService blogs, PlatformTransactionManager manager) {
         this.users = users;
         this.blogs = blogs;
-        transactions = new TransactionTemplate(manager);
+        transactions = new WriteTransaction(manager);
     }
 
     @Transactional(readOnly = true)
@@ -414,50 +411,29 @@ public class InteractionService {
     }
 
     private <T> T write(Supplier<T> operation) {
-        for (int attempt = 0; attempt < MAX_TRANSACTION_ATTEMPTS; attempt++) {
-            try {
-                return transactions.execute(status -> operation.get());
-            } catch (RuntimeException failure) {
-                SQLException sql = null;
-                for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
-                    if (cause instanceof SQLException found) sql = found;
-                }
-                if (sql == null) throw failure;
-                String state = sql.getSQLState();
-                if (state == null) throw failure;
-                if (RETRYABLE_STATES.contains(state)) {
-                    if (attempt + 1 >= MAX_TRANSACTION_ATTEMPTS)
-                        throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
-                    try {
-                        Thread.sleep((long) RETRY_DELAY_MS * (attempt + 1));
-                    } catch (InterruptedException interrupted) {
-                        Thread.currentThread().interrupt();
-                        throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
-                    }
-                    continue;
-                }
-                String marker =
-                        String.valueOf(sql.getMessage())
-                                .lines()
-                                .findFirst()
-                                .orElse("")
-                                .replaceFirst("^ERROR:\\s*", "");
-                ErrorCode error =
-                        switch (marker) {
-                            case "ACTOR_NOT_FOUND" -> ErrorCode.AUTH_REQUIRED;
-                            case "BLOG_NOT_FOUND" -> ErrorCode.BLOG_NOT_FOUND;
-                            case "COMMENT_NOT_FOUND" -> ErrorCode.COMMENT_NOT_FOUND;
-                            case "COMMENT_DELETED" -> ErrorCode.COMMENT_DELETED;
-                            case "ALREADY_SHARED" -> ErrorCode.ALREADY_SHARED;
-                            default -> null;
-                        };
-                if (error != null) throw new AppException(error);
-                if ("55P03".equals(state))
-                    throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
-                throw failure;
-            }
+        try {
+            return transactions.execute(status -> operation.get());
+        } catch (RuntimeException failure) {
+            SQLException sql = WriteTransaction.sqlCause(failure);
+            if (sql == null) throw failure;
+            String marker =
+                    String.valueOf(sql.getMessage())
+                            .lines()
+                            .findFirst()
+                            .orElse("")
+                            .replaceFirst("^ERROR:\\s*", "");
+            ErrorCode error =
+                    switch (marker) {
+                        case "ACTOR_NOT_FOUND" -> ErrorCode.AUTH_REQUIRED;
+                        case "BLOG_NOT_FOUND" -> ErrorCode.BLOG_NOT_FOUND;
+                        case "COMMENT_NOT_FOUND" -> ErrorCode.COMMENT_NOT_FOUND;
+                        case "COMMENT_DELETED" -> ErrorCode.COMMENT_DELETED;
+                        case "ALREADY_SHARED" -> ErrorCode.ALREADY_SHARED;
+                        default -> null;
+                    };
+            if (error != null) throw new AppException(error);
+            throw failure;
         }
-        throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
     }
 
     private record Comments(List<CommentResponse> roots, Map<UUID, CommentResponse> nodes) {}

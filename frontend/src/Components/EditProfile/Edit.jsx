@@ -1,82 +1,77 @@
 import { useState } from "react";
-import "./Edit.css";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { useNavigate } from "react-router-dom";
+import { api, apiErrorMessage } from "../../config/api";
+import { clearSession } from "../../config/auth";
 import { toast } from "sonner";
-import { createPortal } from "react-dom";
-export default function Edit({ user, onClose, onSave }) {
-  const [formData, setFormData] = useState(user);
-  const [loading, setLoading] = useState(false);
+import { Button } from "../ui/button";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter } from "../ui/alert-dialog";
+import "./Edit.css";
 
-  const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
-  };
+const MIN_PASSWORD_LENGTH = 4;
+const MAX_PASSWORD_LENGTH = 128;
 
-  const handleSubmit = async () => {
-    setLoading(true);
-    try {
-      const userId = String(localStorage.getItem("userId")).replaceAll('"', ""); 
-      if (!userId) {
-        console.error("Logged in but userId not found in LocalStorage.");
-        toast.error("User session error. Please log in again.");
-        return; // Dừng thực thi
-      }
+export default function Edit({ user, mode = "profile", onClose, onSave }) {
+  const passwordMode = mode === "password";
+  const [username, setUsername] = useState(user.username);
+  const [fullname, setFullname] = useState(user.fullname);
+  const [dob, setDob] = useState(user.dob || "");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-      const response = await axios.patch(
-        buildApiUrl(`/api/v1/users/${userId}`),
-        formData,
-        { headers: { "Content-Type": "application/json" } }
-      );
-
-      toast.success("Profile updated successfully!");
-      onSave(response.data);
-      onClose();
-    } catch (error) {
-      console.error("Error updating user:", error);
-      toast.error("Failed to update profile!");
-    } finally {
-      setLoading(false);
+  async function submit(event) {
+    event.preventDefault();
+    if (busy) return;
+    setError("");
+    if (passwordMode && (password !== confirmation || Array.from(password).length < MIN_PASSWORD_LENGTH || Array.from(password).length > MAX_PASSWORD_LENGTH)) {
+      setError("Mật khẩu mới cần từ 4–128 ký tự và khớp phần nhập lại.");
+      return;
     }
-  };
+    setBusy(true);
+    try {
+      if (passwordMode) {
+        await api.put(`/api/v1/users/${user.id}`, { currentPassword, password });
+        clearSession();
+        toast.success("Đã đổi mật khẩu. Hãy đăng nhập lại.");
+        navigate("/signin", { replace: true });
+      } else {
+        const { data } = await api.patch(`/api/v1/users/${user.id}`, { username, fullname, dob: dob || null });
+        onSave(data);
+        toast.success("Đã lưu hồ sơ.");
+      }
+      onClose();
+    } catch (failure) {
+      setError(apiErrorMessage(failure));
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  return createPortal(
-    <div className="overlay">
-      <div className="edit-modal">
-        <div className="edit-header">
-          <h2>Edit Profile</h2>
-          <button className="close-icon" onClick={onClose}>
-            ×
-          </button>
-        </div>
-
-        <div className="profile-field">
-          <label className="profile-label">Full Name</label>
-          <input
-            type="text"
-            value={formData.fullname || ""}
-            onChange={(e) => handleChange("fullname", e.target.value)}
-            className="profile-input"
-          />
-        </div>
-
-        <div className="profile-field">
-          <label className="profile-label">Username</label>
-          <input
-            type="text"
-            value={formData.username || ""}
-            onChange={(e) => handleChange("username", e.target.value)}
-            className="profile-input"
-          />
-        </div>
-        <button
-          className="profile-button"
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Done"}
-        </button>
-      </div>
-    </div>,
-    document.body  //đi chung với createPortal
-  );
+  return <AlertDialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
+    <AlertDialogContent className="profile-dialog">
+      <AlertDialogHeader>
+        <AlertDialogTitle>{passwordMode ? "Đổi mật khẩu" : "Chỉnh sửa hồ sơ"}</AlertDialogTitle>
+        <AlertDialogDescription>{passwordMode ? "Sau khi đổi, tất cả phiên đăng nhập sẽ kết thúc." : "Ngày sinh chỉ hiển thị với bạn. Tên đăng nhập cũng được dùng để đăng nhập."}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <form onSubmit={submit} className="profile-form" aria-busy={busy}>
+        {passwordMode ? <>
+          <label>Mật khẩu hiện tại<input autoFocus type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>
+          <label>Mật khẩu mới<input type="password" autoComplete="new-password" required value={password} onChange={(event) => setPassword(event.target.value)} disabled={busy} /></label>
+          <label>Nhập lại mật khẩu mới<input type="password" autoComplete="new-password" required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={busy} /></label>
+        </> : <>
+          <label>Tên đăng nhập<input autoFocus autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} disabled={busy} /></label>
+          <label>Họ tên<input autoComplete="name" required value={fullname} onChange={(event) => setFullname(event.target.value)} disabled={busy} /></label>
+          <label>Ngày sinh<input type="date" autoComplete="bday" value={dob} onChange={(event) => setDob(event.target.value)} disabled={busy} /></label>
+        </>}
+        {error && <p role="alert" className="profile-form-error">{error}</p>}
+        <AlertDialogFooter>
+          <Button type="button" variant="outline" onClick={onClose} disabled={busy}>Hủy</Button>
+          <Button type="submit" disabled={busy}>{busy ? "Đang lưu…" : "Lưu thay đổi"}</Button>
+        </AlertDialogFooter>
+      </form>
+    </AlertDialogContent>
+  </AlertDialog>;
 }

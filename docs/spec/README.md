@@ -1,8 +1,10 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 12/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+Ngày lập: 24/10/2026. Cập nhật: 15/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
 giai đoạn AI cùng thông báo tương tác; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
+
+Kết quả triển khai local (gồm profile, bài viết và tương tác), phạm vi test và phần chưa nghiệm thu được ghi tại [triển khai](05-trien-khai.md#hoàn-thiện-trang-cá-nhân-local-ngày-15112026). Không cần thay schema/ERD cho các API profile vừa hoàn thiện.
 
 Chuyển các chức năng đang có trong `old/Blog_api` sang backend `soulspace`, sử dụng PostgreSQL mới và tích hợp với frontend React hiện tại. Bộ tài liệu này chốt hành vi sản phẩm, hợp đồng API, dữ liệu, bảo mật và tiêu chí nghiệm thu để có thể triển khai theo từng mốc.
 

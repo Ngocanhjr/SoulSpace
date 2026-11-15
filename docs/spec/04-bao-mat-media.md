@@ -150,3 +150,9 @@ Cloudinary invalidation và việc người dùng đã lưu ảnh không tạo b
 ## Quyền truy cập thông báo
 
 GET/PATCH thông báo bắt buộc đăng nhập; recipient_id phải lấy từ session và được dùng trong WHERE của cả đọc lẫn cập nhật. PATCH cần CSRF. Không nhận actor_id/recipient_id từ JSON và không xuất entity trực tiếp. List/count phải cùng lọc quyền xem bài hiện tại và loại comment đã xóa để không lộ nội dung bài private hoặc placeholder. Role runtime dùng chung cho backend, không phải RLS theo user; quyền sở hữu được thực thi tại service. Xem [10 thông báo](10-thong-bao.md).
+
+## Phần profile local đã triển khai
+
+ProfileService kiểm mật khẩu nhạy cảm ngoài transaction và giới hạn 10 lần xác nhận/5 phút/user; đây là giới hạn theo user đang đăng nhập, tính mọi lần thử. Session chỉ bị thu hồi sau khi transaction đổi mật khẩu hoặc xóa tài khoản commit. Nếu hash thay đổi sau khi đã xác thực, trả 409 và không ghi đè thay đổi mới. Google-only và Google reauth proof chưa triển khai; xem trạng thái tại [triển khai profile](05-trien-khai.md#hoàn-thiện-trang-cá-nhân-local-ngày-15112026).
+
+Avatar upload dùng MEDIA_NAMESPACE/avatars, ảnh bài dùng MEDIA_NAMESPACE/blogs; cả hai authenticated và cùng được worker kiểm namespace trước destroy. Môi trường local dùng soulspace/local/avatars và soulspace/local/blogs. Avatar công khai qua API khi còn được user tham chiếu; avatar đã thay/gỡ trả 404 qua API dù cleanup chưa hoàn tất. Ảnh mặc định công khai dùng chung nằm ngoài vòng đời receipt/cleanup của từng user.

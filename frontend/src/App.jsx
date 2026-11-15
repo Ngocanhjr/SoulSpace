@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   DndContext,
   closestCenter,
@@ -26,6 +26,7 @@ function App() {
   const [showSecond, setShowSecond] = useState(false);
   const [isGuest, setGuest] = useState(false);
   const location = useLocation(); 
+  const navigate = useNavigate();
   const auth = useAuth();
 
   useEffect(() => {
@@ -69,6 +70,8 @@ function App() {
   }
 
   const isLoggedIn = Boolean(auth.user);
+  const isPostPage = location.pathname === "/post";
+  const showPostLogin = isPostPage && auth.ready && !auth.error && !isLoggedIn;
 
   return (
     <div className={appCSS["layout-web"]}>
@@ -87,13 +90,13 @@ function App() {
               }`}
           >
             {items.map((id) =>
-              id === "page" ? (
+              id === "page" ? (!showPostLogin && (
                 <SortableItem key="page" id="page">
-                  <div className={appCSS["page-render"]}>
+                  <div className={`${appCSS["page-render"]} ${isPostPage && !isLoggedIn ? appCSS["post-state"] : ""}`}>
                     <Router />
                   </div>
                 </SortableItem>
-              ) : (
+              )) : (
                 showSecond && (
                   <SortableItem key="explore" id="explore">
                     <div className={appCSS["box-explore"]}>
@@ -104,13 +107,18 @@ function App() {
               )
             )}
 
-            {auth.error && (
+            {auth.error && !isPostPage && (
               <div role="alert">
                 {auth.error}
                 <button onClick={() => refreshSession().catch(() => {})}>Retry</button>
               </div>
             )}
-            {auth.ready && !auth.error && !isGuest && !isLoggedIn && <Login guest={setGuest} />}
+            {auth.ready && !auth.error && !isLoggedIn && (!isGuest || isPostPage) && (
+              <Login guest={(value) => {
+                setGuest(value);
+                if (isPostPage) navigate("/");
+              }} />
+            )}
           </div>
         </SortableContext>
       </DndContext>

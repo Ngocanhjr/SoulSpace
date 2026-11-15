@@ -101,6 +101,7 @@ class LocalAuthenticationTests {
     @Autowired private SessionRegistry sessions;
 
     @MockitoBean private UserRepository users;
+    @MockitoBean private ctu.soulspace.service.ProfileService profiles;
 
     private User user;
     private String clientAddress;

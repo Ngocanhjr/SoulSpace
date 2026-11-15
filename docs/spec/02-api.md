@@ -23,11 +23,13 @@ Request chỉ bind vào DTO có danh sách field cho phép. Các field compatibi
 | `LoginUser` | `id`, `username`, `avatarUrl` |
 | `UserResponse` | `id`, `username`, `fullname`, `dob`, `userAvatarUrl`; không có password |
 | `UserResponsePatch` | `username`, `fullname`, `dob`, `userAvatarUrl` |
-| `BlogDTO` | `id`, `userId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls:string[]`, `likesCount:long`, `commentsCount:long`, `sharesCount:long`, `likedUserIds:string[]`, `published:boolean`, `createdAt`, `updatedAt` |
+| `BlogDTO` | `id`, `userId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls:string[]`, `likesCount:long`, `commentsCount:long`, `sharesCount:long`, `sharedByMe:boolean`, `likedUserIds:string[]`, `published:boolean`, `createdAt`, `updatedAt` |
 | `CommentDTO` | `id`, `userId:string hoặc null`, `username:string hoặc null`, `userAvatarUrl:string hoặc null`, `content:string hoặc null`, `likesCount`, `likedUserIds:string[]`, `replies:CommentDTO[]`, `createdAt`, `updatedAt`, `isDeleted:boolean`, `version:long` |
 | `SharedBlogDTO` | `blogId`, `originalUserId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls`, `published`, `originalCreatedAt`, `likesCount`, `commentsCount`, `sharesCount`, `sharedAt` |
 
 `LoginUser.avatarUrl` giữ tên mà SignIn đang đọc; profile dùng `userAvatarUrl`. `dob` chỉ có giá trị trong response xem/sửa chính mình; danh sách users và hồ sơ người khác trả null. `likedUserIds` chứa tối đa ID viewer; tổng like lấy từ `likesCount`.
+
+`sharedByMe` cho biết viewer hiện tại có quan hệ trong blog_shares, guest luôn nhận false. Trường này được tính theo session khi đọc feed, hồ sơ và chi tiết, không phải cột mới trong blogs hoặc snapshot lưu trên client. UI dùng nó để chọn POST share hoặc DELETE unshare; sau unshare đọc lại chi tiết để lấy count/trạng thái chuẩn. U11 giữ response text/plain hiện tại. ALREADY_SHARED do trạng thái cũ ở tab khác được xử lý bằng GET đọc lại, không tự gỡ share. Tooltip của các nút tương tác được hiển thị đồng bộ: Thích/Bỏ thích, Bình luận và Chia sẻ lại/Đã chia sẻ · Bấm để gỡ.
 
 `imageContentUrls` là URL cùng origin dạng `/api/v1/media/{assetId}`. Avatar upload cũng được phục vụ qua route này. Avatar mặc định là ngoại lệ: dùng URL Cloudinary công khai đã chốt trong USR01, được khai báo tại `MediaConstants.DEFAULT_AVATAR_URL` và `config/assets.js`. Không trả signed URL hoặc credential cho ảnh cá nhân/bài viết; ảnh mặc định công khai không mang quyền sở hữu của một user.
 
@@ -60,6 +62,7 @@ Ví dụ `BlogDTO`:
   "likesCount": 2,
   "commentsCount": 3,
   "sharesCount": 1,
+  "sharedByMe": false,
   "likedUserIds": ["10000000-0000-4000-8000-000000000002"],
   "published": true,
   "createdAt": "2026-10-24T01:00:00Z",
@@ -159,7 +162,7 @@ B10 nhận các part `content?`, `published?` mặc định true, `files` lặp 
 
 `successUrls` của B14 là toàn bộ ảnh còn gắn với bài sau commit, theo thứ tự hiển thị. `failedDeleteFiles` không báo ảnh đang chờ dọn là lỗi: job được enqueue thành công thì việc gỡ liên kết đã thành công và array này là `[]`. Nếu enqueue thất bại, transaction rollback và trả 500. Lỗi cleanup xảy ra về sau được theo dõi trong queue, không sửa response đã trả.
 
-UI hiện PATCH nội dung rồi PATCH published thành hai request. Hợp đồng B14 đã nhận `published`; frontend chuyển sang gửi một multipart để nội dung/ảnh/trạng thái commit cùng nhau. B11 vẫn được giữ cho thao tác đổi quyền độc lập.
+UserPage gửi một multipart B14 để nội dung/ảnh/trạng thái commit cùng nhau. B11 vẫn được giữ cho thao tác đổi quyền độc lập trong menu bài viết. Sau khi sửa quyền hoặc ảnh, danh sách chia sẻ được đọc lại để giữ đúng quyền xem hiện tại.
 
 ## Upload độc lập và phục vụ ảnh
 

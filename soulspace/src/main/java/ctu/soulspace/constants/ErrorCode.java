@@ -9,6 +9,10 @@ public enum ErrorCode {
     FORBIDDEN(HttpStatus.FORBIDDEN, "Access denied"),
     CSRF_INVALID(HttpStatus.FORBIDDEN, "Invalid CSRF token"),
     USERNAME_EXISTS(HttpStatus.CONFLICT, "Username already exists"),
+    INVALID_MEDIA_REFERENCE(HttpStatus.BAD_REQUEST, "Image does not belong to this resource"),
+    PASSWORD_NOT_ENABLED(
+            HttpStatus.CONFLICT, "Set a password after verifying your Google identity"),
+    REAUTH_REQUIRED(HttpStatus.FORBIDDEN, "Reauthentication required"),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
     BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "Blog not found"),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Comment not found"),

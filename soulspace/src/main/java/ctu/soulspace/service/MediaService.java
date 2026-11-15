@@ -10,6 +10,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,11 @@ public class MediaService {
 
     public List<UploadedImage> upload(
             UUID actor, List<MultipartFile> files, List<String> failures) {
+        return upload(actor, files, failures, "BLOG");
+    }
+
+    public List<UploadedImage> upload(
+            UUID actor, List<MultipartFile> files, List<String> failures, String purpose) {
         if (files.isEmpty()) return List.of();
         beginUpload(actor);
         List<UploadedImage> uploaded = new ArrayList<>();
@@ -65,10 +71,13 @@ public class MediaService {
                                 status -> {
                                     MediaAsset pending = new MediaAsset();
                                     pending.setOwnerId(actor);
-                                    pending.setPurpose("BLOG");
+                                    pending.setPurpose(purpose);
                                     pending.setState("PENDING");
+                                    String nonce = UUID.randomUUID().toString();
                                     pending.setProviderPublicId(
-                                            provider.publicId(UUID.randomUUID().toString()));
+                                            "BLOG".equals(purpose)
+                                                    ? provider.publicId(nonce)
+                                                    : provider.publicId(nonce, purpose));
                                     em.persist(pending);
                                     em.flush();
                                     return pending;
@@ -131,6 +140,11 @@ public class MediaService {
 
     // Called inside the blog transaction, after locking the actor and creating the blog.
     public List<String> attach(UUID actor, UUID blogId, List<UploadedImage> images) {
+        return attach(actor, blogId, images, 0);
+    }
+
+    public List<String> attach(
+            UUID actor, UUID blogId, List<UploadedImage> images, int startPosition) {
         Map<UUID, MediaAsset> assets = new HashMap<>();
         images.stream()
                 .sorted(Comparator.comparing(UploadedImage::id))
@@ -160,11 +174,42 @@ public class MediaService {
             BlogImage link = new BlogImage();
             link.setAssetId(asset.getId());
             link.setBlogId(blogId);
-            link.setPosition((short) i);
+            link.setPosition((short) (startPosition + i));
             em.persist(link);
             urls.add("/api/v1/media/" + asset.getId());
         }
         return urls;
+    }
+
+    public void lockAssets(UUID actor, Collection<UUID> ids) {
+        if (ids.isEmpty()) return;
+        var unique = new java.util.HashSet<>(ids);
+        List<MediaAsset> assets =
+                em.createQuery(
+                                "select m from MediaAsset m where m.id in :ids order by m.id",
+                                MediaAsset.class)
+                        .setParameter("ids", unique)
+                        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                        .getResultList();
+        if (assets.size() != unique.size()
+                || assets.stream().anyMatch(asset -> !actor.equals(asset.getOwnerId()))) {
+            throw new AppException(ErrorCode.INVALID_MEDIA_REFERENCE);
+        }
+    }
+
+    public UUID attachAvatar(UUID actor, UploadedImage image) {
+        MediaAsset asset = em.find(MediaAsset.class, image.id(), LockModeType.PESSIMISTIC_WRITE);
+        if (asset == null
+                || !actor.equals(asset.getOwnerId())
+                || !"AVATAR".equals(asset.getPurpose())
+                || !"PENDING".equals(asset.getState()))
+            throw new AppException(ErrorCode.INVALID_MEDIA_REFERENCE);
+        asset.setProviderAssetId(image.receipt().assetId());
+        asset.setFormat(image.receipt().format());
+        asset.setSizeBytes(image.receipt().size());
+        asset.setState("ATTACHED");
+        em.flush();
+        return asset.getId();
     }
 
     public ImageData read(UUID id, UUID viewer) {
@@ -201,7 +246,7 @@ public class MediaService {
 
     public void enqueue(UUID id) {
         MediaAsset asset = em.find(MediaAsset.class, id, LockModeType.PESSIMISTIC_WRITE);
-        if (asset == null || !"PENDING".equals(asset.getState())) return;
+        if (asset == null || "DELETE_PENDING".equals(asset.getState())) return;
         if (!em.createQuery("select i.assetId from BlogImage i where i.assetId = :id", UUID.class)
                         .setParameter("id", id)
                         .getResultList()
