@@ -119,6 +119,7 @@ public class SecurityConfig {
                                                 "/api/v1/blogs/*/comments",
                                                 "/api/v1/users/*/shared-blogs",
                                                 "/api/v1/blogs/*",
+                                                "/api/v1/users",
                                                 "/api/v1/users/*",
                                                 "/api/v1/media/*")
                                         .permitAll()

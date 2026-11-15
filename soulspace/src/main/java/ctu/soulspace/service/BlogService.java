@@ -9,6 +9,7 @@ import ctu.soulspace.entities.BlogImage;
 import ctu.soulspace.entities.User;
 import ctu.soulspace.exception.AppException;
 import ctu.soulspace.repositories.BlogRepository;
+import ctu.soulspace.repositories.EmbeddingJobRepository;
 import ctu.soulspace.repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -36,16 +37,19 @@ public class BlogService {
     private final BlogRepository blogs;
     private final UserRepository users;
     private final MediaService media;
+    private final EmbeddingJobRepository embeddingJobs;
     private final TransactionTemplate transactions;
 
     public BlogService(
             BlogRepository blogs,
             UserRepository users,
             MediaService media,
+            EmbeddingJobRepository embeddingJobs,
             PlatformTransactionManager transactionManager) {
         this.blogs = blogs;
         this.users = users;
         this.media = media;
+        this.embeddingJobs = embeddingJobs;
         transactions = new TransactionTemplate(transactionManager);
     }
 
@@ -82,6 +86,7 @@ public class BlogService {
                                 blogs.saveAndFlush(blog);
                                 List<String> urls = media.attach(actor, blog.getId(), uploaded);
                                 em.flush();
+                                embeddingJobs.enqueue(blog.getId());
                                 return new BlogCreateResponse(
                                         blog.getId(), urls, List.copyOf(failedFiles));
                             });

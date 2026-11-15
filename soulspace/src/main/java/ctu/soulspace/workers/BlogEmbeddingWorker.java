@@ -5,7 +5,7 @@ import ctu.soulspace.repositories.EmbeddingJobRepository;
 import ctu.soulspace.repositories.EmbeddingJobRepository.Job;
 import ctu.soulspace.repositories.SearchRepository;
 import ctu.soulspace.repositories.SearchRepository.PostContent;
-import ctu.soulspace.services.SearchEmbedding;
+import ctu.soulspace.service.SearchEmbeddingService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +20,11 @@ public class BlogEmbeddingWorker {
     private static final Logger log = LoggerFactory.getLogger(BlogEmbeddingWorker.class);
     private final EmbeddingJobRepository jobs;
     private final SearchRepository posts;
-    private final SearchEmbedding embeddings;
+    private final SearchEmbeddingService embeddings;
     private final TransactionTemplate transactions;
 
     public BlogEmbeddingWorker(EmbeddingJobRepository jobs, SearchRepository posts,
-            SearchEmbedding embeddings, TransactionTemplate transactions) {
+            SearchEmbeddingService embeddings, TransactionTemplate transactions) {
         this.jobs = jobs;
         this.posts = posts;
         this.embeddings = embeddings;

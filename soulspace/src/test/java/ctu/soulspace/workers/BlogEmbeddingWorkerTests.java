@@ -4,7 +4,7 @@ import ctu.soulspace.repositories.EmbeddingJobRepository;
 import ctu.soulspace.repositories.EmbeddingJobRepository.Job;
 import ctu.soulspace.repositories.SearchRepository;
 import ctu.soulspace.repositories.SearchRepository.PostContent;
-import ctu.soulspace.services.SearchEmbedding;
+import ctu.soulspace.service.SearchEmbeddingService;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 class BlogEmbeddingWorkerTests {
     private final EmbeddingJobRepository jobs = mock(EmbeddingJobRepository.class);
     private final SearchRepository posts = mock(SearchRepository.class);
-    private final SearchEmbedding embeddings = mock(SearchEmbedding.class);
+    private final SearchEmbeddingService embeddings = mock(SearchEmbeddingService.class);
     private final TransactionTemplate transactions = mock(TransactionTemplate.class);
     private final BlogEmbeddingWorker worker = new BlogEmbeddingWorker(jobs, posts, embeddings, transactions);
     private final Job job = new Job(UUID.randomUUID(), 1, 1);

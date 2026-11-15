@@ -5,12 +5,14 @@ import ctu.soulspace.constants.MediaConstants;
 import ctu.soulspace.dto.request.SignUpRequest;
 import ctu.soulspace.dto.response.LoginUserResponse;
 import ctu.soulspace.dto.response.UserResponse;
+import ctu.soulspace.dto.response.UserSearchResponse;
 import ctu.soulspace.entities.User;
 import ctu.soulspace.exception.AppException;
 import ctu.soulspace.repositories.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
@@ -18,8 +20,10 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserService {
@@ -95,6 +99,19 @@ public class UserService {
                 user.getFullname(),
                 id.equals(viewer) ? user.getDob() : null,
                 avatarUrl(user));
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSearchResponse> search(String query) {
+        String text = query == null ? "" : query.strip();
+        if (text.codePointCount(0, text.length()) > 2000 || text.indexOf('\0') >= 0) {
+            throw invalid("q", "Use at most 2000 characters without NUL");
+        }
+        if (text.isEmpty()) return List.of();
+        return userRepository.searchByName(text, PageRequest.of(0, 20)).stream()
+                .map(user -> new UserSearchResponse(
+                        user.getId(), user.getUsername(), user.getFullname(), avatarUrl(user)))
+                .toList();
     }
 
     private String normalizeUsername(String value) {

@@ -1,5 +1,5 @@
 // Gọi Jina v3 để tạo vector 1024 chiều cho câu tìm kiếm hoặc nội dung bài viết.
-package ctu.soulspace.services;
+package ctu.soulspace.service;
 
 import java.util.Arrays;
 import java.util.List;
@@ -14,11 +14,11 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.server.ResponseStatusException;
 
 @Component
-public class SearchEmbedding {
+public class SearchEmbeddingService {
     private final RestClient client;
     private final String apiKey;
 
-    public SearchEmbedding(@Value("${JINA_API_KEY:}") String apiKey) {
+    public SearchEmbeddingService(@Value("${JINA_API_KEY:}") String apiKey) {
         this.apiKey = apiKey.trim();
         var factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10_000);

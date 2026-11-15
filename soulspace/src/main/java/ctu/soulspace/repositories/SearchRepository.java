@@ -1,4 +1,4 @@
-// Truy vấn Neon qua JDBC để lấy tối đa 10 bài công khai có vector gần câu tìm kiếm nhất.
+// Truy vấn Neon qua JDBC để lấy các bài công khai gần câu tìm kiếm, theo giới hạn yêu cầu.
 package ctu.soulspace.repositories;
 
 import java.util.List;
@@ -16,7 +16,7 @@ public class SearchRepository {
         this.jdbc = jdbc;
     }
 
-    public List<SearchResult> search(String queryVector) {
+    public List<SearchResult> search(String queryVector, int limit) {
         return jdbc.query("""
                 SELECT p.blog_id, p.content, p.username,
                        1 - (e.embedding <=> ?::vector) AS similarity
@@ -24,10 +24,10 @@ public class SearchRepository {
                 JOIN public.v_public_blog_feed AS p USING (blog_id)
                 WHERE e.content_sha256 = encode(sha256(convert_to(p.content, 'UTF8')), 'hex')
                 ORDER BY similarity DESC, p.blog_id
-                LIMIT 10
+                LIMIT ?
                 """, (rs, row) -> new SearchResult(rs.getObject("blog_id", UUID.class),
                         rs.getString("content"), rs.getString("username"),
-                        rs.getDouble("similarity")), queryVector);
+                        rs.getDouble("similarity")), queryVector, limit);
     }
 
     public record SearchResult(UUID id, String content, String username, double similarity) {}
