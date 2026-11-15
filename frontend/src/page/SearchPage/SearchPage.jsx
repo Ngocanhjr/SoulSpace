@@ -1,14 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { buildApiUrl } from "../../config/api";
-import { toast } from "sonner";
 import { Search, X } from "lucide-react";
 import style from "./SearchPage.module.css";
 import { assetUrl } from "../../config/assets";
 
 const PEOPLE_SUGGESTION_LIMIT = 4;
-const POST_SUGGESTION_LIMIT = 4;
 
 function normalizeText(value) {
   return String(value || "").trim().toLowerCase();
@@ -28,29 +26,32 @@ export default function SearchPage() {
   const [posts, setPosts] = useState([]);
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState("");
+  const [peopleError, setPeopleError] = useState("");
+  const [needsLogin, setNeedsLogin] = useState(false);
+  const activeRequest = useRef(null);
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
+    const request = new AbortController();
     const fetchSearchSources = async () => {
       try {
-        const [usersResponse, postsResponse] = await Promise.all([
-          axios.get(buildApiUrl("/api/v1/users")),
-          axios.get(buildApiUrl("/api/v1/soulspaces")),
-        ]);
-
-        setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
-        setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : []);
+        const response = await axios.get(buildApiUrl("/api/v1/users"), {
+          signal: request.signal
+        });
+        if (!Array.isArray(response.data)) throw new Error("Invalid users response");
+        setUsers(response.data);
       } catch (error) {
-        console.error("Cannot load search data:", error);
-        toast.error("Không thể tải dữ liệu tìm kiếm");
-      } finally {
-        setLoading(false);
+        if (!axios.isCancel(error)) setPeopleError("Chưa tải được danh sách người dùng.");
       }
     };
 
     fetchSearchSources();
+    return () => request.abort();
   }, []);
+
+  useEffect(() => () => activeRequest.current?.abort(), []);
 
   const normalizedQuery = useMemo(() => normalizeText(query), [query]);
   const normalizedSubmittedQuery = useMemo(
@@ -70,19 +71,7 @@ export default function SearchPage() {
     });
   }, [users, normalizedQuery]);
 
-  const matchedPosts = useMemo(() => {
-    if (!normalizedQuery) {
-      return [];
-    }
-
-    return posts.filter((post) => {
-      const content = normalizeText(post.content);
-      return content.includes(normalizedQuery);
-    });
-  }, [posts, normalizedQuery]);
-
   const peopleSuggestions = matchedPeople.slice(0, PEOPLE_SUGGESTION_LIMIT);
-  const postSuggestions = matchedPosts.slice(0, POST_SUGGESTION_LIMIT);
 
   const searchedPeopleResults = useMemo(() => {
     if (!normalizedSubmittedQuery) {
@@ -99,36 +88,59 @@ export default function SearchPage() {
     });
   }, [users, normalizedSubmittedQuery]);
 
-  const searchedPostResults = useMemo(() => {
-    if (!normalizedSubmittedQuery) {
-      return [];
-    }
-
-    return posts.filter((post) => {
-      const content = normalizeText(post.content);
-      return content.includes(normalizedSubmittedQuery);
-    });
-  }, [posts, normalizedSubmittedQuery]);
+  const searchedPostResults = posts;
 
   const showSuggestions =
     !!normalizedQuery &&
     isInputFocused &&
-    (peopleSuggestions.length > 0 || postSuggestions.length > 0);
+    peopleSuggestions.length > 0;
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
     const safeQuery = query.trim();
-
-    if (!safeQuery) {
-      setSubmittedQuery("");
-      return;
-    }
-
+    activeRequest.current?.abort();
+    setPosts([]);
+    setSearchError("");
+    setNeedsLogin(false);
+    setSearching(false);
     setSubmittedQuery(safeQuery);
     setIsInputFocused(false);
+    if (!safeQuery) {
+      return;
+    }
+    const request = new AbortController();
+    activeRequest.current = request;
+    setSearching(true);
+    try {
+      const response = await axios.get(buildApiUrl("/api/v1/search"), {
+        params: { q: safeQuery },
+        signal: request.signal
+      });
+      if (request.signal.aborted) return;
+      if (!Array.isArray(response.data)) throw new Error("Invalid search response");
+      setPosts(response.data);
+    } catch (error) {
+      if (request.signal.aborted) return;
+      const status = error.response?.status;
+      setNeedsLogin(status === 401);
+      setSearchError(
+        status === 401 ? "Bạn cần đăng nhập để tìm kiếm." :
+        status === 400 ? "Câu tìm kiếm cần có từ 1 đến 2000 ký tự." :
+        status === 503 ? "Dịch vụ tìm kiếm đang bận. Hãy thử lại." :
+        "Không thể tìm kiếm lúc này."
+      );
+    } finally {
+      if (activeRequest.current === request) setSearching(false);
+    }
   };
 
   const handleClear = () => {
+    activeRequest.current?.abort();
+    activeRequest.current = null;
+    setPosts([]);
+    setSearching(false);
+    setSearchError("");
+    setNeedsLogin(false);
     setQuery("");
     setSubmittedQuery("");
     setIsInputFocused(false);
@@ -155,6 +167,7 @@ export default function SearchPage() {
             type="text"
             value={query}
             placeholder="Tìm kiếm"
+            maxLength={2000}
             className={style.searchInput}
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => setIsInputFocused(true)}
@@ -173,10 +186,6 @@ export default function SearchPage() {
       </form>
 
       <div className={style.body}>
-        {loading ? (
-          <div className={style.stateBox}>Đang tải dữ liệu tìm kiếm...</div>
-        ) : (
-          <>
             {showSuggestions && (
               <div className={style.suggestionsPanel}>
                 <SearchSection
@@ -205,35 +214,6 @@ export default function SearchPage() {
                   ))}
                 </SearchSection>
 
-                <SearchSection
-                  title="Posts"
-                  count={postSuggestions.length}
-                  emptyMessage="Không có gợi ý bài đăng phù hợp."
-                >
-                  {postSuggestions.map((post) => (
-                    <button
-                      type="button"
-                      key={post.id}
-                      className={style.resultItem}
-                      onMouseDown={(event) => event.preventDefault()}
-                      onClick={() => handleOpenPost(post.id)}
-                    >
-                      <img
-                        src={
-                          post.imageContentUrls?.[0] ||
-                          post.userAvatarUrl ||
-                          assetUrl("default-avatar.png")
-                        }
-                        alt={post.content || "Post preview"}
-                        className={style.previewImage}
-                      />
-                      <div className={style.resultTextGroup}>
-                        <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
-                        <span>{getPostPreview(post.content)}</span>
-                      </div>
-                    </button>
-                  ))}
-                </SearchSection>
               </div>
             )}
 
@@ -241,7 +221,7 @@ export default function SearchPage() {
               <div className={style.emptyArea}>
                 <p className={style.emptyTitle}>Chưa có nội dung tìm kiếm.</p>
                 <span className={style.emptySubtitle}>
-                  Nhập tên người dùng hoặc nội dung bài đăng để nhận gợi ý.
+                  Nhập tên người dùng hoặc câu tìm kiếm, rồi nhấn Enter.
                 </span>
               </div>
             ) : (
@@ -253,7 +233,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="People"
                   count={searchedPeopleResults.length}
-                  emptyMessage="Không tìm thấy người dùng phù hợp."
+                  emptyMessage={peopleError || "Không tìm thấy người dùng phù hợp."}
                 >
                   {searchedPeopleResults.map((user) => (
                     <button
@@ -275,6 +255,10 @@ export default function SearchPage() {
                   ))}
                 </SearchSection>
 
+                {searching && <p role="status">Đang tìm bài gần nghĩa...</p>}
+                {searchError && <p role="alert">{searchError}</p>}
+                {needsLogin && <a href={buildApiUrl("/login")}>Đăng nhập backend</a>}
+                {!searching && !searchError && (
                 <SearchSection
                   title="Posts"
                   count={searchedPostResults.length}
@@ -303,10 +287,9 @@ export default function SearchPage() {
                     </button>
                   ))}
                 </SearchSection>
+                )}
               </div>
             )}
-          </>
-        )}
       </div>
     </div>
   );

@@ -12,6 +12,13 @@ const base = process.env.GITHUB_ACTIONS
 export default defineConfig({
   base,
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/api": "http://localhost:8080",
+      "/login": "http://localhost:8080",
+      "/logout": "http://localhost:8080",
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
