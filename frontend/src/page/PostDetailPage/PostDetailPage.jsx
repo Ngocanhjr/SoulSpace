@@ -126,7 +126,7 @@ export default function PostDetailPage() {
     } catch (error) {
       if (shareActor.current !== currentUserId) return;
       if (error.response?.status === 404) setPost(null);
-      toast.error(apiErrorMessage(error, "Unable to share this post."));
+      toast.error(apiErrorMessage(error, "Unable to repost this post."));
     } finally {
       shareRequest.current = false;
       setSharing(false);
@@ -209,11 +209,11 @@ export default function PostDetailPage() {
             <button
               type="button"
               className={`${style.btn} ${style.btnShare} ${post.sharedByMe ? style.btnShareActive : ""}`}
-              aria-label={post.sharedByMe ? "Remove share" : "Share"}
+              aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
               aria-pressed={Boolean(post.sharedByMe)}
               aria-busy={sharing}
               disabled={sharing || (!post.published && !post.sharedByMe)}
-              title={post.sharedByMe ? "Shared · Click to remove" : post.published ? "Share" : "Only public posts can be shared"}
+              title={post.sharedByMe ? "Reposted · Click to remove" : post.published ? "Repost" : "Only public posts can be reposted"}
               onClick={() => handleAction("SHARE")}
             >
               <Repeat2 className={style.icon} aria-hidden="true" />

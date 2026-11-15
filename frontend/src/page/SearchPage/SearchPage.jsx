@@ -11,7 +11,9 @@ const POST_SUGGESTION_LIMIT = 4;
 const SEARCH_ERROR_TOAST_ID = "search-load-error";
 
 function normalizeText(value) {
-  return String(value || "").trim().toLowerCase();
+  return String(value || "")
+    .trim()
+    .toLowerCase();
 }
 
 function getPostPreview(content) {
@@ -46,7 +48,9 @@ export default function SearchPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error("Cannot load search data:", error);
-        toast.error("Unable to load search data", { id: SEARCH_ERROR_TOAST_ID });
+        toast.error("Unable to load search data", {
+          id: SEARCH_ERROR_TOAST_ID,
+        });
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
@@ -62,7 +66,7 @@ export default function SearchPage() {
   const normalizedQuery = useMemo(() => normalizeText(query), [query]);
   const normalizedSubmittedQuery = useMemo(
     () => normalizeText(submittedQuery),
-    [submittedQuery]
+    [submittedQuery],
   );
 
   const matchedPeople = useMemo(() => {
@@ -73,7 +77,9 @@ export default function SearchPage() {
     return users.filter((user) => {
       const fullname = normalizeText(user.fullname);
       const username = normalizeText(user.username);
-      return fullname.includes(normalizedQuery) || username.includes(normalizedQuery);
+      return (
+        fullname.includes(normalizedQuery) || username.includes(normalizedQuery)
+      );
     });
   }, [users, normalizedQuery]);
 
@@ -205,7 +211,9 @@ export default function SearchPage() {
                         className={style.avatar}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                        <strong>
+                          {user.fullname || user.username || "Unknown user"}
+                        </strong>
                         <span>@{user.username || "unknown"}</span>
                       </div>
                     </button>
@@ -235,7 +243,9 @@ export default function SearchPage() {
                         className={style.previewImage}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
+                        <strong>
+                          {post.username ? `@${post.username}` : "Unknown user"}
+                        </strong>
                         <span>{getPostPreview(post.content)}</span>
                       </div>
                     </button>
@@ -275,7 +285,9 @@ export default function SearchPage() {
                         className={style.avatar}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{user.fullname || user.username || "Unknown user"}</strong>
+                        <strong>
+                          {user.fullname || user.username || "Unknown user"}
+                        </strong>
                         <span>@{user.username || "unknown"}</span>
                       </div>
                     </button>
@@ -304,7 +316,9 @@ export default function SearchPage() {
                         className={style.previewImage}
                       />
                       <div className={style.resultTextGroup}>
-                        <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
+                        <strong>
+                          {post.username ? `@${post.username}` : "Unknown user"}
+                        </strong>
                         <span>{getPostPreview(post.content)}</span>
                       </div>
                     </button>
@@ -331,7 +345,11 @@ function SearchSection({ title, count, children, emptyMessage }) {
         <span>{count}</span>
       </div>
 
-      {hasContent ? children : <div className={style.emptySection}>{emptyMessage}</div>}
+      {hasContent ? (
+        children
+      ) : (
+        <div className={style.emptySection}>{emptyMessage}</div>
+      )}
     </section>
   );
 }

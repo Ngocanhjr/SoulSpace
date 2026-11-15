@@ -11,7 +11,7 @@ export default function SignUp() {
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmit, setIsSubmit] = useState(false);  // để tránh click đăng ký nhiều lần
+  const [isSubmit, setIsSubmit] = useState(false); // để tránh click đăng ký nhiều lần
   const navigate = useNavigate(); // dùng để chuyển page sau khi đky thành công
   const today = new Date().toISOString().split("T")[0];
 
@@ -30,7 +30,6 @@ export default function SignUp() {
       setPassword("");
       toast.success("Sign up successfully! Please sign in.");
       navigate("/signin");
-
     } catch (error) {
       toast.error(apiErrorMessage(error));
     } finally {
@@ -96,10 +95,7 @@ export default function SignUp() {
           4–128 characters. Spaces are allowed.
         </small>
 
-        <button
-          type="submit"
-          className="signup-btn"
-          disabled={isSubmit}>
+        <button type="submit" className="signup-btn" disabled={isSubmit}>
           {/* tránh click nhiều lần => gây lỗi */}
           {isSubmit ? "Creating account…" : "Sign Up"}
         </button>
@@ -107,7 +103,7 @@ export default function SignUp() {
         <p className="signin-link">
           Already have an account? <Link to="/signin">Sign In</Link>
         </p>
-      </form >
-    </div >
+      </form>
+    </div>
   );
 }

@@ -126,7 +126,7 @@ export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoad
     } catch (error) {
       if (shareActor.current !== currentUserId) return;
       if (error.response?.status === 404) setData((rows) => rows.filter((row) => row.id !== postId));
-      toast.error(apiErrorMessage(error, "Unable to share this post."));
+      toast.error(apiErrorMessage(error, "Unable to repost this post."));
     } finally {
       shareRequests.current.delete(postId);
       setSharing((pending) => ({ ...pending, [postId]: false }));
@@ -228,10 +228,10 @@ export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoad
                   <button
                     type="button"
                     className={`${style.btn} ${style["btn-share"]} ${post.sharedByMe ? style["btn-share-active"] : ""}`}
-                    aria-label={post.sharedByMe ? "Remove share" : "Share"}
+                    aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
                     aria-pressed={Boolean(post.sharedByMe)}
                     aria-busy={Boolean(sharing[post.id])}
-                    title={post.sharedByMe ? "Shared · Click to remove" : "Share"}
+                    title={post.sharedByMe ? "Reposted · Click to remove" : "Repost"}
                     disabled={Boolean(sharing[post.id])}
                     onClick={() => handleAction(post.id, "SHARE")}
                   >

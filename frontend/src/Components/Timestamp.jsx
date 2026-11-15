@@ -1,7 +1,12 @@
 import { useEffect, useState } from "react";
 import { formatDateTime, formatRelativeTime } from "../lib/time";
 
-export default function Timestamp({ value, relative = true, className, style }) {
+export default function Timestamp({
+  value,
+  relative = true,
+  className,
+  style,
+}) {
   const [now, setNow] = useState(Date.now);
   const fullDate = formatDateTime(value);
 

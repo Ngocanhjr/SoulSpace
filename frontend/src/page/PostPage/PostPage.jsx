@@ -53,9 +53,17 @@ export default function PostPage() {
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     e.target.value = "";
-    if (selectedFiles.length > MAX_IMAGES || selectedFiles.some((file) =>
-      !["image/jpeg", "image/png"].includes(file.type) || file.size > MAX_IMAGE_BYTES)) {
-      toast.error("Choose up to 10 JPEG/PNG images, each no larger than 10 MiB.");
+    if (
+      selectedFiles.length > MAX_IMAGES ||
+      selectedFiles.some(
+        (file) =>
+          !["image/jpeg", "image/png"].includes(file.type) ||
+          file.size > MAX_IMAGE_BYTES,
+      )
+    ) {
+      toast.error(
+        "Choose up to 10 JPEG/PNG images, each no larger than 10 MiB.",
+      );
       return;
     }
     setFiles(selectedFiles);
@@ -78,8 +86,13 @@ export default function PostPage() {
       toast.error("Please sign in to create a post.");
       return;
     }
-    if ((!body.trim() && files.length === 0) || Array.from(body.trim()).length > MAX_CONTENT_LENGTH) {
-      toast.error("Add text or images. Text must be no longer than 5,000 characters.");
+    if (
+      (!body.trim() && files.length === 0) ||
+      Array.from(body.trim()).length > MAX_CONTENT_LENGTH
+    ) {
+      toast.error(
+        "Add text or images. Text must be no longer than 5,000 characters.",
+      );
       return;
     }
     setIsSubmit(true);
@@ -100,11 +113,19 @@ export default function PostPage() {
 
       toast.success("Post successful!", { id: loadingToast });
       if (response.data.failedFiles?.length) {
-        toast.warning(`Post saved; ${response.data.failedFiles.length} images failed to upload.`);
+        toast.warning(
+          `Post saved; ${response.data.failedFiles.length} images failed to upload.`,
+        );
       }
       navigate(publish ? "/" : "/user");
     } catch (error) {
-      toast.error(apiErrorMessage(error, "Unable to publish your post. Please try again."), { id: loadingToast });
+      toast.error(
+        apiErrorMessage(
+          error,
+          "Unable to publish your post. Please try again.",
+        ),
+        { id: loadingToast },
+      );
     } finally {
       setProgress(0);
       setIsSubmit(false);
@@ -119,15 +140,23 @@ export default function PostPage() {
   };
 
   if (!ready) {
-    return <section className={style.state}><p role="status">Checking your session...</p></section>;
+    return (
+      <section className={style.state}>
+        <p role="status">Checking your session...</p>
+      </section>
+    );
   }
   if (!user) {
     if (!authError) return null;
     return (
       <section className={style.state}>
         <h1 className={style.stateTitle}>Unable to verify your session</h1>
-        <p className={style.stateDescription} role="alert">Please check your connection and try again.</p>
-        <Button onClick={() => refreshSession().catch(() => {})}>Try again</Button>
+        <p className={style.stateDescription} role="alert">
+          Please check your connection and try again.
+        </p>
+        <Button onClick={() => refreshSession().catch(() => {})}>
+          Try again
+        </Button>
       </section>
     );
   }
@@ -142,105 +171,111 @@ export default function PostPage() {
       </div>
 
       {/* --- Nội dung post --- */}
-          <div className={style["post-content"]}>
-            <div className={style.header_post}>
-              <div className={style.avatar_mini_wrapper}>
-                <img src={user.avatarUrl || DEFAULT_AVATAR_URL} alt="AvatarUser" className={style.avatar } />
-              </div>
-              <strong>
-                <span>
-                  @{user.username}
-                </span>
-              </strong>
-            </div>
-
-            <textarea
-              placeholder="Start a new post..."
-              className={style.input}
-              value={body}
-              disabled={isSubmit}
-              onChange={(e) => setBody(e.target.value)}
+      <div className={style["post-content"]}>
+        <div className={style.header_post}>
+          <div className={style.avatar_mini_wrapper}>
+            <img
+              src={user.avatarUrl || DEFAULT_AVATAR_URL}
+              alt="AvatarUser"
+              className={style.avatar}
             />
           </div>
+          <strong>
+            <span>@{user.username}</span>
+          </strong>
+        </div>
 
-          <div className={style.previewContainer}>
-            {previewUrls.map((url, index) => (
-              <div key={index} className={style.previewWrapper}>
-                <img
-                  src={url}
-                  alt={`preview-${index}`}
-                  className={style.previewImage}
-                />
-                <button
-                  type="button"
-                  className={style.removeButton}
-                  onClick={() => handleRemoveImage(index)}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
+        <textarea
+          placeholder="Start a new post..."
+          className={style.input}
+          value={body}
+          disabled={isSubmit}
+          onChange={(e) => setBody(e.target.value)}
+        />
+      </div>
 
-          {/* --- Tuỳ chọn & nút Post --- */}
-          <div className={style.option}>
-            <div className={style.leftbuttons}>
-              <Select
-                onValueChange={(value) => {
-                  setPublish(value === "true");
-                }}
-                defaultValue={String(publish)}
-              >
-                <SelectTrigger className="w-[180px] border-accent-foreground cursor-pointer">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="true">
-                    <span style={{ fontWeight: "bold" }}>Publish</span>
-                  </SelectItem>
-                  <SelectItem value="false">
-                    <span style={{ fontWeight: "bold" }}>Private</span>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <label
-                htmlFor="fileInput"
-                className="group cursor-pointer  rounded-lg border flex items-center justify-center bg-white shadow-sm transition-all h-10 w-10"
-              >
-                <UploadIcon />
-              </label>
-
-              <input
-                id="fileInput"
-                type="file"
-                accept="image/jpeg,image/png"
-                disabled={isSubmit}
-                multiple
-                ref={fileInputRef}
-                onChange={handleFileChange}
-                className={style.fileInput}
-              />
-            </div>
-            <Button onClick={handleSubmit} disabled={isSubmit} className="w-30 h-10 cursor-pointer">
-              Post
-            </Button>
-          </div>
-
-          {progress > 0 && progress < 100 && (
-            <div
-              className={style.progressBar}
-              role="progressbar"
-              aria-label="Upload progress"
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuenow={progress}
+      <div className={style.previewContainer}>
+        {previewUrls.map((url, index) => (
+          <div key={index} className={style.previewWrapper}>
+            <img
+              src={url}
+              alt={`preview-${index}`}
+              className={style.previewImage}
+            />
+            <button
+              type="button"
+              className={style.removeButton}
+              onClick={() => handleRemoveImage(index)}
             >
-              <div
-                className={style.progressFill}
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-          )}
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* --- Tuỳ chọn & nút Post --- */}
+      <div className={style.option}>
+        <div className={style.leftbuttons}>
+          <Select
+            onValueChange={(value) => {
+              setPublish(value === "true");
+            }}
+            defaultValue={String(publish)}
+          >
+            <SelectTrigger className="w-[180px] border-accent-foreground cursor-pointer">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="true">
+                <span style={{ fontWeight: "bold" }}>Publish</span>
+              </SelectItem>
+              <SelectItem value="false">
+                <span style={{ fontWeight: "bold" }}>Private</span>
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <label
+            htmlFor="fileInput"
+            className="group cursor-pointer  rounded-lg border flex items-center justify-center bg-white shadow-sm transition-all h-10 w-10"
+          >
+            <UploadIcon />
+          </label>
+
+          <input
+            id="fileInput"
+            type="file"
+            accept="image/jpeg,image/png"
+            disabled={isSubmit}
+            multiple
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            className={style.fileInput}
+          />
+        </div>
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmit}
+          className="w-30 h-10 cursor-pointer"
+        >
+          Post
+        </Button>
+      </div>
+
+      {progress > 0 && progress < 100 && (
+        <div
+          className={style.progressBar}
+          role="progressbar"
+          aria-label="Upload progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={progress}
+        >
+          <div
+            className={style.progressFill}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      )}
     </div>
   );
 }

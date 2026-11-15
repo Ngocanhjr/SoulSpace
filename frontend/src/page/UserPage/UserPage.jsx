@@ -135,7 +135,10 @@ function PostEditor({ post, onClose, onSave }) {
         if (!open && !busy) onClose();
       }}
     >
-      <AlertDialogContent className="profile-dialog" aria-describedby={undefined}>
+      <AlertDialogContent
+        className="profile-dialog"
+        aria-describedby={undefined}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>Edit post</AlertDialogTitle>
         </AlertDialogHeader>
@@ -214,14 +217,20 @@ function PostEditor({ post, onClose, onSave }) {
                 onChange={select}
                 disabled={busy}
               />
-              <span className="profile-upload-icon" aria-hidden="true"><ImagePlus size={22} /></span>
+              <span className="profile-upload-icon" aria-hidden="true">
+                <ImagePlus size={22} />
+              </span>
               <span className="profile-upload-copy">
                 <strong>Add photos to your post</strong>
-                <span id="profile-upload-hint">JPEG or PNG · Up to 10 MiB per image</span>
+                <span id="profile-upload-hint">
+                  JPEG or PNG · Up to 10 MiB per image
+                </span>
               </span>
               <span className="profile-upload-choose">Choose images</span>
             </label>
-            <p className="profile-upload-note">Image changes take effect when you save the post.</p>
+            <p className="profile-upload-note">
+              Image changes take effect when you save the post.
+            </p>
           </div>
           {error && (
             <p role="alert" className="profile-form-error">
@@ -298,7 +307,7 @@ export default function UserPage() {
       else toast.success(result.message);
     } catch (failure) {
       if (actor.current !== id) return;
-      toast.error(apiErrorMessage(failure, "Unable to share this post."));
+      toast.error(apiErrorMessage(failure, "Unable to repost this post."));
     } finally {
       shareRequests.current.delete(post.id);
       setSharing((current) => ({ ...current, [post.id]: false }));
@@ -468,7 +477,7 @@ export default function UserPage() {
           current.filter((post) => post.blogId !== dialog.post.blogId),
         );
         load();
-        toast.success("Share removed.");
+        toast.success("Repost removed.");
       }
       setDialog(null);
       setCurrentPassword("");
@@ -577,7 +586,7 @@ export default function UserPage() {
           </span>
         </button>
         <div className="profile-identity">
-          <p className="profile-eyebrow">YOUR SPACE</p>
+          {/* <p className="profile-eyebrow">YOUR SPACE</p> */}
           <h2>{profile.fullname}</h2>
           <p className="profile-handle">@{profile.username}</p>
           {profile.dob && (
@@ -595,7 +604,7 @@ export default function UserPage() {
             Edit profile
           </Button>
           <Button variant="ghost" asChild>
-            <Link to={`/user/${id}`}>
+            <Link to={`/user/${id}?preview=public`}>
               View public profile <ArrowUpRight size={14} />
             </Link>
           </Button>
@@ -606,7 +615,7 @@ export default function UserPage() {
           Posts <span>{posts.length}</span>
         </button>
         <button aria-pressed={sharedTab} onClick={() => setTab("shares")}>
-          Shared <span>{shares.length}</span>
+          Reposts <span>{shares.length}</span>
         </button>
         <Link to="/post" className="profile-create" aria-label="Create post">
           <Plus size={19} />
@@ -614,7 +623,7 @@ export default function UserPage() {
       </nav>
       <section
         className="profile-posts"
-        aria-label={sharedTab ? "Shared posts" : "Your posts"}
+        aria-label={sharedTab ? "Reposted posts" : "Your posts"}
         aria-busy={loading}
       >
         {(errors[tab] || errors.profile) && (
@@ -632,12 +641,10 @@ export default function UserPage() {
         )}
         {!items.length && !loading && !errors[tab] && (
           <div className="profile-empty">
-            <h3>
-              {sharedTab ? "No shared posts yet" : "Your story starts here"}
-            </h3>
+            <h3>{sharedTab ? "No reposts yet" : "Your story starts here"}</h3>
             <p>
               {sharedTab
-                ? "Posts you share will appear here."
+                ? "Posts you repost will appear here."
                 : "Share what is on your mind, or keep it just for yourself."}
             </p>
             <Button variant="outline" asChild>
@@ -653,7 +660,7 @@ export default function UserPage() {
             <article className="profile-post" key={postId}>
               {sharedTab && (
                 <p className="profile-share-label">
-                  You shared · <Timestamp value={post.sharedAt} />
+                  You reposted · <Timestamp value={post.sharedAt} />
                 </p>
               )}
               <div className="profile-post-heading">
@@ -700,7 +707,7 @@ export default function UserPage() {
                       <DropdownMenuItem
                         onSelect={() => setDialog({ type: "unshare", post })}
                       >
-                        Remove share
+                        Remove repost
                       </DropdownMenuItem>
                     ) : (
                       <>
@@ -772,12 +779,12 @@ export default function UserPage() {
                   className={`${postStyle.btn} ${postStyle["btn-share"]} ${post.sharedByMe ? postStyle["btn-share-active"] : ""}`}
                   title={
                     !post.published
-                      ? "Only public posts can be shared"
+                      ? "Only public posts can be reposted"
                       : post.sharedByMe
-                        ? "Shared · Click to remove"
-                        : "Share"
+                        ? "Reposted · Click to remove"
+                        : "Repost"
                   }
-                  aria-label={post.sharedByMe ? "Remove share" : "Share"}
+                  aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
                   aria-pressed={Boolean(post.sharedByMe)}
                   aria-busy={Boolean(sharing[postId])}
                   disabled={
@@ -842,14 +849,14 @@ export default function UserPage() {
                   ? "Delete account?"
                   : dialog.type === "delete"
                     ? "Delete post?"
-                    : "Remove this share?"}
+                    : "Remove this repost?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
                 {dialog.type === "account"
                   ? "Your account, posts, and interactions will be deleted. Your comments on other posts will become deleted placeholders to preserve replies. This cannot be undone."
                   : dialog.type === "delete"
                     ? "This post, its comments, and related interactions will be deleted. This cannot be undone."
-                    : "The original post will remain. Only your share will be removed."}
+                    : "The original post will remain. Only your repost will be removed."}
               </AlertDialogDescription>
             </AlertDialogHeader>
             <form className="profile-form" onSubmit={confirm} aria-busy={busy}>
@@ -889,7 +896,7 @@ export default function UserPage() {
                   {busy
                     ? "Processing…"
                     : dialog.type === "unshare"
-                      ? "Remove share"
+                      ? "Remove repost"
                       : "Confirm deletion"}
                 </Button>
               </AlertDialogFooter>

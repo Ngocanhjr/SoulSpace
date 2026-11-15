@@ -25,7 +25,7 @@ import { refreshSession, useAuth } from "./config/auth";
 function App() {
   const [showSecond, setShowSecond] = useState(false);
   const [isGuest, setGuest] = useState(false);
-  const location = useLocation(); 
+  const location = useLocation();
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -37,7 +37,9 @@ function App() {
 
   const sensors = useSensors(
     useSensor(PointerSensor),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
   );
 
   const handleDragEnd = (event) => {
@@ -87,39 +89,49 @@ function App() {
       >
         <SortableContext items={items} strategy={horizontalListSortingStrategy}>
           <div
-            className={`${appCSS["pages-container"]} ${showSecond ? appCSS["two"] : appCSS["one"]
-              }`}
+            className={`${appCSS["pages-container"]} ${
+              showSecond ? appCSS["two"] : appCSS["one"]
+            }`}
           >
             {items.map((id) =>
-              id === "page" ? (!showLogin && (
-                <SortableItem key="page" id="page">
-                  <div className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}>
-                    <Router />
-                  </div>
-                </SortableItem>
-              )) : (
-                showSecond && (
-                  <SortableItem key="explore" id="explore">
-                    <div className={appCSS["box-explore"]}>
-                      <Explore />
-                    </div>
-                  </SortableItem>
-                )
-              )
+              id === "page"
+                ? !showLogin && (
+                    <SortableItem key="page" id="page">
+                      <div
+                        className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}
+                      >
+                        <Router />
+                      </div>
+                    </SortableItem>
+                  )
+                : showSecond && (
+                    <SortableItem key="explore" id="explore">
+                      <div className={appCSS["box-explore"]}>
+                        <Explore />
+                      </div>
+                    </SortableItem>
+                  ),
             )}
 
             {auth.error && !isPostPage && (
               <div role="alert">
                 {auth.error}
-                <button onClick={() => refreshSession().catch(() => {})}>Retry</button>
+                <button onClick={() => refreshSession().catch(() => {})}>
+                  Retry
+                </button>
               </div>
             )}
-            {auth.ready && !auth.error && !isLoggedIn && (!isGuest || requiresLogin) && (
-              <Login guest={(value) => {
-                setGuest(value);
-                if (requiresLogin) navigate("/");
-              }} />
-            )}
+            {auth.ready &&
+              !auth.error &&
+              !isLoggedIn &&
+              (!isGuest || requiresLogin) && (
+                <Login
+                  guest={(value) => {
+                    setGuest(value);
+                    if (requiresLogin) navigate("/");
+                  }}
+                />
+              )}
           </div>
         </SortableContext>
       </DndContext>

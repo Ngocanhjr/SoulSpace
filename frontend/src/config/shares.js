@@ -11,20 +11,20 @@ export async function toggleShare(post, actorId, onChange) {
     onChange({ sharedByMe: false });
     try {
       await refresh();
-      return { message: "Share removed" };
+      return { message: "Repost removed" };
     } catch (error) {
-      if (error.response?.status === 404) return { message: "Share removed", unavailable: true };
-      return { message: "Share removed, but the share count could not be refreshed.", warning: true };
+      if (error.response?.status === 404) return { message: "Repost removed", unavailable: true };
+      return { message: "Repost removed, but the repost count could not be refreshed.", warning: true };
     }
   }
 
   try {
     const { data } = await api.post("/api/v1/blogs/" + post.id + "/share", {});
     onChange({ sharedByMe: true, sharesCount: data.sharesCount });
-    return { message: "Shared" };
+    return { message: "Reposted" };
   } catch (error) {
     if (error.response?.data?.code !== "ALREADY_SHARED") throw error;
     await refresh();
-    return { message: "You have already shared this post" };
+    return { message: "You have already reposted this post" };
   }
 }

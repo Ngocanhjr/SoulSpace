@@ -17,7 +17,7 @@ export default function PublicProfilePage() {
 
   const isSearchMode = useMemo(
     () => location.pathname.startsWith("/search/"),
-    [location.pathname]
+    [location.pathname],
   );
 
   useEffect(() => {
@@ -43,7 +43,9 @@ export default function PublicProfilePage() {
     if (userId) {
       fetchProfile();
     }
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, [userId]);
 
   const handleBack = () => {
@@ -60,17 +62,17 @@ export default function PublicProfilePage() {
   }
 
   if (!user) {
-    return <div role="alert" className={style.stateBox}>{loadError || "User not found."}</div>;
+    return (
+      <div role="alert" className={style.stateBox}>
+        {loadError || "User not found."}
+      </div>
+    );
   }
 
   return (
     <div className={style.page}>
       <div className={style.header}>
-        <button
-          type="button"
-          className={style.backButton}
-          onClick={handleBack}
-        >
+        <button type="button" className={style.backButton} onClick={handleBack}>
           <ArrowLeft size={18} />
         </button>
         <h1>Profile</h1>
@@ -86,7 +88,9 @@ export default function PublicProfilePage() {
         <div className={style.profileInfo}>
           <h2>{user.fullname || user.username || "Unknown user"}</h2>
           <span>@{user.username || "unknown"}</span>
-          <p>{posts.length} public post{posts.length === 1 ? "" : "s"}</p>
+          <p>
+            {posts.length} public post{posts.length === 1 ? "" : "s"}
+          </p>
         </div>
       </section>
 
