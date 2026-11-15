@@ -71,7 +71,8 @@ function App() {
 
   const isLoggedIn = Boolean(auth.user);
   const isPostPage = location.pathname === "/post";
-  const showPostLogin = isPostPage && auth.ready && !auth.error && !isLoggedIn;
+  const requiresLogin = isPostPage || location.pathname === "/user";
+  const showLogin = requiresLogin && auth.ready && !auth.error && !isLoggedIn;
 
   return (
     <div className={appCSS["layout-web"]}>
@@ -90,9 +91,9 @@ function App() {
               }`}
           >
             {items.map((id) =>
-              id === "page" ? (!showPostLogin && (
+              id === "page" ? (!showLogin && (
                 <SortableItem key="page" id="page">
-                  <div className={`${appCSS["page-render"]} ${isPostPage && !isLoggedIn ? appCSS["post-state"] : ""}`}>
+                  <div className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}>
                     <Router />
                   </div>
                 </SortableItem>
@@ -113,10 +114,10 @@ function App() {
                 <button onClick={() => refreshSession().catch(() => {})}>Retry</button>
               </div>
             )}
-            {auth.ready && !auth.error && !isLoggedIn && (!isGuest || isPostPage) && (
+            {auth.ready && !auth.error && !isLoggedIn && (!isGuest || requiresLogin) && (
               <Login guest={(value) => {
                 setGuest(value);
-                if (isPostPage) navigate("/");
+                if (requiresLogin) navigate("/");
               }} />
             )}
           </div>

@@ -60,7 +60,7 @@ export default function PostDetailPage() {
       } catch (error) {
         if (controller.signal.aborted) return;
         console.error("Cannot get post detail:", error);
-        toast.error("Không thể tải chi tiết bài viết");
+        toast.error("Unable to load post details");
         setPost(null);
       } finally {
         if (!controller.signal.aborted) setLoading(false);
@@ -103,7 +103,7 @@ export default function PostDetailPage() {
       return;
     }
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập để tương tác.");
+      toast.error("Please sign in to interact.");
       return;
     }
     if (type === "LIKE") {
@@ -126,7 +126,7 @@ export default function PostDetailPage() {
     } catch (error) {
       if (shareActor.current !== currentUserId) return;
       if (error.response?.status === 404) setPost(null);
-      toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
+      toast.error(apiErrorMessage(error, "Unable to share this post."));
     } finally {
       shareRequest.current = false;
       setSharing(false);
@@ -134,11 +134,11 @@ export default function PostDetailPage() {
   };
 
   if (loading) {
-    return <div className={style.state}>Đang tải bài viết...</div>;
+    return <div className={style.state}>Loading posts...</div>;
   }
 
   if (!post) {
-    return <div className={style.state}>Không tìm thấy bài viết.</div>;
+    return <div className={style.state}>Post not found.</div>;
   }
 
   return (
@@ -152,7 +152,7 @@ export default function PostDetailPage() {
           >
             <ArrowLeft size={18} />
           </button>
-          <h1 className={style.title}>Bài đăng</h1>
+          <h1 className={style.title}>Posts</h1>
         </div>
 
         <div className={style.card}>
@@ -186,8 +186,8 @@ export default function PostDetailPage() {
               className={`${style.btn} ${style.btnLike} ${
                 post.liked ? style.btnLikeActive : ""
               }`}
-              aria-label={post.liked ? "Bỏ thích" : "Thích"}
-              title={post.liked ? "Bỏ thích" : "Thích"}
+              aria-label={post.liked ? "Unlike" : "Like"}
+              title={post.liked ? "Unlike" : "Like"}
               aria-pressed={post.liked}
               onClick={() => handleAction("LIKE")}
             >
@@ -198,8 +198,8 @@ export default function PostDetailPage() {
             <button
               type="button"
               className={`${style.btn} ${style.btnComment}`}
-              aria-label="Bình luận"
-              title="Bình luận"
+              aria-label="Comments"
+              title="Comments"
               onClick={() => handleAction("COMMENT")}
             >
               <span className={style.icon} />
@@ -209,11 +209,11 @@ export default function PostDetailPage() {
             <button
               type="button"
               className={`${style.btn} ${style.btnShare} ${post.sharedByMe ? style.btnShareActive : ""}`}
-              aria-label={post.sharedByMe ? "Gỡ chia sẻ" : "Chia sẻ lại"}
+              aria-label={post.sharedByMe ? "Remove share" : "Share"}
               aria-pressed={Boolean(post.sharedByMe)}
               aria-busy={sharing}
               disabled={sharing || (!post.published && !post.sharedByMe)}
-              title={post.sharedByMe ? "Đã chia sẻ · Bấm để gỡ" : post.published ? "Chia sẻ lại" : "Chỉ chia sẻ được bài công khai"}
+              title={post.sharedByMe ? "Shared · Click to remove" : post.published ? "Share" : "Only public posts can be shared"}
               onClick={() => handleAction("SHARE")}
             >
               <Repeat2 className={style.icon} aria-hidden="true" />

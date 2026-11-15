@@ -36,7 +36,7 @@ export default function PublicProfilePage() {
         setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : []);
       } catch (error) {
         if (!active) return;
-        setLoadError(apiErrorMessage(error, "Không thể tải trang cá nhân."));
+        setLoadError(apiErrorMessage(error, "Unable to load this profile."));
         setUser(null);
         setPosts([]);
       } finally {
@@ -60,11 +60,11 @@ export default function PublicProfilePage() {
   };
 
   if (loading) {
-    return <div className={style.stateBox}>Đang tải trang cá nhân...</div>;
+    return <div className={style.stateBox}>Loading profile...</div>;
   }
 
   if (!user) {
-    return <div role="alert" className={style.stateBox}>{loadError || "Không tìm thấy người dùng."}</div>;
+    return <div role="alert" className={style.stateBox}>{loadError || "User not found."}</div>;
   }
 
   return (
@@ -95,10 +95,10 @@ export default function PublicProfilePage() {
       </section>
 
       <section className={style.postsSection}>
-        <div className={style.sectionTitle}>Bài đăng</div>
+        <div className={style.sectionTitle}>Posts</div>
 
         {posts.length === 0 ? (
-          <div className={style.emptyBox}>Người dùng này chưa có bài đăng công khai.</div>
+          <div className={style.emptyBox}>This user has no public posts yet.</div>
         ) : (
           posts.map((post) => (
             <article key={post.id} className={style.postCard}>

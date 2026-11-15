@@ -16,9 +16,9 @@ export default function Timestamp({ value, relative = true, className, style }) 
       className={className}
       style={style}
       dateTime={fullDate ? new Date(value).toISOString() : undefined}
-      title={fullDate ? `${fullDate} (giờ Việt Nam)` : undefined}
+      title={fullDate ? `${fullDate} (Vietnam time)` : undefined}
     >
-      {(relative ? formatRelativeTime(value, now) : fullDate) || "Không rõ thời gian"}
+      {(relative ? formatRelativeTime(value, now) : fullDate) || "Unknown time"}
     </time>
   );
 }

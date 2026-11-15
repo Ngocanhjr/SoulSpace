@@ -55,7 +55,7 @@ export default function PostPage() {
     e.target.value = "";
     if (selectedFiles.length > MAX_IMAGES || selectedFiles.some((file) =>
       !["image/jpeg", "image/png"].includes(file.type) || file.size > MAX_IMAGE_BYTES)) {
-      toast.error("Chọn tối đa 10 ảnh JPEG/PNG, mỗi ảnh không quá 10 MiB.");
+      toast.error("Choose up to 10 JPEG/PNG images, each no larger than 10 MiB.");
       return;
     }
     setFiles(selectedFiles);
@@ -75,11 +75,11 @@ export default function PostPage() {
   const postNews = async () => {
     if (isSubmit) return;
     if (!user) {
-      toast.error("Vui lòng đăng nhập để đăng bài.");
+      toast.error("Please sign in to create a post.");
       return;
     }
     if ((!body.trim() && files.length === 0) || Array.from(body.trim()).length > MAX_CONTENT_LENGTH) {
-      toast.error("Thêm nội dung hoặc ảnh. Nội dung tối đa 5.000 ký tự.");
+      toast.error("Add text or images. Text must be no longer than 5,000 characters.");
       return;
     }
     setIsSubmit(true);
@@ -100,11 +100,11 @@ export default function PostPage() {
 
       toast.success("Post successful!", { id: loadingToast });
       if (response.data.failedFiles?.length) {
-        toast.warning(`Bài đã được lưu; ${response.data.failedFiles.length} ảnh chưa tải lên được.`);
+        toast.warning(`Post saved; ${response.data.failedFiles.length} images failed to upload.`);
       }
       navigate(publish ? "/" : "/user");
     } catch (error) {
-      toast.error(apiErrorMessage(error, "Không thể đăng bài. Vui lòng thử lại."), { id: loadingToast });
+      toast.error(apiErrorMessage(error, "Unable to publish your post. Please try again."), { id: loadingToast });
     } finally {
       setProgress(0);
       setIsSubmit(false);
@@ -119,15 +119,15 @@ export default function PostPage() {
   };
 
   if (!ready) {
-    return <section className={style.state}><p role="status">Đang kiểm tra phiên đăng nhập...</p></section>;
+    return <section className={style.state}><p role="status">Checking your session...</p></section>;
   }
   if (!user) {
     if (!authError) return null;
     return (
       <section className={style.state}>
-        <h1 className={style.stateTitle}>Chưa thể kiểm tra phiên đăng nhập</h1>
-        <p className={style.stateDescription} role="alert">Vui lòng kiểm tra kết nối rồi thử lại.</p>
-        <Button onClick={() => refreshSession().catch(() => {})}>Thử lại</Button>
+        <h1 className={style.stateTitle}>Unable to verify your session</h1>
+        <p className={style.stateDescription} role="alert">Please check your connection and try again.</p>
+        <Button onClick={() => refreshSession().catch(() => {})}>Try again</Button>
       </section>
     );
   }

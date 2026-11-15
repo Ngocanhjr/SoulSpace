@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api } from "../../config/api";
 import { toast } from "sonner";
 import { Search, X } from "lucide-react";
 import style from "./SearchPage.module.css";
@@ -9,6 +8,7 @@ import { DEFAULT_AVATAR_URL } from "../../config/assets";
 
 const PEOPLE_SUGGESTION_LIMIT = 4;
 const POST_SUGGESTION_LIMIT = 4;
+const SEARCH_ERROR_TOAST_ID = "search-load-error";
 
 function normalizeText(value) {
   return String(value || "").trim().toLowerCase();
@@ -32,24 +32,31 @@ export default function SearchPage() {
   const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchSearchSources = async () => {
       try {
         const [usersResponse, postsResponse] = await Promise.all([
-          axios.get(buildApiUrl("/api/v1/users")),
-          axios.get(buildApiUrl("/api/v1/soulspaces")),
+          api.get("/api/v1/users", { signal: controller.signal }),
+          api.get("/api/v1/soulspaces", { signal: controller.signal }),
         ]);
+        if (controller.signal.aborted) return;
 
         setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
         setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : []);
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error("Cannot load search data:", error);
-        toast.error("Không thể tải dữ liệu tìm kiếm");
+        toast.error("Unable to load search data", { id: SEARCH_ERROR_TOAST_ID });
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     fetchSearchSources();
+    return () => {
+      controller.abort();
+      toast.dismiss(SEARCH_ERROR_TOAST_ID);
+    };
   }, []);
 
   const normalizedQuery = useMemo(() => normalizeText(query), [query]);
@@ -154,7 +161,7 @@ export default function SearchPage() {
           <input
             type="text"
             value={query}
-            placeholder="Tìm kiếm"
+            placeholder="Search"
             className={style.searchInput}
             onChange={(event) => setQuery(event.target.value)}
             onFocus={() => setIsInputFocused(true)}
@@ -174,7 +181,7 @@ export default function SearchPage() {
 
       <div className={style.body}>
         {loading ? (
-          <div className={style.stateBox}>Đang tải dữ liệu tìm kiếm...</div>
+          <div className={style.stateBox}>Loading search data...</div>
         ) : (
           <>
             {showSuggestions && (
@@ -182,7 +189,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="People"
                   count={peopleSuggestions.length}
-                  emptyMessage="Không có gợi ý người dùng phù hợp."
+                  emptyMessage="No matching people suggestions."
                 >
                   {peopleSuggestions.map((user) => (
                     <button
@@ -208,7 +215,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="Posts"
                   count={postSuggestions.length}
-                  emptyMessage="Không có gợi ý bài đăng phù hợp."
+                  emptyMessage="No matching post suggestions."
                 >
                   {postSuggestions.map((post) => (
                     <button
@@ -239,21 +246,21 @@ export default function SearchPage() {
 
             {!submittedQuery ? (
               <div className={style.emptyArea}>
-                <p className={style.emptyTitle}>Chưa có nội dung tìm kiếm.</p>
+                <p className={style.emptyTitle}>No search yet.</p>
                 <span className={style.emptySubtitle}>
-                  Nhập tên người dùng hoặc nội dung bài đăng để nhận gợi ý.
+                  Enter a username or post text to see suggestions.
                 </span>
               </div>
             ) : (
               <div className={style.resultsPanel}>
                 <div className={style.resultSummary}>
-                  Kết quả cho từ khóa <strong>"{submittedQuery}"</strong>
+                  Results for <strong>"{submittedQuery}"</strong>
                 </div>
 
                 <SearchSection
                   title="People"
                   count={searchedPeopleResults.length}
-                  emptyMessage="Không tìm thấy người dùng phù hợp."
+                  emptyMessage="No matching people found."
                 >
                   {searchedPeopleResults.map((user) => (
                     <button
@@ -278,7 +285,7 @@ export default function SearchPage() {
                 <SearchSection
                   title="Posts"
                   count={searchedPostResults.length}
-                  emptyMessage="Không tìm thấy bài đăng phù hợp."
+                  emptyMessage="No matching posts found."
                 >
                   {searchedPostResults.map((post) => (
                     <button

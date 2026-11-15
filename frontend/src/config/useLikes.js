@@ -75,7 +75,7 @@ export function useLikes(identity, onChange) {
       ? api.post(path, { liked }).then(({ data }) => data)
       : Promise.reject(new Error("Authentication required")),
     (path, next) => callback.current(path, next),
-    (error) => toast.error(apiErrorMessage(error, "Không thể cập nhật lượt thích.")),
+    (error) => toast.error(apiErrorMessage(error, "Unable to update like.")),
   ), [identity]);
   useEffect(() => {
     queue.resume();

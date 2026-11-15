@@ -8,7 +8,7 @@ export default function Explore(){
                     <input
                         className={style["search-bar"]}
                         type="text"
-                        placeholder="Tìm kiếm"
+                        placeholder="Search"
                     />
                 </div>
             </div>

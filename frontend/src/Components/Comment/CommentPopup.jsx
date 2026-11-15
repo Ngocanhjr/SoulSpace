@@ -12,7 +12,7 @@ import Timestamp from "../Timestamp";
 function checkedContent(value) {
   const content = value.trim();
   if (!content || Array.from(content).length > MAX_COMMENT_LENGTH) {
-    toast.warning("Bình luận cần từ 1 đến 2.000 ký tự.");
+    toast.warning("Comments must be between 1 and 2,000 characters.");
     return null;
   }
   return content;
@@ -47,13 +47,13 @@ function CommentItem({ comment, currentUserId, onLike, onReply, onEdit, onDelete
       setBusy(false);
     }
   };
-  const author = comment.username ? "@" + comment.username : "Tài khoản đã xóa";
+  const author = comment.username ? "@" + comment.username : "Deleted account";
   return (
     <article className={style.commentBlock}
       style={{ marginLeft: Math.min(comment.depth, MAX_VISIBLE_COMMENT_LEVELS - 1) * COMMENT_INDENT_PX }}>
       <div className={style.commentRow}>
         {comment.userId ? (
-          <Link to={"/user/" + comment.userId} aria-label={"Xem trang của " + author}>
+          <Link to={"/user/" + comment.userId} aria-label={"View profile of " + author}>
             <img src={comment.userAvatarUrl || DEFAULT_AVATAR_URL} alt="" className={style.avatar} />
           </Link>
         ) : <img src={DEFAULT_AVATAR_URL} alt="" className={style.avatar} />}
@@ -64,38 +64,38 @@ function CommentItem({ comment, currentUserId, onLike, onReply, onEdit, onDelete
               <Timestamp value={comment.createdAt} />
             </div>
             {comment.depth > 0 && <div className={style.replyContext}>
-              Trả lời {comment.parentUsername ? "@" + comment.parentUsername : "bình luận của tài khoản đã xóa"}
+              Replying to {comment.parentUsername ? "@" + comment.parentUsername : "a comment from a deleted account"}
             </div>}
-            <p>{comment.isDeleted ? "Bình luận đã xóa" : comment.content}</p>
+            <p>{comment.isDeleted ? "Deleted comment" : comment.content}</p>
           </div>
           {!comment.isDeleted && (
             <div className={style.commentActions}>
               <button type="button" className={style.textButton} disabled={!currentUserId || busy}
-                onClick={() => open("reply")}>Phản hồi</button>
+                onClick={() => open("reply")}>Reply</button>
               {comment.userId === currentUserId && <>
-                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("edit")}>Sửa</button>
-                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("delete")}>Xóa</button>
+                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("edit")}>Edit</button>
+                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("delete")}>Delete</button>
               </>}
-              <span className={style.likeCount}>{comment.likesCount || 0} tim</span>
+              <span className={style.likeCount}>{comment.likesCount || 0} likes</span>
             </div>
           )}
           {mode && !comment.isDeleted && (
             <form className={style.replyForm} onSubmit={submit}>
-              {mode === "delete" ? <span>Xóa bình luận này? Các phản hồi vẫn được giữ.</span> : (
-                <input ref={input} type="text" aria-label={mode === "edit" ? "Sửa bình luận" : "Viết phản hồi"}
-                  placeholder={mode === "edit" ? "Sửa bình luận..." : "Viết phản hồi..."}
+              {mode === "delete" ? <span>Delete this comment? Replies will be kept.</span> : (
+                <input ref={input} type="text" aria-label={mode === "edit" ? "Edit comment" : "Write a reply"}
+                  placeholder={mode === "edit" ? "Edit comment..." : "Write a reply..."}
                   value={text} onChange={(event) => setText(event.target.value)} disabled={busy} />
               )}
               <button type="submit" disabled={busy || (mode !== "delete" && !text.trim())}>
-                {busy ? "Đang lưu..." : mode === "delete" ? "Xác nhận xóa" : "Gửi"}
+                {busy ? "Saving..." : mode === "delete" ? "Confirm deletion" : "Send"}
               </button>
-              <button type="button" disabled={busy} onClick={() => setMode(null)}>Hủy</button>
+              <button type="button" disabled={busy} onClick={() => setMode(null)}>Cancel</button>
             </form>
           )}
         </div>
         <div className={style.commentAside}>
           <button type="button" className={style.iconButton + (comment.liked ? " " + style.iconButtonActive : "")}
-            onClick={() => onLike(comment)} aria-label="Thích bình luận" aria-pressed={comment.liked}
+            onClick={() => onLike(comment)} aria-label="Like comment" aria-pressed={comment.liked}
             disabled={!currentUserId || comment.isDeleted}>♥</button>
         </div>
       </div>
@@ -135,7 +135,7 @@ export default function CommentPopup({ postId, onClose, onCommentAdded }) {
       }
     } catch (error) {
       if (signal?.aborted || version !== counter.value) return;
-      setLoadError(apiErrorMessage(error, "Không thể tải bình luận."));
+      setLoadError(apiErrorMessage(error, "Unable to load comments."));
       if ([401, 403, 404].includes(error.response?.status)) setComments([]);
     } finally {
       if (version === counter.value && !signal?.aborted) setLoading(false);
@@ -179,7 +179,7 @@ export default function CommentPopup({ postId, onClose, onCommentAdded }) {
       return response.data;
     } catch (error) {
       if (error.response?.status === 409) await loadComments();
-      toast.error(apiErrorMessage(error, "Không thể lưu bình luận. Nội dung bạn nhập vẫn được giữ."));
+      toast.error(apiErrorMessage(error, "Unable to save your comment. Your text has been kept."));
       throw error;
     }
   };
@@ -203,25 +203,25 @@ export default function CommentPopup({ postId, onClose, onCommentAdded }) {
     <div className={style.overlay} onClick={onClose}>
       <section ref={panel} className={style.popup} role="dialog" aria-modal="true" aria-labelledby="comments-title"
         onClick={(event) => event.stopPropagation()}>
-        <button ref={close} className={style.closeButton} type="button" onClick={onClose} aria-label="Đóng bình luận">×</button>
-        <h3 id="comments-title">Bình luận</h3>
+        <button ref={close} className={style.closeButton} type="button" onClick={onClose} aria-label="Close comments">×</button>
+        <h3 id="comments-title">Comments</h3>
         {loadError && <div role="alert"><p>{loadError}</p>
-          <button type="button" onClick={() => loadComments()}>Thử tải lại</button></div>}
+          <button type="button" onClick={() => loadComments()}>Try again</button></div>}
         <div className={style.commentList}>
-          {loading ? <p className={style.emptyState}>Đang tải bình luận...</p> : comments.length ? comments.map((comment) => (
+          {loading ? <p className={style.emptyState}>Loading comments...</p> : comments.length ? comments.map((comment) => (
             <CommentItem key={comment.id} comment={comment} currentUserId={currentUserId}
               onLike={(row) => likes.toggle(base + "/" + row.id + "/like", row.liked, row.likesCount)}
               onReply={(id, content) => mutate("post", base + "/" + id + "/reply", { content })}
               onEdit={(id, content, expectedVersion) => mutate("patch", base + "/" + id, { content, expectedVersion })}
               onDelete={(id, expectedVersion) => mutate("delete", base + "/" + id, { expectedVersion })} />
-          )) : !loadError && <p className={style.emptyState}>Chưa có bình luận nào.</p>}
+          )) : !loadError && <p className={style.emptyState}>No comments yet.</p>}
         </div>
         <form className={style.commentInputBox} onSubmit={submit}>
-          <input type="text" aria-label="Viết bình luận" placeholder={currentUserId ? "Viết bình luận..." : "Đăng nhập để bình luận"}
+          <input type="text" aria-label="Write a comment" placeholder={currentUserId ? "Write a comment..." : "Sign in to comment"}
             value={newComment} onChange={(event) => setNewComment(event.target.value)}
             disabled={submitting || !currentUserId || Boolean(loadError)} />
           <button type="submit" disabled={submitting || !currentUserId || !newComment.trim() || Boolean(loadError)}>
-            {submitting ? "Đang gửi..." : "Gửi"}
+            {submitting ? "Sending..." : "Send"}
           </button>
         </form>
       </section>

@@ -58,7 +58,7 @@ export default function ListPost() {
       setData(processedData);
     } catch (error) {
       if (signal?.aborted) return;
-      setLoadError(apiErrorMessage(error, "Không thể tải bài viết."));
+      setLoadError(apiErrorMessage(error, "Unable to load posts."));
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
@@ -100,7 +100,7 @@ export default function ListPost() {
       return;
     }
     if (!currentUserId) {
-      toast.error("Vui lòng đăng nhập để tương tác.");
+      toast.error("Please sign in to interact.");
       return;
     }
     if (type === "LIKE") {
@@ -125,7 +125,7 @@ export default function ListPost() {
     } catch (error) {
       if (shareActor.current !== currentUserId) return;
       if (error.response?.status === 404) setData((rows) => rows.filter((row) => row.id !== postId));
-      toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
+      toast.error(apiErrorMessage(error, "Unable to share this post."));
     } finally {
       shareRequests.current.delete(postId);
       setSharing((pending) => ({ ...pending, [postId]: false }));
@@ -140,8 +140,8 @@ export default function ListPost() {
   return (
     <>
       <div className={style.layout}>
-        {loading ? <p>Đang tải bài viết...</p> : loadError ? (
-          <div role="alert"><p>{loadError}</p><button onClick={() => fetchPosts()}>Thử lại</button></div>
+        {loading ? <p>Loading posts...</p> : loadError ? (
+          <div role="alert"><p>{loadError}</p><button onClick={() => fetchPosts()}>Try again</button></div>
         ) : data.length > 0 ? (
           data.map((post) => {
             const isExpanded = !!expandedPosts[post.id];
@@ -151,7 +151,7 @@ export default function ListPost() {
               <div key={post.id} className={style.box}>
                 <div className={style["post-content"]}>
                   <div className={style.header_post}>
-                    <Link to={`/user/${post.userId}`} className={style.avatar_mini_wrapper} aria-label={`Xem trang của ${post.username}`}>
+                    <Link to={`/user/${post.userId}`} className={style.avatar_mini_wrapper} aria-label={`View profile of ${post.username}`}>
                       <img
                         src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
                         alt="User Avatar"
@@ -204,8 +204,8 @@ export default function ListPost() {
                     className={`${style.btn} ${style["btn-like"]} ${
                       post.liked ? style["btn-like-active"] : ""
                     }`}
-                    aria-label={post.liked ? "Bỏ thích" : "Thích"}
-                    title={post.liked ? "Bỏ thích" : "Thích"}
+                    aria-label={post.liked ? "Unlike" : "Like"}
+                    title={post.liked ? "Unlike" : "Like"}
                     aria-pressed={post.liked}
                     onClick={() => handleAction(post.id, "LIKE")}
                   >
@@ -216,8 +216,8 @@ export default function ListPost() {
                   <button
                     type="button"
                     className={`${style.btn} ${style["btn-comment"]}`}
-                    aria-label="Bình luận"
-                    title="Bình luận"
+                    aria-label="Comments"
+                    title="Comments"
                     onClick={() => handleAction(post.id, "COMMENT")}
                   >
                     <span className={style.icon} />
@@ -227,10 +227,10 @@ export default function ListPost() {
                   <button
                     type="button"
                     className={`${style.btn} ${style["btn-share"]} ${post.sharedByMe ? style["btn-share-active"] : ""}`}
-                    aria-label={post.sharedByMe ? "Gỡ chia sẻ" : "Chia sẻ lại"}
+                    aria-label={post.sharedByMe ? "Remove share" : "Share"}
                     aria-pressed={Boolean(post.sharedByMe)}
                     aria-busy={Boolean(sharing[post.id])}
-                    title={post.sharedByMe ? "Đã chia sẻ · Bấm để gỡ" : "Chia sẻ lại"}
+                    title={post.sharedByMe ? "Shared · Click to remove" : "Share"}
                     disabled={Boolean(sharing[post.id])}
                     onClick={() => handleAction(post.id, "SHARE")}
                   >

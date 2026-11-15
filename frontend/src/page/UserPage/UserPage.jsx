@@ -36,7 +36,7 @@ function PostEditor({ post, onClose, onSave }) {
     const selected = Array.from(event.target.files);
     event.target.value = "";
     if (remaining.length + files.length + selected.length > MAX_IMAGES || selected.some((file) => !["image/jpeg", "image/png"].includes(file.type) || file.size > MAX_IMAGE_BYTES)) {
-      setError("Tối đa 10 ảnh JPEG/PNG, mỗi ảnh không quá 10 MiB.");
+      setError("Up to 10 JPEG/PNG images, each no larger than 10 MiB.");
       return;
     }
     setError("");
@@ -47,7 +47,7 @@ function PostEditor({ post, onClose, onSave }) {
     event.preventDefault();
     if (busy) return;
     if ((!content.trim() && !remaining.length && !files.length) || Array.from(content.trim()).length > MAX_CONTENT_LENGTH) {
-      setError("Bài viết cần nội dung hoặc ảnh; nội dung tối đa 5.000 ký tự.");
+      setError("Add text or images. Text must be no longer than 5,000 characters.");
       return;
     }
     setBusy(true);
@@ -61,8 +61,8 @@ function PostEditor({ post, onClose, onSave }) {
     try {
       const { data } = await api.patch("/api/v1/blogs-details", body);
       onSave({ ...post, content: data.content, published: data.published, imageContentUrls: data.successUrls, updatedAt: data.updatedAt });
-      if (data.failedUploadFiles?.length) toast.warning(`Đã lưu bài. Có ${data.failedUploadFiles.length} ảnh tải lên thất bại.`);
-      else toast.success("Đã lưu bài viết.");
+      if (data.failedUploadFiles?.length) toast.warning(`Post saved. ${data.failedUploadFiles.length} images failed to upload.`);
+      else toast.success("Post saved.");
       onClose();
     } catch (failure) {
       setError(apiErrorMessage(failure));
@@ -72,22 +72,22 @@ function PostEditor({ post, onClose, onSave }) {
   return <AlertDialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
     <AlertDialogContent className="profile-dialog">
       <AlertDialogHeader>
-        <AlertDialogTitle>Chỉnh sửa bài viết</AlertDialogTitle>
-        <AlertDialogDescription>Nội dung, ảnh và quyền xem được lưu cùng nhau.</AlertDialogDescription>
+        <AlertDialogTitle>Edit post</AlertDialogTitle>
+        <AlertDialogDescription>Text, images, and visibility are saved together.</AlertDialogDescription>
       </AlertDialogHeader>
       <form className="profile-form" onSubmit={submit} aria-busy={busy}>
-        <label>Nội dung<textarea autoFocus value={content} onChange={(event) => setContent(event.target.value)} disabled={busy} /></label>
-        <label>Ai có thể xem?<select value={String(published)} onChange={(event) => setPublished(event.target.value === "true")} disabled={busy}>
-          <option value="true">Công khai</option><option value="false">Chỉ mình tôi</option>
+        <label>Text<textarea autoFocus value={content} onChange={(event) => setContent(event.target.value)} disabled={busy} /></label>
+        <label>Who can see this?<select value={String(published)} onChange={(event) => setPublished(event.target.value === "true")} disabled={busy}>
+          <option value="true">Public</option><option value="false">Only me</option>
         </select></label>
         {(remaining.length > 0 || files.length > 0) && <div className="profile-edit-images">
-          {remaining.map((url) => <figure key={url}><img src={imageUrl(url)} alt="Ảnh trong bài" /><button type="button" disabled={busy} onClick={() => setRemaining((current) => current.filter((item) => item !== url))}>Gỡ ảnh</button></figure>)}
-          {files.map((file, index) => <figure key={`${file.name}-${index}`}><img src={previews[index]} alt={file.name} /><button type="button" disabled={busy} onClick={() => setFiles((current) => current.filter((_, position) => position !== index))}>Gỡ ảnh mới</button></figure>)}
+          {remaining.map((url) => <figure key={url}><img src={imageUrl(url)} alt="Post image" /><button type="button" disabled={busy} onClick={() => setRemaining((current) => current.filter((item) => item !== url))}>Remove image</button></figure>)}
+          {files.map((file, index) => <figure key={`${file.name}-${index}`}><img src={previews[index]} alt={file.name} /><button type="button" disabled={busy} onClick={() => setFiles((current) => current.filter((_, position) => position !== index))}>Remove new image</button></figure>)}
         </div>}
-        <label>Thêm ảnh<input type="file" multiple accept="image/jpeg,image/png" onChange={select} disabled={busy} /></label>
-        <p className="profile-form-hint">{remaining.length + files.length}/10 ảnh · Chỉ gỡ ảnh khi bạn lưu thay đổi.</p>
+        <label>Add images<input type="file" multiple accept="image/jpeg,image/png" onChange={select} disabled={busy} /></label>
+        <p className="profile-form-hint">{remaining.length + files.length}/10 images · Images are removed when you save your changes.</p>
         {error && <p role="alert" className="profile-form-error">{error}</p>}
-        <AlertDialogFooter><Button type="button" variant="outline" disabled={busy} onClick={onClose}>Hủy</Button><Button type="submit" disabled={busy}>{busy ? "Đang lưu…" : "Lưu bài viết"}</Button></AlertDialogFooter>
+        <AlertDialogFooter><Button type="button" variant="outline" disabled={busy} onClick={onClose}>Cancel</Button><Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save post"}</Button></AlertDialogFooter>
       </form>
     </AlertDialogContent>
   </AlertDialog>;
@@ -122,7 +122,7 @@ export default function UserPage() {
     const setters = [setProfile, setPosts, setShares];
     results.forEach((result, index) => {
       if (result.status === "fulfilled") setters[index](result.value.data);
-      else nextErrors[names[index]] = apiErrorMessage(result.reason, "Không thể tải dữ liệu. Hãy thử lại.");
+      else nextErrors[names[index]] = apiErrorMessage(result.reason, "Unable to load data. Please try again.");
     });
     setErrors(nextErrors);
     setLoading(false);
@@ -150,7 +150,7 @@ export default function UserPage() {
     setProfile((current) => ({ ...current, ...data }));
     setPosts((current) => current.map((post) => ({ ...post, username: data.username, userAvatarUrl: data.userAvatarUrl })));
     setShares((current) => current.map((post) => post.originalUserId === id ? { ...post, username: data.username, userAvatarUrl: data.userAvatarUrl } : post));
-    refreshSession().catch(() => toast.warning("Hồ sơ đã lưu. Không thể làm mới phiên; hãy tải lại trang."));
+    refreshSession().catch(() => toast.warning("Profile saved. Unable to refresh your session; please reload the page."));
   }
 
   function reloadShares() {
@@ -181,17 +181,17 @@ export default function UserPage() {
       if (dialog.type === "account") {
         await api.delete(`/api/v1/users/${id}`, { data: { currentPassword } });
         clearSession();
-        toast.success("Đã xóa tài khoản.");
+        toast.success("Account deleted.");
         navigate("/signin", { replace: true });
       } else if (dialog.type === "delete") {
         await api.delete(`/api/v1/blogs/${dialog.post.id}`);
         setPosts((current) => current.filter((post) => post.id !== dialog.post.id));
         setShares((current) => current.filter((post) => post.blogId !== dialog.post.id));
-        toast.success("Đã xóa bài viết.");
+        toast.success("Post deleted.");
       } else {
         await api.delete(`/api/v1/users/${id}/shared-blogs/${dialog.post.blogId}`);
         setShares((current) => current.filter((post) => post.blogId !== dialog.post.blogId));
-        toast.success("Đã bỏ chia sẻ.");
+        toast.success("Share removed.");
       }
       setDialog(null);
       setCurrentPassword("");
@@ -206,41 +206,41 @@ export default function UserPage() {
       const { data } = await api.patch("/api/v1/blogs/access", { blogId: post.id, published: !post.published });
       setPosts((current) => current.map((item) => item.id === post.id ? { ...item, published: data.published, updatedAt: data.updatedAt } : item));
       reloadShares();
-      toast.success(data.published ? "Bài viết đã công khai." : "Chỉ bạn có thể xem bài viết này.");
+      toast.success(data.published ? "Your post is now public." : "Only you can see this post.");
     } catch (failure) { toast.error(apiErrorMessage(failure)); }
     finally { setBusy(false); }
   }
 
-  if (!ready) return <div className="profile-state" role="status">Đang kiểm tra phiên đăng nhập…</div>;
-  if (!id) return <div className="profile-state"><h1>Trang cá nhân</h1><p>Đăng nhập để xem và quản lý hồ sơ của bạn.</p><Button asChild><Link to="/signin">Đăng nhập</Link></Button></div>;
-  if (!profile) return <div className="profile-state" aria-busy={loading}>{loading ? "Đang tải hồ sơ…" : <><p role="alert">{errors.profile || "Chưa tải được hồ sơ."}</p><Button onClick={() => load()}>Thử lại</Button></>}</div>;
+  if (!ready) return <div className="profile-state" role="status">Checking your session…</div>;
+  if (!id) return null;
+  if (!profile) return <div className="profile-state" aria-busy={loading}>{loading ? "Loading profile…" : <><p role="alert">{errors.profile || "Unable to load your profile."}</p><Button onClick={() => load()}>Try again</Button></>}</div>;
 
   const sharedTab = tab === "shares";
   const items = sharedTab ? shares : posts;
   return <main className="profile-page">
-    <header className="profile-topbar"><h1>Trang cá nhân</h1><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Cài đặt tài khoản" disabled={busy}><Settings size={19} /></Button></DropdownMenuTrigger>
-      <DropdownMenuContent align="end"><DropdownMenuItem onSelect={() => setDialog({ type: "password" })}>Đổi mật khẩu</DropdownMenuItem><DropdownMenuItem onSelect={logout}><LogOut size={15} /> Đăng xuất</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onSelect={() => setDialog({ type: "account" })}>Xóa tài khoản</DropdownMenuItem></DropdownMenuContent></DropdownMenu></header>
+    <header className="profile-topbar"><h1>Profile</h1><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Account settings" disabled={busy}><Settings size={19} /></Button></DropdownMenuTrigger>
+      <DropdownMenuContent align="end"><DropdownMenuItem onSelect={() => setDialog({ type: "password" })}>Change password</DropdownMenuItem><DropdownMenuItem onSelect={logout}><LogOut size={15} /> Sign out</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onSelect={() => setDialog({ type: "account" })}>Delete account</DropdownMenuItem></DropdownMenuContent></DropdownMenu></header>
     <section className="profile-summary">
-      <button className="profile-avatar-button" onClick={() => setDialog({ type: "avatar" })} aria-label="Đổi ảnh đại diện"><img src={imageUrl(profile.userAvatarUrl)} alt="Ảnh đại diện của bạn" /><span>Sửa ảnh</span></button>
-      <div className="profile-identity"><p className="profile-eyebrow">GÓC CỦA BẠN</p><h2>{profile.fullname}</h2><p className="profile-handle">@{profile.username}</p>
-        {profile.dob && <p className="profile-birthday">Sinh ngày {profile.dob.split("-").reverse().join("/")} <LockKeyhole size={12} aria-label="Chỉ mình tôi" /></p>}
+      <button className="profile-avatar-button" onClick={() => setDialog({ type: "avatar" })} aria-label="Change avatar"><img src={imageUrl(profile.userAvatarUrl)} alt="Your avatar" /><span>Edit photo</span></button>
+      <div className="profile-identity"><p className="profile-eyebrow">YOUR SPACE</p><h2>{profile.fullname}</h2><p className="profile-handle">@{profile.username}</p>
+        {profile.dob && <p className="profile-birthday">Born on {profile.dob.split("-").reverse().join("/")} <LockKeyhole size={12} aria-label="Only me" /></p>}
       </div>
-      <div className="profile-summary-actions"><Button variant="outline" onClick={() => setDialog({ type: "profile" })}>Sửa hồ sơ</Button><Button variant="ghost" asChild><Link to={`/user/${id}`}>Xem công khai <ArrowUpRight size={14} /></Link></Button></div>
+      <div className="profile-summary-actions"><Button variant="outline" onClick={() => setDialog({ type: "profile" })}>Edit profile</Button><Button variant="ghost" asChild><Link to={`/user/${id}`}>View public profile <ArrowUpRight size={14} /></Link></Button></div>
     </section>
-    <nav className="profile-tabs" aria-label="Nội dung trang cá nhân"><button aria-pressed={!sharedTab} onClick={() => setTab("posts")}>Bài đăng <span>{posts.length}</span></button><button aria-pressed={sharedTab} onClick={() => setTab("shares")}>Đã chia sẻ <span>{shares.length}</span></button><Link to="/post" className="profile-create" aria-label="Viết bài mới"><Plus size={19} /></Link></nav>
-    <section className="profile-posts" aria-label={sharedTab ? "Bài đã chia sẻ" : "Bài đăng của bạn"} aria-busy={loading}>
-      {(errors[tab] || errors.profile) && <div className="profile-inline-error" role="alert"><p>{errors[tab] || errors.profile}</p><Button variant="outline" onClick={() => load()} disabled={loading}>Tải lại</Button></div>}
-      {loading && <p role="status" className="profile-loading">Đang tải…</p>}
-      {!items.length && !loading && !errors[tab] && <div className="profile-empty"><h3>{sharedTab ? "Chưa có bài chia sẻ" : "Câu chuyện của bạn bắt đầu ở đây"}</h3><p>{sharedTab ? "Bài viết bạn chia sẻ sẽ được lưu tại đây." : "Chia sẻ một điều bạn nghĩ, hoặc giữ lại cho riêng mình."}</p><Button variant="outline" asChild><Link to={sharedTab ? "/" : "/post"}>{sharedTab ? "Khám phá bảng tin" : "Viết bài đầu tiên"}</Link></Button></div>}
+    <nav className="profile-tabs" aria-label="Profile content"><button aria-pressed={!sharedTab} onClick={() => setTab("posts")}>Posts <span>{posts.length}</span></button><button aria-pressed={sharedTab} onClick={() => setTab("shares")}>Shared <span>{shares.length}</span></button><Link to="/post" className="profile-create" aria-label="Create post"><Plus size={19} /></Link></nav>
+    <section className="profile-posts" aria-label={sharedTab ? "Shared posts" : "Your posts"} aria-busy={loading}>
+      {(errors[tab] || errors.profile) && <div className="profile-inline-error" role="alert"><p>{errors[tab] || errors.profile}</p><Button variant="outline" onClick={() => load()} disabled={loading}>Reload</Button></div>}
+      {loading && <p role="status" className="profile-loading">Loading…</p>}
+      {!items.length && !loading && !errors[tab] && <div className="profile-empty"><h3>{sharedTab ? "No shared posts yet" : "Your story starts here"}</h3><p>{sharedTab ? "Posts you share will appear here." : "Share what is on your mind, or keep it just for yourself."}</p><Button variant="outline" asChild><Link to={sharedTab ? "/" : "/post"}>{sharedTab ? "Explore the feed" : "Write your first post"}</Link></Button></div>}
       {items.map((post) => {
         const postId = sharedTab ? post.blogId : post.id;
         return <article className="profile-post" key={postId}>
-          {sharedTab && <p className="profile-share-label">Bạn đã chia sẻ · <Timestamp value={post.sharedAt} /></p>}
-          <div className="profile-post-heading"><Link to={`/user/${sharedTab ? post.originalUserId : id}`} className="profile-post-author"><img src={imageUrl(post.userAvatarUrl)} alt="" /><span><strong>@{post.username}</strong><span className="profile-post-meta"><Timestamp value={sharedTab ? post.originalCreatedAt : post.createdAt} />{post.published ? <><Globe size={12} /> Công khai</> : <><LockKeyhole size={12} /> Chỉ mình tôi</>}</span></span></Link>
-            <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Tùy chọn bài viết" disabled={busy}><MoreHorizontal size={20} /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{sharedTab ? <DropdownMenuItem onSelect={() => setDialog({ type: "unshare", post })}>Bỏ chia sẻ</DropdownMenuItem> : <><DropdownMenuItem onSelect={() => setDialog({ type: "post", post })}>Chỉnh sửa bài viết</DropdownMenuItem><DropdownMenuItem onSelect={() => access(post)}>{post.published ? "Chuyển sang chỉ mình tôi" : "Chuyển sang công khai"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onSelect={() => setDialog({ type: "delete", post })}>Xóa bài viết</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu>
+          {sharedTab && <p className="profile-share-label">You shared · <Timestamp value={post.sharedAt} /></p>}
+          <div className="profile-post-heading"><Link to={`/user/${sharedTab ? post.originalUserId : id}`} className="profile-post-author"><img src={imageUrl(post.userAvatarUrl)} alt="" /><span><strong>@{post.username}</strong><span className="profile-post-meta"><Timestamp value={sharedTab ? post.originalCreatedAt : post.createdAt} />{post.published ? <><Globe size={12} /> Public</> : <><LockKeyhole size={12} /> Only me</>}</span></span></Link>
+            <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label="Post options" disabled={busy}><MoreHorizontal size={20} /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">{sharedTab ? <DropdownMenuItem onSelect={() => setDialog({ type: "unshare", post })}>Remove share</DropdownMenuItem> : <><DropdownMenuItem onSelect={() => setDialog({ type: "post", post })}>Edit post</DropdownMenuItem><DropdownMenuItem onSelect={() => access(post)}>{post.published ? "Make private" : "Make public"}</DropdownMenuItem><DropdownMenuSeparator /><DropdownMenuItem variant="destructive" onSelect={() => setDialog({ type: "delete", post })}>Delete post</DropdownMenuItem></>}</DropdownMenuContent></DropdownMenu>
           </div>
-          <Link to={`/post/${postId}`} className="profile-post-body">{post.content && <p>{post.content}</p>}{post.imageContentUrls?.length > 0 && <div className="profile-post-images">{post.imageContentUrls.map((url, index) => <img src={imageUrl(url)} alt={`Ảnh bài viết ${index + 1}`} key={url} loading="lazy" />)}</div>}</Link>
-          <Link to={`/post/${postId}`} className="profile-post-footer"><span>{post.likesCount || 0} lượt thích · {post.commentsCount || 0} bình luận · {post.sharesCount || 0} chia sẻ</span><ArrowUpRight size={15} aria-hidden="true" /></Link>
+          <Link to={`/post/${postId}`} className="profile-post-body">{post.content && <p>{post.content}</p>}{post.imageContentUrls?.length > 0 && <div className="profile-post-images">{post.imageContentUrls.map((url, index) => <img src={imageUrl(url)} alt={`Post image ${index + 1}`} key={url} loading="lazy" />)}</div>}</Link>
+          <Link to={`/post/${postId}`} className="profile-post-footer"><span>{post.likesCount || 0} likes · {post.commentsCount || 0} comments · {post.sharesCount || 0} shares</span><ArrowUpRight size={15} aria-hidden="true" /></Link>
         </article>;
       })}
     </section>
@@ -248,8 +248,8 @@ export default function UserPage() {
     {dialog?.type === "avatar" && <EditAvt userId={id} currentAvatar={imageUrl(profile.userAvatarUrl)} onClose={closeDialog} onSave={savedProfile} />}
     {dialog?.type === "post" && <PostEditor post={dialog.post} onClose={closeDialog} onSave={savedPost} />}
     {["account", "delete", "unshare"].includes(dialog?.type) && <AlertDialog open onOpenChange={(open) => { if (!open) closeDialog(); }}><AlertDialogContent className="profile-dialog">
-      <AlertDialogHeader><AlertDialogTitle>{dialog.type === "account" ? "Xóa tài khoản?" : dialog.type === "delete" ? "Xóa bài viết?" : "Bỏ chia sẻ bài viết?"}</AlertDialogTitle><AlertDialogDescription>{dialog.type === "account" ? "Tài khoản, bài viết và lượt tương tác của bạn sẽ bị xóa. Bình luận của bạn trong bài người khác sẽ trở thành bình luận đã xóa để giữ các câu trả lời. Thao tác này không thể hoàn tác." : dialog.type === "delete" ? "Bài viết, bình luận và các tương tác liên quan sẽ bị xóa. Thao tác này không thể hoàn tác." : "Bài viết gốc vẫn còn. Chỉ lượt chia sẻ của bạn được gỡ."}</AlertDialogDescription></AlertDialogHeader>
-      <form className="profile-form" onSubmit={confirm} aria-busy={busy}>{dialog.type === "account" && <label>Mật khẩu hiện tại<input autoFocus type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>}{actionError && <p role="alert" className="profile-form-error">{actionError}</p>}<AlertDialogFooter><Button type="button" variant="outline" disabled={busy} onClick={closeDialog}>Hủy</Button><Button type="submit" className="profile-danger" disabled={busy}>{busy ? "Đang xử lý…" : dialog.type === "unshare" ? "Bỏ chia sẻ" : "Xác nhận xóa"}</Button></AlertDialogFooter></form>
+      <AlertDialogHeader><AlertDialogTitle>{dialog.type === "account" ? "Delete account?" : dialog.type === "delete" ? "Delete post?" : "Remove this share?"}</AlertDialogTitle><AlertDialogDescription>{dialog.type === "account" ? "Your account, posts, and interactions will be deleted. Your comments on other posts will become deleted placeholders to preserve replies. This cannot be undone." : dialog.type === "delete" ? "This post, its comments, and related interactions will be deleted. This cannot be undone." : "The original post will remain. Only your share will be removed."}</AlertDialogDescription></AlertDialogHeader>
+      <form className="profile-form" onSubmit={confirm} aria-busy={busy}>{dialog.type === "account" && <label>Current password<input autoFocus type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>}{actionError && <p role="alert" className="profile-form-error">{actionError}</p>}<AlertDialogFooter><Button type="button" variant="outline" disabled={busy} onClick={closeDialog}>Cancel</Button><Button type="submit" className="profile-danger" disabled={busy}>{busy ? "Processing…" : dialog.type === "unshare" ? "Remove share" : "Confirm deletion"}</Button></AlertDialogFooter></form>
     </AlertDialogContent></AlertDialog>}
   </main>;
 }

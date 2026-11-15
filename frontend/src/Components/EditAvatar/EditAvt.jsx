@@ -26,7 +26,7 @@ export default function EditAvt({ userId, currentAvatar, onClose, onSave }) {
     event.target.value = "";
     if (!next) return;
     if (!["image/jpeg", "image/png"].includes(next.type) || next.size > MAX_IMAGE_BYTES) {
-      setError("Chọn ảnh JPEG hoặc PNG, tối đa 10 MiB.");
+      setError("Choose a JPEG or PNG image up to 10 MiB.");
       return;
     }
     setError("");
@@ -48,7 +48,7 @@ export default function EditAvt({ userId, currentAvatar, onClose, onSave }) {
         ({ data } = await api.patch(`/api/v1/users/${userId}/avatar`, body));
       }
       onSave(data);
-      toast.success(remove ? "Đã dùng avatar mặc định." : "Đã đổi avatar.");
+      toast.success(remove ? "Default avatar restored." : "Avatar updated.");
       onClose();
     } catch (failure) {
       setError(apiErrorMessage(failure));
@@ -60,17 +60,17 @@ export default function EditAvt({ userId, currentAvatar, onClose, onSave }) {
   return <AlertDialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
     <AlertDialogContent className="profile-dialog">
       <AlertDialogHeader>
-        <AlertDialogTitle>Ảnh đại diện</AlertDialogTitle>
-        <AlertDialogDescription>Ảnh này sẽ hiển thị công khai. JPEG hoặc PNG, tối đa 10 MiB và 25 triệu điểm ảnh.</AlertDialogDescription>
+        <AlertDialogTitle>Avatar</AlertDialogTitle>
+        <AlertDialogDescription>This image will be public. JPEG or PNG, up to 10 MiB and 25 million pixels.</AlertDialogDescription>
       </AlertDialogHeader>
       <div className="profile-form" aria-busy={busy}>
-        <img className="profile-avatar-preview" src={(file && preview) || currentAvatar || DEFAULT_AVATAR_URL} alt="Xem trước ảnh đại diện" />
-        <label>Chọn ảnh mới<input type="file" accept="image/jpeg,image/png" onChange={select} disabled={busy} /></label>
+        <img className="profile-avatar-preview" src={(file && preview) || currentAvatar || DEFAULT_AVATAR_URL} alt="Avatar preview" />
+        <label>Choose a new image<input type="file" accept="image/jpeg,image/png" onChange={select} disabled={busy} /></label>
         {error && <p role="alert" className="profile-form-error">{error}</p>}
-        <Button variant="outline" disabled={busy || currentAvatar === DEFAULT_AVATAR_URL} onClick={() => save(true)}>Dùng avatar mặc định</Button>
+        <Button variant="outline" disabled={busy || currentAvatar === DEFAULT_AVATAR_URL} onClick={() => save(true)}>Use default avatar</Button>
         <AlertDialogFooter>
-          <Button variant="outline" disabled={busy} onClick={onClose}>Hủy</Button>
-          <Button disabled={busy || !file} onClick={() => save()}>{busy ? "Đang lưu…" : "Lưu ảnh"}</Button>
+          <Button variant="outline" disabled={busy} onClick={onClose}>Cancel</Button>
+          <Button disabled={busy || !file} onClick={() => save()}>{busy ? "Saving…" : "Save image"}</Button>
         </AlertDialogFooter>
       </div>
     </AlertDialogContent>

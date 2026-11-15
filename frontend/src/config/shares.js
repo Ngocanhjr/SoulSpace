@@ -11,20 +11,20 @@ export async function toggleShare(post, actorId, onChange) {
     onChange({ sharedByMe: false });
     try {
       await refresh();
-      return { message: "Đã gỡ chia sẻ" };
+      return { message: "Share removed" };
     } catch (error) {
-      if (error.response?.status === 404) return { message: "Đã gỡ chia sẻ", unavailable: true };
-      return { message: "Đã gỡ chia sẻ nhưng chưa tải lại được tổng lượt chia sẻ.", warning: true };
+      if (error.response?.status === 404) return { message: "Share removed", unavailable: true };
+      return { message: "Share removed, but the share count could not be refreshed.", warning: true };
     }
   }
 
   try {
     const { data } = await api.post("/api/v1/blogs/" + post.id + "/share", {});
     onChange({ sharedByMe: true, sharesCount: data.sharesCount });
-    return { message: "Đã chia sẻ" };
+    return { message: "Shared" };
   } catch (error) {
     if (error.response?.data?.code !== "ALREADY_SHARED") throw error;
     await refresh();
-    return { message: "Bạn đã chia sẻ bài viết này" };
+    return { message: "You have already shared this post" };
   }
 }

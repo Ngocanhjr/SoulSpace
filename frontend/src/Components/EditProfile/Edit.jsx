@@ -27,7 +27,7 @@ export default function Edit({ user, mode = "profile", onClose, onSave }) {
     if (busy) return;
     setError("");
     if (passwordMode && (password !== confirmation || Array.from(password).length < MIN_PASSWORD_LENGTH || Array.from(password).length > MAX_PASSWORD_LENGTH)) {
-      setError("Mật khẩu mới cần từ 4–128 ký tự và khớp phần nhập lại.");
+      setError("Your new password must be 4–128 characters and match the confirmation.");
       return;
     }
     setBusy(true);
@@ -35,12 +35,12 @@ export default function Edit({ user, mode = "profile", onClose, onSave }) {
       if (passwordMode) {
         await api.put(`/api/v1/users/${user.id}`, { currentPassword, password });
         clearSession();
-        toast.success("Đã đổi mật khẩu. Hãy đăng nhập lại.");
+        toast.success("Password changed. Please sign in again.");
         navigate("/signin", { replace: true });
       } else {
         const { data } = await api.patch(`/api/v1/users/${user.id}`, { username, fullname, dob: dob || null });
         onSave(data);
-        toast.success("Đã lưu hồ sơ.");
+        toast.success("Profile saved.");
       }
       onClose();
     } catch (failure) {
@@ -53,23 +53,23 @@ export default function Edit({ user, mode = "profile", onClose, onSave }) {
   return <AlertDialog open onOpenChange={(open) => { if (!open && !busy) onClose(); }}>
     <AlertDialogContent className="profile-dialog">
       <AlertDialogHeader>
-        <AlertDialogTitle>{passwordMode ? "Đổi mật khẩu" : "Chỉnh sửa hồ sơ"}</AlertDialogTitle>
-        <AlertDialogDescription>{passwordMode ? "Sau khi đổi, tất cả phiên đăng nhập sẽ kết thúc." : "Ngày sinh chỉ hiển thị với bạn. Tên đăng nhập cũng được dùng để đăng nhập."}</AlertDialogDescription>
+        <AlertDialogTitle>{passwordMode ? "Change password" : "Edit profile"}</AlertDialogTitle>
+        <AlertDialogDescription>{passwordMode ? "Changing your password will end all active sessions." : "Only you can see your date of birth. Your username is also used to sign in."}</AlertDialogDescription>
       </AlertDialogHeader>
       <form onSubmit={submit} className="profile-form" aria-busy={busy}>
         {passwordMode ? <>
-          <label>Mật khẩu hiện tại<input autoFocus type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>
-          <label>Mật khẩu mới<input type="password" autoComplete="new-password" required value={password} onChange={(event) => setPassword(event.target.value)} disabled={busy} /></label>
-          <label>Nhập lại mật khẩu mới<input type="password" autoComplete="new-password" required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={busy} /></label>
+          <label>Current password<input autoFocus type="password" autoComplete="current-password" required value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} disabled={busy} /></label>
+          <label>New password<input type="password" autoComplete="new-password" required value={password} onChange={(event) => setPassword(event.target.value)} disabled={busy} /></label>
+          <label>Confirm new password<input type="password" autoComplete="new-password" required value={confirmation} onChange={(event) => setConfirmation(event.target.value)} disabled={busy} /></label>
         </> : <>
-          <label>Tên đăng nhập<input autoFocus autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} disabled={busy} /></label>
-          <label>Họ tên<input autoComplete="name" required value={fullname} onChange={(event) => setFullname(event.target.value)} disabled={busy} /></label>
-          <label>Ngày sinh<input type="date" autoComplete="bday" value={dob} onChange={(event) => setDob(event.target.value)} disabled={busy} /></label>
+          <label>Username<input autoFocus autoComplete="username" required value={username} onChange={(event) => setUsername(event.target.value)} disabled={busy} /></label>
+          <label>Full name<input autoComplete="name" required value={fullname} onChange={(event) => setFullname(event.target.value)} disabled={busy} /></label>
+          <label>Date of birth<input type="date" autoComplete="bday" value={dob} onChange={(event) => setDob(event.target.value)} disabled={busy} /></label>
         </>}
         {error && <p role="alert" className="profile-form-error">{error}</p>}
         <AlertDialogFooter>
-          <Button type="button" variant="outline" onClick={onClose} disabled={busy}>Hủy</Button>
-          <Button type="submit" disabled={busy}>{busy ? "Đang lưu…" : "Lưu thay đổi"}</Button>
+          <Button type="button" variant="outline" onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button type="submit" disabled={busy}>{busy ? "Saving…" : "Save changes"}</Button>
         </AlertDialogFooter>
       </form>
     </AlertDialogContent>
