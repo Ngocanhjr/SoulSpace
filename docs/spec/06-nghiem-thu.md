@@ -36,7 +36,7 @@ Kiểm thử API qua đầy đủ security filter/session/CSRF, không chỉ g�
 | AUTH04 | Login rồi gọi me ở request mới/reload browser | Đăng nhập thật được giữ qua cookie; không phụ thuộc localStorage. |
 | AUTH05 | Cookie trước/sau login; CSRF trước/sau login/logout | Session ID thay đổi; token mới dùng được; token cũ không làm phát sinh ghi trái phép. |
 | AUTH06 | POST/PATCH/multipart không có/sai CSRF | 403, không đổi DB và không bắt đầu upload. |
-| AUTH07 | Idle timeout, tuổi tối đa, logout, restart backend | Session không còn được chấp nhận theo policy; UI clear trạng thái đúng mã lỗi. |
+| AUTH07 | Idle timeout 1 giờ, hoạt động liên tục quá 8 giờ, logout, restart backend | Không có request trong 1 giờ thì hết phiên; phiên hoạt động không bị kết thúc chỉ vì quá 8 giờ. Logout/restart làm mất hiệu lực session; UI clear trạng thái đúng mã lỗi. |
 | AUTH08 | Đặt/đổi password và xóa account khi đang có nhiều session | Thu hồi tất cả session, Google flow và proof; password mới hoạt động, password cũ không hoạt động. |
 | ACL01 | Đổi userId body/path thành người khác | 403 ở route owner/actor; không giả tác giả, không chỉnh profile hoặc xóa tài sản của người khác. |
 | ACL02 | Guest/user khác đọc chi tiết/comments/ảnh của bài private | 404 tại tài nguyên private; không lộ qua feed/profile/shared list. |

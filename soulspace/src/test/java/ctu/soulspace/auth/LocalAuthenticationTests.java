@@ -253,12 +253,13 @@ class LocalAuthenticationTests {
     }
 
     @Test
-    void sessionOlderThanEightHoursIsRejected() throws Exception {
+    void activeSessionOlderThanEightHoursRemainsValid() throws Exception {
         MockHttpSession session = authenticatedSession();
         session.setAttribute(
-                SessionGuardFilter.AUTHENTICATED_AT,
-                System.currentTimeMillis() - Duration.ofHours(8).toMillis());
-        mvc.perform(client(get(ME)).session(session)).andExpect(status().isUnauthorized());
+                "SOULSPACE_AUTHENTICATED_AT",
+                System.currentTimeMillis() - Duration.ofHours(9).toMillis());
+        mvc.perform(client(get(ME)).session(session)).andExpect(status().isOk());
+        assertThat(session.isInvalid()).isFalse();
     }
 
     @Test

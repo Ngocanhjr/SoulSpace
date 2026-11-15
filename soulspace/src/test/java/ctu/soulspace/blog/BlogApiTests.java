@@ -514,7 +514,14 @@ class BlogApiTests {
         mvc.perform(client(get(listing)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].content").value("current content"))
-                .andExpect(jsonPath("$[0].sharesCount").value(2));
+                .andExpect(jsonPath("$[0].sharesCount").value(2))
+                .andExpect(jsonPath("$[0].sharedByMe").value(false))
+                .andExpect(jsonPath("$[0].likedUserIds").isEmpty());
+        write(visitor, post(BLOGS + "/" + blog + "/like"), "{\"liked\":true}", 200);
+        mvc.perform(client(get(listing)).session(visitor.session()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].sharedByMe").value(true))
+                .andExpect(jsonPath("$[0].likedUserIds[0]").value(other.getId().toString()));
         jdbc.update("update blogs set published = false where id = ?", UUID.fromString(blog));
         mvc.perform(client(get(listing)))
                 .andExpect(status().isOk())

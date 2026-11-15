@@ -12,7 +12,7 @@ import { toggleShare } from "../../config/shares";
 import { Repeat2 } from "lucide-react";
 const CONTENT_PREVIEW_LENGTH = 220;
 
-export default function ListPost() {
+export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoaded }) {
   const [data, setData] = useState([]);
   const [isCommentPopupOpen, setIsCommentPopupOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -35,7 +35,7 @@ export default function ListPost() {
     setLoading(true);
     setLoadError("");
     try {
-      const rs = await api.get("/api/v1/soulspaces", { signal });
+      const rs = await api.get(sourceUrl, { signal });
       if (signal?.aborted) return;
 
       if (!Array.isArray(rs.data)) {
@@ -56,13 +56,14 @@ export default function ListPost() {
       }, read));
 
       setData(processedData);
+      onPostsLoaded?.(processedData);
     } catch (error) {
       if (signal?.aborted) return;
       setLoadError(apiErrorMessage(error, "Unable to load posts."));
     } finally {
       if (!signal?.aborted) setLoading(false);
     }
-  }, [currentUserId, likes]);
+  }, [currentUserId, likes, sourceUrl, onPostsLoaded]);
 
   useEffect(() => {
     const controller = new AbortController();

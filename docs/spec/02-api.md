@@ -25,7 +25,7 @@ Request chỉ bind vào DTO có danh sách field cho phép. Các field compatibi
 | `UserResponsePatch` | `username`, `fullname`, `dob`, `userAvatarUrl` |
 | `BlogDTO` | `id`, `userId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls:string[]`, `likesCount:long`, `commentsCount:long`, `sharesCount:long`, `sharedByMe:boolean`, `likedUserIds:string[]`, `published:boolean`, `createdAt`, `updatedAt` |
 | `CommentDTO` | `id`, `userId:string hoặc null`, `username:string hoặc null`, `userAvatarUrl:string hoặc null`, `content:string hoặc null`, `likesCount`, `likedUserIds:string[]`, `replies:CommentDTO[]`, `createdAt`, `updatedAt`, `isDeleted:boolean`, `version:long` |
-| `SharedBlogDTO` | `blogId`, `originalUserId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls`, `published`, `originalCreatedAt`, `likesCount`, `commentsCount`, `sharesCount`, `sharedAt` |
+| `SharedBlogDTO` | `blogId`, `originalUserId`, `username`, `userAvatarUrl`, `content`, `imageContentUrls`, `published`, `originalCreatedAt`, `likesCount`, `commentsCount`, `sharesCount`, `sharedByMe:boolean`, `likedUserIds:string[]`, `sharedAt` |
 
 `LoginUser.avatarUrl` giữ tên mà SignIn đang đọc; profile dùng `userAvatarUrl`. `dob` chỉ có giá trị trong response xem/sửa chính mình; danh sách users và hồ sơ người khác trả null. `likedUserIds` chứa tối đa ID viewer; tổng like lấy từ `likesCount`.
 
@@ -215,7 +215,7 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 | `SignInPage/SignIn.jsx` | Lấy CSRF trước login, xử lý 401/429, nhận avatarUrl, lấy token mới sau login; bỏ log response xác thực. Bổ sung Google start/result/onboarding theo tài liệu 11, pending không được coi đã đăng nhập. |
 | `SignUpPage/SignUp.jsx` | Gửi `dob` canonical; API vẫn nhận birthday; cập nhật policy password và bỏ log password/form. |
 | `Navigation`, `UserPage`, mọi nơi logout | Gọi A04 rồi clear state; không chỉ xóa localStorage. |
-| `ListPost`, `PostDetailPage` | Optimistic UI; gửi `liked` mong muốn và gộp lần bấm nhanh theo blog, tối đa một request đang chạy/mục; response không ghi đè ý định mới hơn. Counter chuẩn lấy từ response. |
+| `ListPost`, `PostDetailPage`, `UserPage` (Posts và Shared) | Optimistic UI; gửi `liked` mong muốn và gộp lần bấm nhanh theo blog, tối đa một request đang chạy/mục; response không ghi đè ý định mới hơn. Counter chuẩn lấy từ response. |
 | `Comment/CommentPopup` và các nơi dựng comment trong `PostDetailPage` | Like comment dùng cùng quy tắc optimistic/coalescing; thêm sửa/xóa cho đúng tác giả, gửi expectedVersion; 409 yêu cầu đọc lại. Giữ placeholder/replies, xử lý tác giả null, khóa reply/like ở node đã xóa; count lấy từ response. Thụt lề tối đa 3 tầng, chỉ rõ người được trả lời ở nhánh sâu; gửi đúng parent comment, không chặn reply theo độ sâu. |
 | `UserPage` sửa bài | Gộp published vào B14; giữ các tên multipart hiện có. |
 | `UserPage` xóa tài khoản | Đọc auth/methods: user có hash xác nhận currentPassword như cũ; Google-only hoàn tất REAUTH và gửi proof DELETE_ACCOUNT. Dialog xác nhận rồi gửi U08; lỗi không xóa state trước khi server xác nhận. |

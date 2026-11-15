@@ -268,6 +268,8 @@ public class InteractionService {
                             blog.likesCount(),
                             blog.commentsCount(),
                             blog.sharesCount(),
+                            blog.sharedByMe(),
+                            blog.likedUserIds(),
                             (Instant) row[1]));
         }
         return result;

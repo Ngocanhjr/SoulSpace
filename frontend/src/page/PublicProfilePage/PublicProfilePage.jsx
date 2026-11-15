@@ -4,7 +4,7 @@ import { api, apiErrorMessage } from "../../config/api";
 import { ArrowLeft } from "lucide-react";
 import style from "./PublicProfilePage.module.css";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
-import Timestamp from "../../Components/Timestamp";
+import ListPost from "../../Components/ListPost/ListPost";
 
 export default function PublicProfilePage() {
   const { userId } = useParams();
@@ -27,13 +27,9 @@ export default function PublicProfilePage() {
         setLoading(true);
         setLoadError("");
 
-        const [userResponse, postsResponse] = await Promise.all([
-          api.get(`/api/v1/users/${userId}`),
-          api.get(`/api/v1/blogs/${userId}/blogs`),
-        ]);
+        const userResponse = await api.get(`/api/v1/users/${userId}`);
         if (!active) return;
         setUser(userResponse.data || null);
-        setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : []);
       } catch (error) {
         if (!active) return;
         setLoadError(apiErrorMessage(error, "Unable to load this profile."));
@@ -97,43 +93,11 @@ export default function PublicProfilePage() {
       <section className={style.postsSection}>
         <div className={style.sectionTitle}>Posts</div>
 
-        {posts.length === 0 ? (
-          <div className={style.emptyBox}>This user has no public posts yet.</div>
-        ) : (
-          posts.map((post) => (
-            <article key={post.id} className={style.postCard}>
-              <div className={style.postHeader}>
-                <img
-                  src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
-                  alt={post.username || "User avatar"}
-                  className={style.postAvatar}
-                />
-                <div className={style.postMeta}>
-                  <strong>{post.username ? `@${post.username}` : "Unknown user"}</strong>
-                  <Timestamp value={post.createdAt} />
-                </div>
-              </div>
-
-              <div className={style.postContent}>{post.content}</div>
-
-              {Array.isArray(post.imageContentUrls) &&
-                post.imageContentUrls.map((url, index) => (
-                  <img
-                    key={`${post.id}-${index}`}
-                    src={url}
-                    alt={`Post ${index}`}
-                    className={style.postImage}
-                  />
-                ))}
-
-              <div className={style.postStats}>
-                <span>Likes {post.likesCount || 0}</span>
-                <span>Comments {post.commentsCount || 0}</span>
-                <span>Shares {post.sharesCount || 0}</span>
-              </div>
-            </article>
-          ))
-        )}
+        <ListPost
+          key={userId}
+          sourceUrl={`/api/v1/blogs/${userId}/blogs`}
+          onPostsLoaded={setPosts}
+        />
       </section>
     </div>
   );

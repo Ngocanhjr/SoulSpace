@@ -64,7 +64,7 @@ Các giá trị dưới đây là lựa chọn thiết kế cho demo, có thể 
 | Riêng tư | Giữ `published` boolean; chưa thêm quyền FOLLOWERS. |
 | Bình luận | Không giới hạn cứng độ sâu; UI thụt lề tối đa 3 tầng và chỉ rõ người được trả lời. Counter tính comment/reply chưa xóa, không tính placeholder. |
 | Ảnh | JPEG/PNG; tối đa 10 ảnh/bài, 10 MiB/file, 100 MiB/request. Chọn định dạng giải mã được bằng JDK để không thêm decoder chưa cần. |
-| Session | Idle 30 phút, tuổi tối đa 8 giờ, lưu trong bộ nhớ của một backend. |
+| Session | Idle 1 giờ, không giới hạn cứng tuổi session, lưu trong bộ nhớ của một backend. |
 | Seed chức năng | 8 users, 24 blogs, 48 comments gồm replies, 40 blog likes, 24 comment likes, 12 shares. |
 
 Quyết định ngày 31/10/2026 bỏ giới hạn độ sâu không đổi bảng/cột hoặc các hình ERD. Đã đồng bộ V3,

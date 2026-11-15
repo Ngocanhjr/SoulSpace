@@ -22,9 +22,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class SessionGuardFilter extends OncePerRequestFilter {
 
-    public static final String AUTHENTICATED_AT = "SOULSPACE_AUTHENTICATED_AT";
-
-    private static final long MAX_SESSION_AGE = Duration.ofHours(8).toMillis();
     private static final long RATE_WINDOW = Duration.ofMinutes(5).toMillis();
     private static final long WRITE_WINDOW_MS = Duration.ofMinutes(1).toMillis();
     private static final int MAX_WRITES_PER_WINDOW = 60;
@@ -106,11 +103,6 @@ public class SessionGuardFilter extends OncePerRequestFilter {
     private boolean sessionIsValid(HttpServletRequest request, Authentication authentication) {
         HttpSession session = request.getSession(false);
         if (session == null) {
-            return false;
-        }
-        Object value = session.getAttribute(AUTHENTICATED_AT);
-        if (!(value instanceof Long authenticatedAt)
-                || System.currentTimeMillis() - authenticatedAt >= MAX_SESSION_AGE) {
             return false;
         }
         SessionInformation info = sessionRegistry.getSessionInformation(session.getId());

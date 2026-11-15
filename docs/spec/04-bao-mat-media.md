@@ -18,7 +18,7 @@ Sử dụng cơ chế session của Spring Security/Servlet; chỉ lưu session 
 | SameSite | Lax | Lax |
 | Path / Domain | `/`, không đặt Domain | `/`, không đặt Domain |
 | Cookie bền qua đóng browser | Không đặt Max-Age | Không đặt Max-Age |
-| Idle / tuổi tối đa phía server | 30 phút / 8 giờ | 30 phút / 8 giờ |
+| Idle / tuổi tối đa phía server | 1 giờ / không giới hạn cứng | 1 giờ / không giới hạn cứng |
 
 HTTPS bảo vệ mật khẩu/session trên mạng; HttpOnly hạn chế JavaScript đọc cookie; SameSite hỗ trợ phòng vệ CSRF nhưng vẫn cần token. Người dùng tấn công được bằng XSS có thể thao tác trong browser nên vẫn phải xử lý nội dung an toàn. [OWASP session management](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
 
@@ -29,7 +29,7 @@ Luồng bắt buộc:
 3. Backend dùng AuthenticationManager/PasswordEncoder, thực hiện SessionAuthenticationStrategy để chống session fixation, lưu SecurityContext bằng cơ chế Spring Security và đăng ký session để có thể thu hồi. Với JSON login tự viết, chỉ set context vào thread là chưa đủ để đăng nhập tồn tại ở request tiếp theo.
 4. Response JSON đúng AuthResponse; frontend gọi lại `/auth/csrf`, sau đó `/auth/me` khi cần bootstrap.
 5. Logout/đặt hoặc đổi password/account deletion làm hết hiệu lực session ở server, không chỉ xóa cookie hoặc localStorage; hủy cả pending Google flow và proof xác nhận lại liên quan.
-6. Mỗi request kiểm user còn tồn tại và session chưa hết tuổi tối đa. Session bị đánh dấu thu hồi phải bị chặn ở request tiếp theo. Dùng session registry và cơ chế filter/listener của Spring, kiểm thử cả trường hợp custom JSON login.
+6. Mỗi request kiểm user còn tồn tại và session còn hợp lệ. Servlet container kết thúc session sau 1 giờ không có request; không giới hạn cứng tuổi session tính từ lúc đăng nhập. Session bị đánh dấu thu hồi phải bị chặn ở request tiếp theo. Dùng session registry và cơ chế filter/listener của Spring, kiểm thử cả trường hợp custom JSON login.
 
 Server chỉ chấp nhận session qua cookie; tắt URL rewriting/session ID trên URL. Endpoint API lỗi xác thực trả JSON 401/403, không redirect HTML sang form login. Không bật remember-me trong giai đoạn này. Restart backend làm hết session; chưa có Redis hoặc Spring Session JDBC.
 
