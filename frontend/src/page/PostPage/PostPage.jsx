@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api, apiErrorMessage } from "../../config/api";
+import { useAuth } from "../../config/auth";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import style from "./PostPage.module.css";
 import { toast } from "sonner";
 import {
@@ -12,6 +13,9 @@ import {
   SelectValue,
 } from "@/Components/ui/select";
 import { Button } from "@/Components/ui/button";
+const MAX_IMAGES = 10;
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_CONTENT_LENGTH = 5_000;
 const UploadIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -36,72 +40,74 @@ export default function PostPage() {
   const [files, setFiles] = useState([]);
   const [previewUrls, setPreviewUrls] = useState([]);
   const [progress, setProgress] = useState(0);
-  const [isLoggedIn, setIsLogin] = useState(false);
-  const [data, setData] = useState({});
+  const { user, ready } = useAuth();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const [isSubmit, setIsSubmit] = useState(false);
-  // ✅ Khi chọn file — hiển thị preview
+  useEffect(() => {
+    const urls = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls(urls);
+    return () => urls.forEach((url) => URL.revokeObjectURL(url));
+  }, [files]);
+
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
+    e.target.value = "";
+    if (selectedFiles.length > MAX_IMAGES || selectedFiles.some((file) =>
+      !["image/jpeg", "image/png"].includes(file.type) || file.size > MAX_IMAGE_BYTES)) {
+      toast.error("Chọn tối đa 10 ảnh JPEG/PNG, mỗi ảnh không quá 10 MiB.");
+      return;
+    }
     setFiles(selectedFiles);
-    const urls = selectedFiles.map((file) => URL.createObjectURL(file));
-    setPreviewUrls(urls);
-    e.target.value = ""; // reset input file để chọn lại được cùng file nếu cần
   };
 
   // ✅ Xóa một hình
   const handleRemoveImage = (index) => {
     const newFiles = [...files];
-    const newPreviews = [...previewUrls];
     newFiles.splice(index, 1);
-    newPreviews.splice(index, 1);
     setFiles(newFiles);
-    setPreviewUrls(newPreviews);
 
     if (newFiles.length === 0 && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const checkLogin = async () => {
-    const login = localStorage.getItem("isLoggedIn");
-    const userData= await axios.get(buildApiUrl(`/api/v1/users/${localStorage.getItem("userId")?.replaceAll('"', "")}`))
-    setData(userData.data);
-    setIsLogin(login);
-  };
-
-  useEffect(() => {
-    checkLogin();
-  }, []);
-
-  // Gửi bài viết lên BE
-  const postNews = async (storedUserId, storedUsername) => {
+  const postNews = async () => {
+    if (isSubmit) return;
+    if (!user) {
+      toast.error("Vui lòng đăng nhập để đăng bài.");
+      return;
+    }
+    if ((!body.trim() && files.length === 0) || Array.from(body.trim()).length > MAX_CONTENT_LENGTH) {
+      toast.error("Thêm nội dung hoặc ảnh. Nội dung tối đa 5.000 ký tự.");
+      return;
+    }
+    setIsSubmit(true);
     const loadingToast = toast.loading("Uploading...");
 
     try {
       const formData = new FormData();
-      formData.append("userId", storedUserId);
-      formData.append("username", storedUsername);
       formData.append("content", body);
       formData.append("published", publish ? "true" : "false");
       files.forEach((file) => formData.append("files", file));
 
-      await axios.post(buildApiUrl("/api/v1/blogs"), formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      const response = await api.post("/api/v1/blogs", formData, {
         onUploadProgress: (e) => {
-          const percent = Math.round((e.loaded * 100) / e.total);
+          const percent = e.total ? Math.round((e.loaded * 100) / e.total) : 0;
           setProgress(percent);
         },
       });
 
       toast.success("Post successful!", { id: loadingToast });
-      setProgress(0);
-      navigate("/");
+      if (response.data.failedFiles?.length) {
+        toast.warning(`Bài đã được lưu; ${response.data.failedFiles.length} ảnh chưa tải lên được.`);
+      }
+      navigate(publish ? "/" : "/user");
     } catch (error) {
-      toast.error("Post failure!", { id: loadingToast });
-      console.error("Error posting:", error);
+      toast.error(apiErrorMessage(error, "Không thể đăng bài. Vui lòng thử lại."), { id: loadingToast });
+    } finally {
       setProgress(0);
+      setIsSubmit(false);
     }
   };
 
@@ -109,26 +115,7 @@ export default function PostPage() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-     if (isSubmit) return;
-
-    setIsSubmit(true); // chặn click nút lần 2
-
-    const storedUserId = localStorage.getItem("userId")?.replaceAll('"', "");
-    const storedUsername = localStorage
-      .getItem("username")
-      ?.replaceAll('"', "");
-
-    if (!storedUserId) {
-      toast.error("User not found. Please log in again.");
-      return;
-    }
-
-    if (body.trim() === "" && files.length===0) {
-      toast.warning("Content cannot be blank!");
-      return;
-    }
-
-    postNews(storedUserId, storedUsername);
+    postNews();
   };
 
   return (
@@ -141,18 +128,16 @@ export default function PostPage() {
       </div>
 
       {/* --- Nội dung post --- */}
-      {isLoggedIn ? (
+      {!ready ? <p>Đang kiểm tra phiên đăng nhập...</p> : user ? (
         <>
           <div className={style["post-content"]}>
             <div className={style.header_post}>
               <div className={style.avatar_mini_wrapper}>
-                <img src={data.userAvatarUrl} alt="AvatarUser" className={style.avatar } />
+                <img src={user.avatarUrl || DEFAULT_AVATAR_URL} alt="AvatarUser" className={style.avatar } />
               </div>
               <strong>
                 <span>
-                  {"@" +
-                    localStorage.getItem("username")?.replaceAll('"', "") ||
-                    "unknown"}
+                  @{user.username}
                 </span>
               </strong>
             </div>
@@ -161,6 +146,7 @@ export default function PostPage() {
               placeholder="Start a new post..."
               className={style.input}
               value={body}
+              disabled={isSubmit}
               onChange={(e) => setBody(e.target.value)}
             />
           </div>
@@ -215,6 +201,8 @@ export default function PostPage() {
               <input
                 id="fileInput"
                 type="file"
+                accept="image/jpeg,image/png"
+                disabled={isSubmit}
                 multiple
                 ref={fileInputRef}
                 onChange={handleFileChange}

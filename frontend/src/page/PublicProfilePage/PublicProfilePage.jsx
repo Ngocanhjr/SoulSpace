@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
-import { toast } from "sonner";
+import { api, apiErrorMessage } from "../../config/api";
 import { ArrowLeft } from "lucide-react";
 import style from "./PublicProfilePage.module.css";
-import { assetUrl } from "../../config/assets";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import Timestamp from "../../Components/Timestamp";
 
 export default function PublicProfilePage() {
@@ -15,6 +13,7 @@ export default function PublicProfilePage() {
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
 
   const isSearchMode = useMemo(
     () => location.pathname.startsWith("/search/"),
@@ -22,30 +21,33 @@ export default function PublicProfilePage() {
   );
 
   useEffect(() => {
+    let active = true;
     const fetchProfile = async () => {
       try {
         setLoading(true);
+        setLoadError("");
 
         const [userResponse, postsResponse] = await Promise.all([
-          axios.get(buildApiUrl(`/api/v1/users/${userId}`)),
-          axios.get(buildApiUrl(`/api/v1/blogs/${userId}/blogs`)),
+          api.get(`/api/v1/users/${userId}`),
+          api.get(`/api/v1/blogs/${userId}/blogs`),
         ]);
-
+        if (!active) return;
         setUser(userResponse.data || null);
         setPosts(Array.isArray(postsResponse.data) ? postsResponse.data : []);
       } catch (error) {
-        console.error("Cannot load public profile:", error);
-        toast.error("Không thể tải trang cá nhân");
+        if (!active) return;
+        setLoadError(apiErrorMessage(error, "Không thể tải trang cá nhân."));
         setUser(null);
         setPosts([]);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     if (userId) {
       fetchProfile();
     }
+    return () => { active = false; };
   }, [userId]);
 
   const handleBack = () => {
@@ -62,7 +64,7 @@ export default function PublicProfilePage() {
   }
 
   if (!user) {
-    return <div className={style.stateBox}>Không tìm thấy người dùng.</div>;
+    return <div role="alert" className={style.stateBox}>{loadError || "Không tìm thấy người dùng."}</div>;
   }
 
   return (
@@ -80,7 +82,7 @@ export default function PublicProfilePage() {
 
       <section className={style.profileCard}>
         <img
-          src={user.userAvatarUrl || assetUrl("default-avatar.png")}
+          src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
           alt={user.username || user.fullname || "User avatar"}
           className={style.avatar}
         />
@@ -98,11 +100,11 @@ export default function PublicProfilePage() {
         {posts.length === 0 ? (
           <div className={style.emptyBox}>Người dùng này chưa có bài đăng công khai.</div>
         ) : (
-          [...posts].reverse().map((post) => (
+          posts.map((post) => (
             <article key={post.id} className={style.postCard}>
               <div className={style.postHeader}>
                 <img
-                  src={post.userAvatarUrl || assetUrl("default-avatar.png")}
+                  src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
                   alt={post.username || "User avatar"}
                   className={style.postAvatar}
                 />

@@ -1,26 +1,25 @@
 package ctu.soulspace.service;
 
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
-
-import org.hibernate.exception.ConstraintViolationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import ctu.soulspace.constants.ErrorCode;
+import ctu.soulspace.constants.MediaConstants;
 import ctu.soulspace.dto.request.SignUpRequest;
 import ctu.soulspace.dto.response.LoginUserResponse;
 import ctu.soulspace.dto.response.UserResponse;
 import ctu.soulspace.entities.User;
 import ctu.soulspace.exception.AppException;
 import ctu.soulspace.repositories.UserRepository;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
+import org.hibernate.exception.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
 @Service
 public class UserService {
@@ -60,8 +59,8 @@ public class UserService {
         } catch (DataIntegrityViolationException exception) {
             for (Throwable cause = exception; cause != null; cause = cause.getCause()) {
                 if (cause instanceof ConstraintViolationException violation
-                    && "23505".equals(violation.getSQLState())
-                    && "users_username_key".equals(violation.getConstraintName())) {
+                        && "23505".equals(violation.getSQLState())
+                        && "users_username_key".equals(violation.getConstraintName())) {
                     throw new AppException(ErrorCode.USERNAME_EXISTS);
                 }
             }
@@ -69,14 +68,33 @@ public class UserService {
         }
 
         log.info("event=user_registered user_id={}", saved.getId());
-        return new UserResponse(saved.getId(), saved.getUsername(), saved.getFullname(),
-            saved.getDob(), avatarUrl(saved));
+        return new UserResponse(
+                saved.getId(),
+                saved.getUsername(),
+                saved.getFullname(),
+                saved.getDob(),
+                avatarUrl(saved));
     }
 
     public LoginUserResponse findLoginUser(UUID userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new AppException(ErrorCode.AUTH_REQUIRED));
+        User user =
+                userRepository
+                        .findById(userId)
+                        .orElseThrow(() -> new AppException(ErrorCode.AUTH_REQUIRED));
         return new LoginUserResponse(user.getId(), user.getUsername(), avatarUrl(user));
+    }
+
+    public UserResponse profile(UUID id, UUID viewer) {
+        User user =
+                userRepository
+                        .findById(id)
+                        .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_FOUND));
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getFullname(),
+                id.equals(viewer) ? user.getDob() : null,
+                avatarUrl(user));
     }
 
     private String normalizeUsername(String value) {
@@ -118,16 +136,20 @@ public class UserService {
             throw invalid("password", "Password is required");
         }
         int length = password.codePointCount(0, password.length());
-        if (length < 15 || length > 128
-            || password.getBytes(StandardCharsets.UTF_8).length > 512
-            || password.codePoints().anyMatch(Character::isISOControl)) {
-            throw invalid("password", "Use 15 to 128 characters, at most 512 UTF-8 bytes, without control characters");
+        if (length < 4
+                || length > 128
+                || password.getBytes(StandardCharsets.UTF_8).length > 512
+                || password.codePoints().anyMatch(Character::isISOControl)) {
+            throw invalid(
+                    "password",
+                    "Use 4 to 128 characters, at most 512 UTF-8 bytes, without control characters");
         }
     }
 
     private String avatarUrl(User user) {
-        return user.getAvatarMediaId() == null ? "/default-avatar.png"
-            : "/api/v1/media/" + user.getAvatarMediaId();
+        return user.getAvatarMediaId() == null
+                ? MediaConstants.DEFAULT_AVATAR_URL
+                : "/api/v1/media/" + user.getAvatarMediaId();
     }
 
     private AppException invalid(String field, String message) {

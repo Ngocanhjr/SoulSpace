@@ -1,18 +1,43 @@
 package ctu.soulspace.auth;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import ctu.soulspace.configuration.PasswordConfig;
+import ctu.soulspace.configuration.SecurityConfig;
+import ctu.soulspace.controller.AuthenticationController;
+import ctu.soulspace.controller.UserController;
+import ctu.soulspace.entities.User;
+import ctu.soulspace.exception.GlobalExceptionHandler;
+import ctu.soulspace.repositories.UserRepository;
+import ctu.soulspace.security.AccessDeniedHandler;
+import ctu.soulspace.security.ApiErrorWriter;
+import ctu.soulspace.security.AuthenticationEntryPoint;
+import ctu.soulspace.security.SessionGuardFilter;
+import ctu.soulspace.service.AuthenticationService;
+import ctu.soulspace.service.UserDetailsService;
+import ctu.soulspace.service.UserService;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
-
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint;
@@ -30,41 +55,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-import ctu.soulspace.configuration.PasswordConfig;
-import ctu.soulspace.configuration.SecurityConfig;
-import ctu.soulspace.controller.AuthenticationController;
-import ctu.soulspace.controller.UserController;
-import ctu.soulspace.entities.User;
-import ctu.soulspace.exception.GlobalExceptionHandler;
-import ctu.soulspace.repositories.UserRepository;
-import ctu.soulspace.security.AccessDeniedHandler;
-import ctu.soulspace.security.ApiErrorWriter;
-import ctu.soulspace.security.AuthenticationEntryPoint;
-import ctu.soulspace.security.SessionGuardFilter;
-import ctu.soulspace.service.AuthenticationService;
-import ctu.soulspace.service.UserDetailsService;
-import ctu.soulspace.service.UserService;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-@SpringBootTest(classes = LocalAuthenticationTests.TestApplication.class, properties = {
-    "spring.jackson.deserialization.fail-on-unknown-properties=true",
-    "server.servlet.session.cookie.name=SOULSPACESESSION"
-})
+@SpringBootTest(
+        classes = LocalAuthenticationTests.TestApplication.class,
+        properties = {
+            "spring.jackson.deserialization.fail-on-unknown-properties=true",
+            "server.servlet.session.cookie.name=SOULSPACESESSION"
+        })
 @AutoConfigureMockMvc(print = MockMvcPrint.NONE)
 class LocalAuthenticationTests {
 
@@ -76,28 +75,32 @@ class LocalAuthenticationTests {
     private static final String SIGNUP = "/api/v1/users/sign-up";
 
     @Configuration(proxyBeanMethods = false)
-    @EnableAutoConfiguration(exclude = {DataSourceAutoConfiguration.class, FlywayAutoConfiguration.class})
-    @Import({PasswordConfig.class, SecurityConfig.class, GlobalExceptionHandler.class,
-        AuthenticationController.class, UserController.class, UserService.class,
-        AuthenticationService.class, UserDetailsService.class, ApiErrorWriter.class,
-        AuthenticationEntryPoint.class, AccessDeniedHandler.class})
-    static class TestApplication {
-    }
+    @EnableAutoConfiguration(
+            exclude = {DataSourceAutoConfiguration.class, FlywayAutoConfiguration.class})
+    @Import({
+        PasswordConfig.class,
+        SecurityConfig.class,
+        GlobalExceptionHandler.class,
+        AuthenticationController.class,
+        UserController.class,
+        UserService.class,
+        AuthenticationService.class,
+        UserDetailsService.class,
+        ApiErrorWriter.class,
+        AuthenticationEntryPoint.class,
+        AccessDeniedHandler.class
+    })
+    static class TestApplication {}
 
-    @Autowired
-    private MockMvc mvc;
+    @Autowired private MockMvc mvc;
 
-    @Autowired
-    private JsonMapper mapper;
+    @Autowired private JsonMapper mapper;
 
-    @Autowired
-    private PasswordEncoder encoder;
+    @Autowired private PasswordEncoder encoder;
 
-    @Autowired
-    private SessionRegistry sessions;
+    @Autowired private SessionRegistry sessions;
 
-    @MockitoBean
-    private UserRepository users;
+    @MockitoBean private UserRepository users;
 
     private User user;
     private String clientAddress;
@@ -117,26 +120,40 @@ class LocalAuthenticationTests {
 
     @Test
     void signupNormalizesFieldsHashesPasswordAndDoesNotLogin() throws Exception {
-        when(users.saveAndFlush(any(User.class))).thenAnswer(invocation -> {
-            User saved = invocation.getArgument(0);
-            assertThat(saved.getUsername()).isEqualTo("newuser");
-            assertThat(saved.getFullname()).isEqualTo("Full name");
-            assertThat(saved.getDob()).isEqualTo(LocalDate.of(2000, 1, 1));
-            assertThat(saved.getPasswordHash()).isNotEqualTo(PASSWORD).startsWith("$argon2id$");
-            assertThat(encoder.matches(PASSWORD, saved.getPasswordHash())).isTrue();
-            saved.setId(UUID.randomUUID());
-            return saved;
-        });
+        String password = "aaaa";
+        when(users.saveAndFlush(any(User.class)))
+                .thenAnswer(
+                        invocation -> {
+                            User saved = invocation.getArgument(0);
+                            assertThat(saved.getUsername()).isEqualTo("newuser");
+                            assertThat(saved.getFullname()).isEqualTo("Full name");
+                            assertThat(saved.getDob()).isEqualTo(LocalDate.of(2000, 1, 1));
+                            assertThat(saved.getPasswordHash())
+                                    .isNotEqualTo(password)
+                                    .startsWith("$argon2id$");
+                            assertThat(encoder.matches(password, saved.getPasswordHash())).isTrue();
+                            saved.setId(UUID.randomUUID());
+                            return saved;
+                        });
         CsrfSession csrf = csrf(null);
-        mvc.perform(client(post(SIGNUP)).session(csrf.session())
-                .header("X-CSRF-TOKEN", csrf.token()).contentType(MediaType.APPLICATION_JSON)
-                .content("""
+        mvc.perform(
+                        client(post(SIGNUP))
+                                .session(csrf.session())
+                                .header("X-CSRF-TOKEN", csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        """
                     {"username":" NewUser ","fullname":" Full name ",
-                     "password":"simplepassword123","birthday":"2000-01-01"}
-                    """))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.username").value("newuser"))
-            .andExpect(jsonPath("$.passwordHash").doesNotExist())
-            .andExpect(jsonPath("$.password").doesNotExist());
+                     "password":"%s","birthday":"2000-01-01"}
+                    """
+                                                .formatted(password)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value("newuser"))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist())
+                .andExpect(
+                        jsonPath("$.userAvatarUrl")
+                                .value(ctu.soulspace.constants.MediaConstants.DEFAULT_AVATAR_URL))
+                .andExpect(jsonPath("$.password").doesNotExist());
         mvc.perform(client(get(ME)).session(csrf.session())).andExpect(status().isUnauthorized());
     }
 
@@ -147,27 +164,38 @@ class LocalAuthenticationTests {
         MvcResult result = login(csrf, " USER01 ", PASSWORD, 200);
         MockHttpSession session = (MockHttpSession) result.getRequest().getSession(false);
         assertThat(session.getId()).isNotEqualTo(oldId);
-        SecurityContext context = (SecurityContext) session.getAttribute(
-            HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        SecurityContext context =
+                (SecurityContext)
+                        session.getAttribute(
+                                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
         assertThat(context.getAuthentication().getName()).isEqualTo(user.getId().toString());
         assertThat(context.getAuthentication().getCredentials()).isNull();
         assertThat(sessions.getSessionInformation(session.getId())).isNotNull();
-        mvc.perform(client(get(ME)).session(session)).andExpect(status().isOk())
-            .andExpect(jsonPath("$.authentication").value(true))
-            .andExpect(jsonPath("$.user.id").value(user.getId().toString()))
-            .andExpect(jsonPath("$.user.passwordHash").doesNotExist());
-        mvc.perform(client(get(ME))).andExpect(status().isUnauthorized())
-            .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
+        mvc.perform(client(get(ME)).session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.authentication").value(true))
+                .andExpect(jsonPath("$.user.id").value(user.getId().toString()))
+                .andExpect(jsonPath("$.user.passwordHash").doesNotExist());
+        mvc.perform(client(get(ME)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("AUTH_REQUIRED"));
     }
 
     @Test
     void missingAndIncorrectCsrfAreJson403() throws Exception {
-        mvc.perform(client(post(LOGIN)).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"user01\",\"password\":\"" + PASSWORD + "\"}"))
-            .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+        mvc.perform(
+                        client(post(LOGIN))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"username\":\"user01\",\"password\":\""
+                                                + PASSWORD
+                                                + "\"}"))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
         CsrfSession csrf = csrf(null);
         mvc.perform(client(post(LOGOUT)).session(csrf.session()).header("X-CSRF-TOKEN", "wrong"))
-            .andExpect(status().isForbidden()).andExpect(jsonPath("$.code").value("CSRF_INVALID"));
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("CSRF_INVALID"));
         verify(users, never()).findByUsername(anyString());
     }
 
@@ -190,14 +218,16 @@ class LocalAuthenticationTests {
     @Test
     void logoutRequiresNewCsrfAndRemovesSession() throws Exception {
         CsrfSession old = csrf(null);
-        MockHttpSession session = (MockHttpSession) login(old, "user01", PASSWORD, 200)
-            .getRequest().getSession(false);
+        MockHttpSession session =
+                (MockHttpSession)
+                        login(old, "user01", PASSWORD, 200).getRequest().getSession(false);
         mvc.perform(client(post(LOGOUT)).session(session).header("X-CSRF-TOKEN", old.token()))
-            .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden());
         CsrfSession fresh = csrf(session);
         String id = session.getId();
         mvc.perform(client(post(LOGOUT)).session(session).header("X-CSRF-TOKEN", fresh.token()))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.message").value("Logged out successfully"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Logged out successfully"));
         assertThat(session.isInvalid()).isTrue();
         assertThat(sessions.getSessionInformation(id)).isNull();
         mvc.perform(client(get(ME))).andExpect(status().isUnauthorized());
@@ -206,8 +236,11 @@ class LocalAuthenticationTests {
     @Test
     void guestCanLogoutWithValidCsrf() throws Exception {
         CsrfSession csrf = csrf(null);
-        mvc.perform(client(post(LOGOUT)).session(csrf.session()).header("X-CSRF-TOKEN", csrf.token()))
-            .andExpect(status().isOk());
+        mvc.perform(
+                        client(post(LOGOUT))
+                                .session(csrf.session())
+                                .header("X-CSRF-TOKEN", csrf.token()))
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -221,17 +254,20 @@ class LocalAuthenticationTests {
     @Test
     void sessionOlderThanEightHoursIsRejected() throws Exception {
         MockHttpSession session = authenticatedSession();
-        session.setAttribute(SessionGuardFilter.AUTHENTICATED_AT,
-            System.currentTimeMillis() - Duration.ofHours(8).toMillis());
+        session.setAttribute(
+                SessionGuardFilter.AUTHENTICATED_AT,
+                System.currentTimeMillis() - Duration.ofHours(8).toMillis());
         mvc.perform(client(get(ME)).session(session)).andExpect(status().isUnauthorized());
     }
 
     @Test
     void deletedUserIsRejectedAndDatabaseOutageIsNotMisreportedAsDeleted() throws Exception {
         MockHttpSession session = authenticatedSession();
-        when(users.existsById(user.getId())).thenThrow(new DataAccessResourceFailureException("private details"));
-        mvc.perform(client(get(ME)).session(session)).andExpect(status().isServiceUnavailable())
-            .andExpect(jsonPath("$.code").value("SERVICE_UNAVAILABLE"));
+        when(users.existsById(user.getId()))
+                .thenThrow(new DataAccessResourceFailureException("private details"));
+        mvc.perform(client(get(ME)).session(session))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("SERVICE_UNAVAILABLE"));
         assertThat(session.isInvalid()).isFalse();
         doReturn(false).when(users).existsById(user.getId());
         mvc.perform(client(get(ME)).session(session)).andExpect(status().isUnauthorized());
@@ -242,16 +278,23 @@ class LocalAuthenticationTests {
         CsrfSession csrf = csrf(null);
         String[] bodies = {
             "{\"username\":\"ab\",\"fullname\":\"User\",\"password\":\"simplepassword123\"}",
-            "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"short\"}",
+            "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"abc\"}",
             "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"simplepassword123\",\"role\":\"ADMIN\"}",
             "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"simplepassword123\",\"dob\":\"2000-01-01\",\"birthday\":\"2001-01-01\"}"
         };
         for (String json : bodies) {
-            MvcResult result = mvc.perform(client(post(SIGNUP)).session(csrf.session())
-                    .header("X-CSRF-TOKEN", csrf.token()).contentType(MediaType.APPLICATION_JSON).content(json))
-                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
-                .andReturn();
-            assertThat(result.getResponse().getContentAsString()).doesNotContain(PASSWORD, "short", "ADMIN");
+            MvcResult result =
+                    mvc.perform(
+                                    client(post(SIGNUP))
+                                            .session(csrf.session())
+                                            .header("X-CSRF-TOKEN", csrf.token())
+                                            .contentType(MediaType.APPLICATION_JSON)
+                                            .content(json))
+                            .andExpect(status().isBadRequest())
+                            .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
+                            .andReturn();
+            assertThat(result.getResponse().getContentAsString())
+                    .doesNotContain(PASSWORD, "abc", "ADMIN");
         }
         verify(users, never()).saveAndFlush(any(User.class));
     }
@@ -259,13 +302,24 @@ class LocalAuthenticationTests {
     @Test
     void duplicateUsernameDetectedAtInsertBecomes409() throws Exception {
         SQLException sql = new SQLException("private SQL and values", "23505");
-        when(users.saveAndFlush(any(User.class))).thenThrow(new DataIntegrityViolationException(
-            "private details", new ConstraintViolationException("private details", sql, "users_username_key")));
+        when(users.saveAndFlush(any(User.class)))
+                .thenThrow(
+                        new DataIntegrityViolationException(
+                                "private details",
+                                new ConstraintViolationException(
+                                        "private details", sql, "users_username_key")));
         CsrfSession csrf = csrf(null);
-        mvc.perform(client(post(SIGNUP)).session(csrf.session())
-                .header("X-CSRF-TOKEN", csrf.token()).contentType(MediaType.APPLICATION_JSON)
-                .content("{\"username\":\"newuser\",\"fullname\":\"User\",\"password\":\"" + PASSWORD + "\"}"))
-            .andExpect(status().isConflict()).andExpect(jsonPath("$.code").value("USERNAME_EXISTS"));
+        mvc.perform(
+                        client(post(SIGNUP))
+                                .session(csrf.session())
+                                .header("X-CSRF-TOKEN", csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"username\":\"newuser\",\"fullname\":\"User\",\"password\":\""
+                                                + PASSWORD
+                                                + "\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("USERNAME_EXISTS"));
     }
 
     @Test
@@ -280,9 +334,40 @@ class LocalAuthenticationTests {
         verify(users, never()).findByUsername("user01");
     }
 
+    @Test
+    void authenticatedBusinessWritesAreLimitedBeforeReachingTheController() throws Exception {
+        MockHttpSession session = authenticatedSession();
+        var context =
+                (SecurityContext)
+                        session.getAttribute(
+                                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        org.springframework.security.core.context.SecurityContextHolder.setContext(context);
+        var filter = new SessionGuardFilter(sessions, users, new ApiErrorWriter(mapper));
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        var response = new org.springframework.mock.web.MockHttpServletResponse();
+        try {
+            for (int attempt = 0; attempt <= 60; attempt++) {
+                var request =
+                        new org.springframework.mock.web.MockHttpServletRequest(
+                                "POST", "/api/v1/blogs/test/comments");
+                request.setServletPath("/api/v1/blogs/test/comments");
+                request.setSession(session);
+                response = new org.springframework.mock.web.MockHttpServletResponse();
+                filter.doFilter(request, response, (incoming, outgoing) -> calls.incrementAndGet());
+            }
+            assertThat(calls.get()).isEqualTo(60);
+            assertThat(response.getStatus()).isEqualTo(429);
+            assertThat(response.getHeader("Retry-After")).isEqualTo("60");
+            assertThat(mapper.readTree(response.getContentAsString()).get("code").asText())
+                    .isEqualTo("RATE_LIMITED");
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+        }
+    }
+
     private MockHttpSession authenticatedSession() throws Exception {
-        return (MockHttpSession) login(csrf(null), "user01", PASSWORD, 200)
-            .getRequest().getSession(false);
+        return (MockHttpSession)
+                login(csrf(null), "user01", PASSWORD, 200).getRequest().getSession(false);
     }
 
     private CsrfSession csrf(MockHttpSession session) throws Exception {
@@ -291,29 +376,38 @@ class LocalAuthenticationTests {
             request.session(session);
         }
         MvcResult result = mvc.perform(request).andExpect(status().isOk()).andReturn();
-        return new CsrfSession((MockHttpSession) result.getRequest().getSession(false),
-            body(result).get("token").asText());
+        return new CsrfSession(
+                (MockHttpSession) result.getRequest().getSession(false),
+                body(result).get("token").asText());
     }
 
-    private MvcResult login(CsrfSession csrf, String username, String password, int status) throws Exception {
-        String json = mapper.writeValueAsString(java.util.Map.of("username", username, "password", password));
-        return mvc.perform(client(post(LOGIN)).session(csrf.session())
-                .header("X-CSRF-TOKEN", csrf.token()).contentType(MediaType.APPLICATION_JSON).content(json))
-            .andExpect(status().is(status)).andReturn();
+    private MvcResult login(CsrfSession csrf, String username, String password, int status)
+            throws Exception {
+        String json =
+                mapper.writeValueAsString(
+                        java.util.Map.of("username", username, "password", password));
+        return mvc.perform(
+                        client(post(LOGIN))
+                                .session(csrf.session())
+                                .header("X-CSRF-TOKEN", csrf.token())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json))
+                .andExpect(status().is(status))
+                .andReturn();
     }
 
     private MockHttpServletRequestBuilder client(MockHttpServletRequestBuilder request) {
-        return request.with(servletRequest -> {
-            servletRequest.setRemoteAddr(clientAddress);
-            servletRequest.setServletPath(servletRequest.getRequestURI());
-            return servletRequest;
-        });
+        return request.with(
+                servletRequest -> {
+                    servletRequest.setRemoteAddr(clientAddress);
+                    servletRequest.setServletPath(servletRequest.getRequestURI());
+                    return servletRequest;
+                });
     }
 
     private JsonNode body(MvcResult result) throws Exception {
         return mapper.readTree(result.getResponse().getContentAsString());
     }
 
-    private record CsrfSession(MockHttpSession session, String token) {
-    }
+    private record CsrfSession(MockHttpSession session, String token) {}
 }

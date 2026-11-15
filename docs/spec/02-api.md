@@ -29,7 +29,7 @@ Request chỉ bind vào DTO có danh sách field cho phép. Các field compatibi
 
 `LoginUser.avatarUrl` giữ tên mà SignIn đang đọc; profile dùng `userAvatarUrl`. `dob` chỉ có giá trị trong response xem/sửa chính mình; danh sách users và hồ sơ người khác trả null. `likedUserIds` chứa tối đa ID viewer; tổng like lấy từ `likesCount`.
 
-`imageContentUrls` là URL cùng origin dạng `/api/v1/media/{assetId}`. Avatar upload cũng được phục vụ qua route này; avatar mặc định dùng tài nguyên tĩnh của frontend. Các field vẫn là string URL nhưng không lộ URL có chữ ký hoặc thông tin tài khoản Cloudinary.
+`imageContentUrls` là URL cùng origin dạng `/api/v1/media/{assetId}`. Avatar upload cũng được phục vụ qua route này. Avatar mặc định là ngoại lệ: dùng URL Cloudinary công khai đã chốt trong USR01, được khai báo tại `MediaConstants.DEFAULT_AVATAR_URL` và `config/assets.js`. Không trả signed URL hoặc credential cho ảnh cá nhân/bài viết; ảnh mặc định công khai không mang quyền sở hữu của một user.
 
 CommentDTO có isDeleted=true khi deleted_at khác NULL; content khi đó luôn null, likesCount=0 và likedUserIds=[]. Xóa riêng comment giữ thông tin tác giả còn tồn tại; xóa tài khoản gỡ tác giả nên userId/username/userAvatarUrl đều null. Frontend dựng placeholder, không hiển thị chuỗi "null" hoặc bỏ mất node/replies. updatedAt/version chỉ đổi khi sửa nội dung, xóa hoặc gỡ tác giả, không đổi khi like. Không trả deletedAt vì isDeleted đã thể hiện trạng thái cần dùng.
 
@@ -41,7 +41,7 @@ Ví dụ đăng nhập thành công:
   "user": {
     "id": "10000000-0000-4000-8000-000000000001",
     "username": "demo01",
-    "avatarUrl": "/default-avatar.png"
+    "avatarUrl": "https://res.cloudinary.com/drwznlrbn/image/upload/v1762008409/9db2e9f0-8423-481e-8bd6-e2f911e15097.jpg"
   },
   "message": "Log in successfully"
 }
@@ -54,7 +54,7 @@ Ví dụ `BlogDTO`:
   "id": "20000000-0000-4000-8000-000000000001",
   "userId": "10000000-0000-4000-8000-000000000001",
   "username": "demo01",
-  "userAvatarUrl": "/default-avatar.png",
+  "userAvatarUrl": "https://res.cloudinary.com/drwznlrbn/image/upload/v1762008409/9db2e9f0-8423-481e-8bd6-e2f911e15097.jpg",
   "content": "Một bài viết demo",
   "imageContentUrls": [],
   "likesCount": 2,
@@ -192,7 +192,7 @@ M02 giữ HTTP 200 khi có lỗi upstream từng file; `success` chỉ true nế
 | 400 | `VALIDATION_FAILED`, `INVALID_ID`, `INVALID_MEDIA_REFERENCE` | Input hoặc liên kết không hợp lệ; độ sâu reply không phải lỗi validation. |
 | 401 | `AUTH_REQUIRED`, `INVALID_CREDENTIALS` | Hết session, chưa đăng nhập, hoặc sai password xác nhận lại. |
 | 403 | `FORBIDDEN`, `ACTOR_MISMATCH`, `CSRF_INVALID` | Không có quyền ghi/owner, giả userId, hoặc CSRF không hợp lệ. |
-| 404 | `RESOURCE_NOT_FOUND` | Không tồn tại hoặc tài nguyên bị che do privacy. |
+| 404 | `RESOURCE_NOT_FOUND`, `USER_NOT_FOUND`, `BLOG_NOT_FOUND`, `COMMENT_NOT_FOUND`, `MEDIA_NOT_FOUND` | Không tồn tại hoặc tài nguyên bị che do privacy; bài private trả cùng BLOG_NOT_FOUND như bài không tồn tại. |
 | 409 | `USERNAME_EXISTS`, `ALREADY_SHARED`, `MEDIA_IN_USE`, `COMMENT_DELETED`, `CONCURRENT_MODIFICATION` | Node đã xóa, expectedVersion cũ, hoặc xung đột transaction không hoàn tất sau retry nội bộ; version cũ không được tự retry bằng dữ liệu mới. |
 | 413 | `PAYLOAD_TOO_LARGE` | Vượt quota kích thước. |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | MIME/định dạng ảnh không được phép. |

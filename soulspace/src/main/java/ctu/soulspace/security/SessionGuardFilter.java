@@ -1,27 +1,24 @@
 package ctu.soulspace.security;
 
-import java.io.IOException;
-import java.time.Duration;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
+import ctu.soulspace.constants.ErrorCode;
+import ctu.soulspace.repositories.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.dao.DataAccessException;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.session.SessionInformation;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import ctu.soulspace.constants.ErrorCode;
-import ctu.soulspace.repositories.UserRepository;
 
 public class SessionGuardFilter extends OncePerRequestFilter {
 
@@ -29,27 +26,33 @@ public class SessionGuardFilter extends OncePerRequestFilter {
 
     private static final long MAX_SESSION_AGE = Duration.ofHours(8).toMillis();
     private static final long RATE_WINDOW = Duration.ofMinutes(5).toMillis();
+    private static final long WRITE_WINDOW_MS = Duration.ofMinutes(1).toMillis();
+    private static final int MAX_WRITES_PER_WINDOW = 60;
     private static final int MAX_ATTEMPTS = 10;
-    private static final int MAX_IP_ENTRIES = 4096;
+    private static final int MAX_RATE_ENTRIES = 4096;
 
     private final SessionRegistry sessionRegistry;
     private final UserRepository userRepository;
     private final ApiErrorWriter errors;
     private final Map<String, AttemptWindow> attempts = new HashMap<>();
+    private final Map<String, AttemptWindow> writes = new HashMap<>();
 
-    public SessionGuardFilter(SessionRegistry sessionRegistry, UserRepository userRepository,
-                              ApiErrorWriter errors) {
+    public SessionGuardFilter(
+            SessionRegistry sessionRegistry, UserRepository userRepository, ApiErrorWriter errors) {
         this.sessionRegistry = sessionRegistry;
         this.userRepository = userRepository;
         this.errors = errors;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException {
+    protected void doFilterInternal(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        boolean authenticated = authentication != null && authentication.isAuthenticated()
-            && !(authentication instanceof AnonymousAuthenticationToken);
+        boolean authenticated =
+                authentication != null
+                        && authentication.isAuthenticated()
+                        && !(authentication instanceof AnonymousAuthenticationToken);
 
         boolean valid = true;
         if (authenticated) {
@@ -68,18 +71,32 @@ public class SessionGuardFilter extends OncePerRequestFilter {
             }
             SecurityContextHolder.clearContext();
 
-            boolean csrfRequest = "GET".equals(request.getMethod())
-                && "/api/v1/auth/csrf".equals(request.getServletPath());
-            boolean logoutRequest = "POST".equals(request.getMethod())
-                && "/api/v1/auth/log-out".equals(request.getServletPath());
+            boolean csrfRequest =
+                    "GET".equals(request.getMethod())
+                            && "/api/v1/auth/csrf".equals(request.getServletPath());
+            boolean logoutRequest =
+                    "POST".equals(request.getMethod())
+                            && "/api/v1/auth/log-out".equals(request.getServletPath());
             if (!csrfRequest && !logoutRequest) {
                 errors.write(request, response, ErrorCode.AUTH_REQUIRED);
                 return;
             }
         }
 
-        if (isAuthenticationAttempt(request) && !allowAttempt(request.getRemoteAddr())) {
-            response.setHeader("Retry-After", "300");
+        if (isAuthenticationAttempt(request)
+                && !allowAttempt(attempts, request.getRemoteAddr(), RATE_WINDOW, MAX_ATTEMPTS)) {
+            response.setHeader(
+                    "Retry-After", Long.toString(Duration.ofMillis(RATE_WINDOW).toSeconds()));
+            errors.write(request, response, ErrorCode.RATE_LIMITED);
+            return;
+        }
+        if (authenticated
+                && valid
+                && isBusinessWrite(request)
+                && !allowAttempt(
+                        writes, authentication.getName(), WRITE_WINDOW_MS, MAX_WRITES_PER_WINDOW)) {
+            response.setHeader(
+                    "Retry-After", Long.toString(Duration.ofMillis(WRITE_WINDOW_MS).toSeconds()));
             errors.write(request, response, ErrorCode.RATE_LIMITED);
             return;
         }
@@ -93,7 +110,7 @@ public class SessionGuardFilter extends OncePerRequestFilter {
         }
         Object value = session.getAttribute(AUTHENTICATED_AT);
         if (!(value instanceof Long authenticatedAt)
-            || System.currentTimeMillis() - authenticatedAt >= MAX_SESSION_AGE) {
+                || System.currentTimeMillis() - authenticatedAt >= MAX_SESSION_AGE) {
             return false;
         }
         SessionInformation info = sessionRegistry.getSessionInformation(session.getId());
@@ -114,22 +131,32 @@ public class SessionGuardFilter extends OncePerRequestFilter {
             return false;
         }
         String path = request.getServletPath();
-        return "/api/v1/auth/log-in".equals(path)
-            || "/api/v1/users/sign-up".equals(path);
+        return "/api/v1/auth/log-in".equals(path) || "/api/v1/users/sign-up".equals(path);
     }
 
-    private synchronized boolean allowAttempt(String address) {
+    private boolean isBusinessWrite(HttpServletRequest request) {
+        if (!java.util.Set.of("POST", "PUT", "PATCH", "DELETE").contains(request.getMethod()))
+            return false;
+        String path = request.getServletPath();
+        return path.equals("/api/v1/blogs")
+                || path.startsWith("/api/v1/blogs/")
+                || path.equals("/api/v1/blogs-details")
+                || (path.startsWith("/api/v1/users/") && path.contains("/shared-blogs/"));
+    }
+
+    private synchronized boolean allowAttempt(
+            Map<String, AttemptWindow> windows, String key, long windowMs, int limit) {
         long now = System.currentTimeMillis();
-        attempts.entrySet().removeIf(entry -> now - entry.getValue().startedAt >= RATE_WINDOW);
-        AttemptWindow window = attempts.get(address);
+        windows.entrySet().removeIf(entry -> now - entry.getValue().startedAt >= windowMs);
+        AttemptWindow window = windows.get(key);
         if (window == null) {
-            if (attempts.size() >= MAX_IP_ENTRIES) {
+            if (windows.size() >= MAX_RATE_ENTRIES) {
                 return false;
             }
             window = new AttemptWindow(now);
-            attempts.put(address, window);
+            windows.put(key, window);
         }
-        if (window.count >= MAX_ATTEMPTS) {
+        if (window.count >= limit) {
             return false;
         }
         window.count++;

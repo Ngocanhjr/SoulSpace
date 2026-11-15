@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { AxiosError } from "axios";
+import { DEFAULT_AVATAR_URL } from "./assets.js";
 
 test("auth sends CSRF and cookies, refreshes tokens, and only clears auth on AUTH_REQUIRED", async () => {
   const store = new Map();
@@ -12,7 +13,7 @@ test("auth sends CSRF and cookies, refreshes tokens, and only clears auth on AUT
   };
   const { api } = await import("./api.js");
   const { signIn, signOut, refreshSession } = await import("./auth.js");
-  const user = { id: "test-user", username: "user01", avatarUrl: "/default-avatar.png" };
+  const user = { id: "test-user", username: "user01", avatarUrl: DEFAULT_AVATAR_URL };
   let token = "before-login";
   let loggedIn = false;
   let failureCode = null;

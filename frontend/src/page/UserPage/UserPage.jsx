@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import { buildApiUrl, apiErrorMessage } from "../../config/api";
-import { signOut } from "../../config/auth";
-import { assetUrl } from "../../config/assets";
+import { useEffect, useState, useRef, useCallback } from "react";
+import { api, buildApiUrl, apiErrorMessage } from "../../config/api";
+import { signOut, useAuth } from "../../config/auth";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import Timestamp from "../../Components/Timestamp";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -41,6 +40,8 @@ import {
 } from "@/Components/ui/select";
 
 export default function UserPage() {
+  const { user: currentUser, ready } = useAuth();
+  const currentUserId = currentUser?.id;
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
   const [showEditAvt, setShowEditAvt] = useState(false);
@@ -51,6 +52,7 @@ export default function UserPage() {
   const [isDelete, setIsDelete] = useState(false);
   const [userBlog, setUserBlogs] = useState([]);
   const [sharedBlogs, setSharedBlogs] = useState([]);
+  const [sharedError, setSharedError] = useState("");
   const [editingContent, setEditingContent] = useState("");
   const [editingImage, setEditingImage] = useState([]);
   const [publish, setPublish] = useState(true);
@@ -60,37 +62,25 @@ export default function UserPage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const fetchDataUser = async () => {
+  const fetchDataUser = useCallback(async () => {
+    if (!currentUserId) return;
     try {
-      const userId = String(localStorage.getItem("userId")).replaceAll('"', "");
-      if (!userId) {
-        setIsLogin(false);
-        localStorage.removeItem("isLoggedIn");
-        console.error("User ID not found in LocalStorage.");
-        return;
-      }
+      const userId = currentUserId;
 
-      const tempData = await axios.get(
+      const tempData = await api.get(
         buildApiUrl(`/api/v1/users/${userId}`)
       );
 
-      const islogined = Boolean(localStorage.getItem("isLoggedIn"));
-      setIsLogin(islogined);
-
-      if (!islogined) {
-        return;
-      }
-
+      setIsLogin(true);
+      setProfileError("");
       setDataUser(tempData.data);
-      console.log("Lấy dữ liệu user thành công");
     } catch (error) {
-      // A missing profile endpoint does not mean that the login session expired.
-      setIsLogin(localStorage.getItem("isLoggedIn") === "true");
+      setIsLogin(Boolean(currentUserId));
       setProfileError(apiErrorMessage(error, "Profile is not available yet."));
     }
-  };
+  }, [currentUserId]);
 
-  const deleteDataUser = async () => {
+  const deleteDataUser = useCallback(async () => {
     try {
       const userId = String(localStorage.getItem("userId")).replaceAll('"', "");
       if (!userId) {
@@ -98,7 +88,7 @@ export default function UserPage() {
         return;
       }
 
-      await axios.delete(buildApiUrl(`/api/v1/users/${userId}`));
+      await api.delete(buildApiUrl(`/api/v1/users/${userId}`));
       console.log("Xóa user thành công");
       toast.success("Delete user successfully!");
       localStorage.removeItem("isLoggedIn");
@@ -108,16 +98,16 @@ export default function UserPage() {
       console.log("Không thể xóa user", error);
       toast.error("Cannot delete user");
     }
-  };
+  }, [navigate]);
 
-  const getUserPost = async () => {
+  const getUserPost = useCallback(async () => {
     try {
-      const userId = String(localStorage.getItem("userId")).replaceAll('"', "");
+      const userId = currentUserId;
       if (!userId) {
         return;
       }
 
-      const blogs = await axios.get(
+      const blogs = await api.get(
         buildApiUrl(`/api/v1/blogs/${userId}/all`)
       );
 
@@ -133,16 +123,17 @@ export default function UserPage() {
       console.log("Khong the lay cai bai post cua user", error);
       toast.error("Cannot get user's blogs");
     }
-  };
+  }, [currentUserId]);
 
-  const getSharedBlogs = async () => {
+  const getSharedBlogs = useCallback(async () => {
+    setSharedError("");
     try {
-      const userId = String(localStorage.getItem("userId")).replaceAll('"', "");
+      const userId = currentUserId;
       if (!userId) {
         return;
       }
 
-      const response = await axios.get(
+      const response = await api.get(
         buildApiUrl(`/api/v1/users/${userId}/shared-blogs`)
       );
 
@@ -152,31 +143,34 @@ export default function UserPage() {
         setSharedBlogs([]);
       }
     } catch (error) {
-      console.log("Khong the lay bai viet da chia se", error);
+      setSharedError(apiErrorMessage(error, "Không thể tải bài đã chia sẻ."));
       setSharedBlogs([]);
     }
-  };
+  }, [currentUserId]);
 
   useEffect(() => {
-    const init = async () => {
-      await fetchDataUser();
-    };
-    init();
-  }, []);
+    if (!ready) return;
+    setIsLogin(Boolean(currentUserId));
+    if (currentUserId) fetchDataUser();
+    else {
+      setDataUser(null);
+      setUserBlogs([]);
+    }
+  }, [ready, currentUserId, fetchDataUser]);
 
   useEffect(() => {
     if (dataUser && isLogin) {
       getUserPost();
       getSharedBlogs();
     }
-  }, [dataUser, isLogin]);
+  }, [dataUser, isLogin, getUserPost, getSharedBlogs]);
 
   useEffect(() => {
     if (isDelete) {
       deleteDataUser();
       setIsDelete(false);
     }
-  }, [isDelete]);
+  }, [isDelete, deleteDataUser]);
 
   const handleSave = (updatedUser) => {
     setDataUser(updatedUser);
@@ -231,7 +225,7 @@ export default function UserPage() {
   const handleDeletePost = async (blogId) => {
     const loadingToast = toast.loading("Deleting blog...");
     try {
-      await axios.delete(buildApiUrl(`/api/v1/blogs/${blogId}`));
+      await api.delete(buildApiUrl(`/api/v1/blogs/${blogId}`));
       console.log("Xoa blog thanh cong");
       toast.success("Delete blog successful", { id: loadingToast });
       setUserBlogs((currentBlogs) =>
@@ -246,10 +240,7 @@ export default function UserPage() {
   const handleRemoveSharedPost = async (blogId) => {
     const loadingToast = toast.loading("Removing shared post...");
     try {
-      const userId = String(localStorage.getItem("userId") || "").replaceAll(
-        '"',
-        ""
-      );
+      const userId = currentUserId;
 
       if (!userId) {
         toast.error("User session error. Please log in again.", {
@@ -258,7 +249,7 @@ export default function UserPage() {
         return;
       }
 
-      await axios.delete(
+      await api.delete(
         buildApiUrl(`/api/v1/users/${userId}/shared-blogs/${blogId}`)
       );
 
@@ -288,8 +279,8 @@ export default function UserPage() {
         formData.append("newImages", file);
       });
 
-      await axios.patch(buildApiUrl("/api/v1/blogs-details"), formData);
-      await axios.patch(buildApiUrl("/api/v1/blogs/access"), {
+      await api.patch(buildApiUrl("/api/v1/blogs-details"), formData);
+      await api.patch(buildApiUrl("/api/v1/blogs/access"), {
         blogId: blogId,
         published: publish,
       });
@@ -308,6 +299,8 @@ export default function UserPage() {
   const handleAvatarUpdate = (newUserData) => {
     setDataUser(newUserData);
   };
+
+  if (!ready) return <p>Đang kiểm tra phiên đăng nhập...</p>;
 
   return (
     <div className="user-page">
@@ -390,20 +383,20 @@ export default function UserPage() {
                     getSharedBlogs();
                   }}
                 >
-                  replay ({sharedBlogs.length})
+                  Chia sẻ ({sharedBlogs.length})
                 </button>
               </div>
 
               <div className="layout">
                 {activeTab === "posts" ? (
                   userBlog.length > 0 ? (
-                    [...userBlog].reverse().map((post) => (
+                    userBlog.map((post) => (
                       <div key={post.id} className="box">
                         <div className="post-content">
                           <div className="header_post">
                             <div className="avatar_mini_wrapper">
                               <img
-                                src={post.userAvatarUrl || assetUrl("default-avatar.png")}
+                                src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
                                 alt="User Avatar"
                                 className="avatar"
                               />
@@ -414,6 +407,7 @@ export default function UserPage() {
                                 {post.username ? "@" + post.username : "Unknown user"}
                               </div>
                               <Timestamp value={post.createdAt} className="post-time" />
+                              <span>{post.published ? "Công khai" : "Riêng tư"}</span>
                             </div>
 
                             <div className="modifileButton">
@@ -642,6 +636,8 @@ export default function UserPage() {
                   ) : (
                     <div className="empty-state">Bạn chưa có bài viết nào.</div>
                   )
+                ) : sharedError ? (
+                  <div role="alert"><p>{sharedError}</p><button type="button" onClick={getSharedBlogs}>Thử lại</button></div>
                 ) : sharedBlogs.length > 0 ? (
                   sharedBlogs.map((post, index) => (
                     <div
@@ -663,7 +659,7 @@ export default function UserPage() {
                         <div className="header_post">
                           <div className="avatar_mini_wrapper">
                             <img
-                              src={post.userAvatarUrl || assetUrl("default-avatar.png")}
+                              src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
                               alt="User Avatar"
                               className="avatar"
                             />

@@ -93,7 +93,7 @@ export default function SignUp() {
         </div>
 
         <small className="password-hint">
-          15–128 characters. Spaces are allowed.
+          4–128 characters. Spaces are allowed.
         </small>
 
         <button

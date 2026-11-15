@@ -5,7 +5,7 @@ import { buildApiUrl } from "../../config/api";
 import { toast } from "sonner";
 import { Search, X } from "lucide-react";
 import style from "./SearchPage.module.css";
-import { assetUrl } from "../../config/assets";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 
 const PEOPLE_SUGGESTION_LIMIT = 4;
 const POST_SUGGESTION_LIMIT = 4;
@@ -193,7 +193,7 @@ export default function SearchPage() {
                       onClick={() => handleOpenProfile(user.id)}
                     >
                       <img
-                        src={user.userAvatarUrl || assetUrl("default-avatar.png")}
+                        src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
                         alt={user.username || user.fullname || "User avatar"}
                         className={style.avatar}
                       />
@@ -222,7 +222,7 @@ export default function SearchPage() {
                         src={
                           post.imageContentUrls?.[0] ||
                           post.userAvatarUrl ||
-                          assetUrl("default-avatar.png")
+                          DEFAULT_AVATAR_URL
                         }
                         alt={post.content || "Post preview"}
                         className={style.previewImage}
@@ -263,7 +263,7 @@ export default function SearchPage() {
                       onClick={() => handleOpenProfile(user.id)}
                     >
                       <img
-                        src={user.userAvatarUrl || assetUrl("default-avatar.png")}
+                        src={user.userAvatarUrl || DEFAULT_AVATAR_URL}
                         alt={user.username || user.fullname || "User avatar"}
                         className={style.avatar}
                       />
@@ -291,7 +291,7 @@ export default function SearchPage() {
                         src={
                           post.imageContentUrls?.[0] ||
                           post.userAvatarUrl ||
-                          assetUrl("default-avatar.png")
+                          DEFAULT_AVATAR_URL
                         }
                         alt={post.content || "Post preview"}
                         className={style.previewImage}
