@@ -23,7 +23,7 @@ Tài nguyên private được che bằng 404 ở các route đọc/ảnh/tương
 
 ## Tài khoản và hồ sơ
 
-**USR01 đăng ký.** Nhận username, fullname, ngày sinh và mật khẩu; canonical hóa username bằng trim và lowercase, kiểm trùng ở constraint; băm mật khẩu rồi tạo user. Lỗi trùng trả 409. Không tự đăng nhập sau đăng ký, phù hợp luồng frontend hiện tại. Avatar mặc định là tài nguyên tĩnh của dự án, không gắn với tài khoản Cloudinary legacy.
+**USR01 đăng ký.** Nhận username, fullname, ngày sinh và mật khẩu; canonical hóa username bằng trim và lowercase, kiểm trùng ở constraint; băm mật khẩu rồi tạo user. Lỗi trùng trả 409. Không tự đăng nhập sau đăng ký, phù hợp luồng frontend hiện tại. Theo quyết định ngày 15/11/2026, avatar mặc định dùng ảnh công khai do chủ dự án cung cấp: `https://res.cloudinary.com/drwznlrbn/image/upload/v1762008409/9db2e9f0-8423-481e-8bd6-e2f911e15097.jpg`. User chưa có avatar riêng giữ `avatar_media_id=NULL`; backend/frontend suy ra cùng URL mặc định. Không tạo media asset riêng cho mỗi user và không đưa ảnh mặc định dùng chung vào cleanup cá nhân.
 
 **USR02 đăng nhập.** Xác thực bằng Spring Security; tạo/đổi session ID và trả JSON tương thích. Sai username, mật khẩu hoặc tài khoản chưa có password dùng cùng thông báo, 401; trường hợp hash NULL vẫn kiểm dummy hash. Reload frontend dùng `/auth/me` để lấy trạng thái thật. Đăng xuất gọi backend để hủy session rồi mới xóa trạng thái UI.
 

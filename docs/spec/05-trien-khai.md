@@ -74,7 +74,7 @@ frontend/src/config/api.js
 frontend/src/config/http.js
 frontend/src/App.jsx
 frontend/src/Components/ và frontend/src/page/     # caller nêu trong hợp đồng API
-frontend/public/default-avatar.svg
+frontend/src/config/assets.js                     # URL avatar mặc định công khai
 frontend/vite.config.js
 docs/spec/                         # bộ tài liệu hiện tại
 ```
@@ -180,6 +180,22 @@ Compose bind cổng database vào `127.0.0.1`, có healthcheck, volume lưu dữ
 
 ## Bàn giao
 
+### Triển khai xác thực local
+
+UI đăng ký/đăng nhập dùng Axios client chung có cookie và CSRF. Vite dev/preview proxy `/api` sang backend `127.0.0.1:8080`; VITE_API_BASE_URL để trống khi dùng proxy. Tải lại trang gọi `/auth/me` để xác nhận session, localStorage chỉ giữ dữ liệu tương thích cho những trang chưa migrate. Sidebar hiển thị username và nút logout gọi backend. Tạo/đọc bài và tương tác bình luận/like/chia sẻ được triển khai theo các mốc ngày 15/11/2026 bên dưới; sửa/xóa bài và sửa hồ sơ/avatar vẫn cần triển khai riêng.
+
+Log backend có các event user_registered/login_success/authentication_rejected/logout; event thành công có UUID nội bộ, không ghi mật khẩu/hash/token/session ID. Profile db-local bật DEBUG riêng JpaTransactionManager để xem ranh giới transaction, không bật log SQL bind parameters. Các form xác thực không log toàn bộ lỗi Axios. SQL chỉ đọc để xem user mới và metadata nằm tại `infra/postgres/check-auth.sql` (chạy bằng psql, truyền `-v username=testuser01`).
+
+Source đã có `UserRepository`, DTO request/response, `UserService`, `UserDetailsService`, `AuthenticationService`, cấu hình encoder Argon2id và security chain. API hiện triển khai U01 đăng ký và A01–A04 (đăng nhập, CSRF, user hiện tại và đăng xuất). Đăng ký chỉ ghi một hàng users, dùng transaction của repository; không bọc thêm TransactionTemplate. Băm mật khẩu trước thao tác ghi, UNIQUE username là chốt chống trùng đồng thời. Không dùng blocklist theo quyết định hiện tại.
+
+Controller đăng nhập gọi SessionAuthenticationStrategy, đổi session ID, xóa CSRF cũ, đăng ký session rồi lưu SecurityContext qua repository. SessionGuardFilter kiểm tuổi tối đa 8 giờ, trạng thái thu hồi và user còn tồn tại; idle timeout 30 phút do servlet container quản lý. Runtime lỗi database trả 503, không coi là user đã bị xóa. Cần lấy lại CSRF sau login/logout. Trạng thái session/rate limit lưu trong bộ nhớ của một backend.
+
+Rate limit local dùng chung cho đăng nhập/đăng ký: 10 request trong 5 phút trên mỗi remote IP, tối đa 4096 IP đang theo dõi; request vượt hạn mức trả 429 và Retry-After. Các client sau cùng NAT/proxy chia sẻ hạn mức; chưa nhận IP từ X-Forwarded-For. Exception nghiệp vụ và thông báo dùng ErrorCode/constant; filter bảo mật có handler riêng dùng cùng ErrorResponse. Mật khẩu/hash không nằm trong DTO response, không được đưa vào log lỗi. JSON ngoài danh sách field được phép bị từ chối.
+
+`LocalAuthenticationTests` chạy toàn bộ security filter cùng encoder Argon2id thật và repository giả lập, không kết nối database hoặc chạy Flyway. Chạy từ thư mục `soulspace`: `mvn -Dtest=LocalAuthenticationTests test` (hoặc Maven Wrapper đã hoạt động). Bộ test này không thay thế kiểm thử PostgreSQL, constraint race, idle timeout của container, cookie trên browser hay tích hợp frontend. Frontend cần gửi cookie/CSRF theo hợp đồng trước khi coi luồng giao diện hoạt động. Google OIDC, đổi mật khẩu/xóa tài khoản và thu hồi toàn bộ session từ các nghiệp vụ đó chưa triển khai.
+
+Kiểm tra ngày 14/11/2026: Maven trên Java 21 biên dịch thành công; 12 test trong LocalAuthenticationTests đạt. Bao gồm đăng ký/hash/DTO an toàn, login và context giữa request, session ID mới, CSRF, logout, thu hồi/giới hạn tuổi session, tài khoản đã xóa, lỗi database 503, lỗi đăng nhập chung, validation/field lạ, chuyển lỗi unique giả lập thành 409 và rate limit. Lỗi unique ở đây là exception do mock tạo, chưa chứng minh constraint hoặc race trên PostgreSQL thật.
+
 Cần source, secret examples, Flyway, seed runner, ERD/API cập nhật, bộ test và báo cáo kết quả riêng cho Docker, Neon, media thật và LAN. Runbook phải nêu đúng cách nạp env, xem job DEAD và requeue ID cụ thể, đổi database, phục hồi kết nối và giới hạn session sau restart. Không đưa credential, bản dump dữ liệu cá nhân hoặc URL ký media vào báo cáo.
 
 V1 định nghĩa 13 bảng/76 cột, gồm `external_identities` (3 cột); cần chạy migration và nghiệm thu theo [tài liệu 11](11-dang-nhap-google.md). Flyway phải tạo timestamp likes/shares NOT NULL DEFAULT now(), ràng
@@ -192,3 +208,62 @@ kiện xác nhận lượt xử lý.
 Theo xác nhận chưa chạy migration, gộp schema/index/trigger/quyền thông báo vào V1–V4; không tạo V6 trùng chức năng. V5 giữ nguyên. Sau migration thực tế đầu tiên phải tạo migration mới cho các thay đổi tiếp theo.
 
 Sau các mốc tương tác, triển khai entity/repository notifications, GET danh sách + unreadCount, PATCH đã đọc và chuông thông báo của Navigation theo [10](10-thong-bao.md). SQL hiện có chưa đồng nghĩa các API/UI này hoạt động. Seed like/comment/share sẽ sinh thông báo tự động qua trigger; không seed lại cùng thông báo bằng tay. Chạy SQL suite notifications.sql và sau đó kiểm JDBC/Flyway, API/UI, concurrency trên Docker/Neon.
+
+## Triển khai tạo bài và đọc feed ngày 15/11/2026
+
+Backend bổ sung POST `/api/v1/blogs`, GET `/api/v1/soulspaces`, GET `/api/v1/blogs/{userId}/all`, GET `/api/v1/blogs/{userId}/blogs`, GET `/api/v1/blogs/{blogId}`, GET `/api/v1/users/{userId}` và GET `/api/v1/media/{assetId}`. Giữ nguyên JSON array, không thêm giới hạn số bài ngầm. Danh sách đọc bằng các truy vấn tách riêng public/author để dùng các index V2; luôn có `ORDER BY created_at DESC, id DESC`. Tác giả, ảnh và like của viewer được đọc theo nhóm, không truy vấn lại từng bài. Hồ sơ người khác có `dob=null`.
+
+Tạo bài lấy actor từ session, kiểm CSRF; không nhận author/counter do client tự đặt. `userId` compatibility phải trùng actor; `username` compatibility được bỏ qua. Content tối đa 5.000 Unicode code points, không có NUL. File được kiểm trước khi gọi provider: tối đa 10 ảnh JPEG/PNG tĩnh, mỗi ảnh 10 MiB và 25 triệu pixel; chặn PNG động và file giả định dạng. Upload có giới hạn 30 request/giờ/user, tối đa hai request upload đồng thời/user, danh sách theo dõi có dung lượng giới hạn.
+
+Cloudinary dùng SDK `cloudinary-http5`, delivery type `authenticated`, `overwrite=false`; `asset_folder` và tiền tố `public_id` đều là `${MEDIA_NAMESPACE}/blogs`. Ví dụ local: `MEDIA_NAMESPACE=soulspace/local`, demo: `soulspace/demo`, test: `soulspace/test`. Đây là thư mục trong Folders; Collection `soulspace` chỉ là nhóm tham chiếu ảnh và không thay thế thư mục hoặc kiểm tra quyền. Không thay namespace giữa các lần chạy khi còn dữ liệu của môi trường cũ cần dọn.
+
+Receipt PENDING được commit trước upload. Sau upload, tạo blog, xác nhận metadata và gắn ảnh trong một transaction ngắn; mọi lời gọi provider nằm ngoài transaction. Bài có text vẫn được tạo nếu ảnh upload lỗi, response báo `failedFiles` theo vị trí `image-1`, `image-2`, …; không trả lại đường dẫn hoặc tên file tùy ý của client. Bài chỉ có ảnh mà mọi upload đều thất bại trả 502 và không tạo blog rỗng. Khi chưa cấu hình Cloudinary, bài text vẫn dùng được; ảnh không được giả lập thành upload thành công.
+
+Upload lỗi hoặc transaction tạo bài rollback sẽ đưa receipt còn PENDING vào queue bù trừ; ảnh đã gắn thành công không bị thu hồi. Receipt đã có xác nhận provider được giữ metadata để dọn ngay; receipt chưa xác nhận vẫn chờ 1 giờ. Nếu database không nhận được thao tác enqueue, bộ quét stale là bước phục hồi, không làm mất receipt.
+
+Endpoint ảnh kiểm tra trạng thái asset và quyền hiện tại của blog tại mỗi request. Chỉ backend dùng signed download URL; UI nhận bytes qua `/api/v1/media/{assetId}`, không nhận URL Cloudinary hoặc redirect. Bài private chỉ chủ bài xem ảnh, còn guest/người khác nhận 404, kể cả đã biết assetId. Response có `Cache-Control:no-store` và `nosniff`.
+
+MediaCleanupService quét receipt stale và xử lý queue mỗi phút. Receipt upload chưa xác nhận sau 10 phút được đưa vào queue với khoảng chờ 1 giờ; receipt đã xác nhận chưa gắn sau 24 giờ được thu hồi. Worker claim bằng SKIP LOCKED, dùng lease 120 giây và cặp attempts/lease từ database; kiểm thời hạn sau khi lấy khóa, gọi provider ngoài transaction, không xóa public_id ngoài namespace hiện tại. Tối đa 5 lượt thử rồi DEAD; khoảng chờ retry là 1 phút, 5 phút, 30 phút và 2 giờ. Worker không chạy khi thiếu cấu hình Cloudinary.
+
+Frontend tạo bài gửi multipart bằng Axios client chung, không gửi actor lấy từ localStorage. Đăng thành công bài public mở feed; bài private mở trang của mình. Feed và hồ sơ không đảo ngược thứ tự API; bấm avatar/username mở `/user/{userId}` và chỉ tải bài public. URL preview cục bộ được thu hồi khi đổi ảnh/rời trang; lỗi đăng bài mở lại nút gửi để thử lại.
+
+### Format và kiểm thử
+
+Java dùng Google Java Format style AOSP (4 dấu cách) qua Spotless đã ghim phiên bản trong `soulspace/pom.xml`, cùng `.editorconfig`. Từ `soulspace/`, dùng `mvn spotless:apply` để format hoặc `mvn spotless:check` để kiểm tra. Với tác vụ nhỏ, giới hạn file bằng `-DspotlessFiles=.*BlogService.java,.*BlogController.java` để tránh thay đổi các file không liên quan. Không tự chạy formatter trong lúc người dùng đang sửa file khác.
+
+`BlogApiTests` chỉ chạy khi `SOULSPACE_BLOG_TEST_DB=true`; cấu hình datasource/Flyway lấy từ các biến BLOG_TEST_* và profile test, không lấy DB local/Neon. Từ root chạy `./infra/postgres/tests/run-blog-api.ps1` bằng PowerShell với Java 21 và Docker đang chạy. Script tạo PostgreSQL 17 trên cổng ngẫu nhiên, cấp hai role, chạy V1–V5 cùng bộ test local authentication/bài viết rồi dọn đúng container và volume kiểm thử do nó tạo. Cloudinary được mock trong bộ test này; không coi kết quả là bằng chứng upload/download/destroy đã chạy với tài khoản Cloudinary thật.
+
+Kết quả ngày 15/11/2026: 19/19 test đạt (12 local authentication, 7 bài viết/media). V1–V5 chạy bằng Flyway trên PostgreSQL 17.11 riêng; JPA validate và các API được kiểm thử qua MockMvc với security filter thật. Các ca gồm bài text/ảnh, thứ tự mới nhất trước, feed chỉ public, `/all` chỉ chính chủ, DOB không công khai, chặn giả actor/field lạ/thiếu CSRF, ảnh private trả 404 cho guest/người khác, đổi public/private có hiệu lực trên link ảnh cũ, provider lỗi, rollback khi actor mất trong lúc upload và queue dừng sau 5 lượt lỗi. Không chạy migration hoặc ghi fixture vào database ứng dụng.
+
+Kiểm tra Cloudinary thật riêng: upload PNG do agent sinh vào `soulspace/test/blogs` bằng delivery type authenticated; signed download bên trong backend thành công; link unsigned trả HTTP 401. Ảnh thử đã được destroy sau kiểm tra. Không lưu hoặc công khai URL ký/credential. Đây là kiểm tra SDK/provider, tách với bộ test API dùng provider mock.
+
+Frontend build, ESLint trên các màn hình được sửa và test session/CSRF phía frontend đều đạt. Vite vẫn cảnh báo bundle lớn hơn 500 kB; chưa tối ưu bundle trong mốc này. Các kiểm tra này không thay thế kiểm thử toàn bộ luồng trên trình duyệt hoặc LAN. Phần bình luận/like/chia sẻ được bổ sung trong mốc tiếp theo dưới đây; sửa/xóa bài và sửa hồ sơ/avatar chưa triển khai.
+
+## Bình luận, lượt thích và chia sẻ ngày 15/11/2026
+
+InteractionController và InteractionService bổ sung B05–B09, B12, B15–B16, U03 và U11 theo hợp đồng API. Bao gồm đọc/thêm bình luận, trả lời, sửa và xóa mềm bình luận, thích/bỏ thích bài hoặc bình luận, chia sẻ, đọc danh sách chia sẻ và gỡ chia sẻ. Request ghi dùng session/CSRF và UUID actor ở principal. Field lạ bị từ chối; userId compatibility khác actor trả 403. liked phải là JSON boolean; expectedVersion phải là số nguyên không âm, không nhận chuỗi hoặc số thập phân.
+
+| Luồng | SQL thực hiện | Index và trigger liên quan | Transaction |
+| --- | --- | --- | --- |
+| Đọc bình luận | Lấy flat comments theo blog, ORDER BY created_at DESC, id DESC; đọc tác giả và like viewer theo nhóm, giữ node có author_id NULL. Dựng cây bằng hai vòng lặp. | comments_blog_idx; PK comment_likes hỗ trợ lookup theo comment. comments_parent_idx vẫn hỗ trợ tìm replies/FK, không thay index sắp xếp của toàn blog. | Read-only, kiểm quyền bài trước khi đọc cây. |
+| Tạo bình luận/reply | FOR KEY SHARE trên actor, khóa blog, khóa parent nếu có rồi INSERT comments. Parent khác bài/không tồn tại trả 400, parent đã xóa trả 409. | PK comments và comments_blog_idx; comments_validate/validate_comment, comments_counter/update_comment_counter và trigger thông báo tương tác. | Một transaction cho comment, count và thông báo; không tự cộng count trong Java. |
+| Sửa/xóa comment | Khóa actor → blog → comment, kiểm tác giả và expectedVersion. Xóa các comment_likes trước khi đặt content=NULL/deleted_at; không xóa replies. | comments_validate giữ cấu trúc và cập nhật version/updated_at; comment_likes_counter, comments_counter và kiểm tra deferred về likes của node đã xóa. | Lần xóa đầu phải khớp version; xóa lặp với body hợp lệ giữ nguyên version/time/count. |
+| Thích/bỏ thích | CALL sp_set_blog_like hoặc sp_set_comment_like với liked mong muốn. | PK chống trùng; comment_like_active chặn placeholder; các relation-counter trigger cập nhật count. | Procedure và trigger cùng transaction service; đọc/refresh counter từ DB trước khi trả response. |
+| Share/unshare | CALL sp_share_blog hoặc sp_unshare_blog. Share chỉ public, trùng trả 409; unshare được lặp cả khi bài private/đã mất. | PK blog_shares, blog_shares_blog_idx; blog_shares_counter và trigger thông báo share. | Quan hệ, count và thông báo commit/rollback cùng nhau; unshare kiểm owner từ path. |
+| Danh sách chia sẻ | JOIN blog_shares với blogs hiện tại, chỉ published=true; ORDER BY shared_at DESC, blog_id DESC. Batch lấy tác giả/ảnh. | blog_shares_user_time_idx hỗ trợ lọc user và thứ tự chia sẻ. | Read-only; không tạo snapshot, bài private bị ẩn nhưng quan hệ/counter còn lưu. |
+
+Các lệnh CALL dùng native query có bind parameters. Tầng API không mở transaction bao ngoài InteractionService; TransactionTemplate mở transaction ở từng lần thử và chỉ trả kết quả sau commit. SQLSTATE 40P01/40001 được retry toàn transaction tối đa hai lần sau rollback; lần thử thứ ba còn lỗi trả 409 CONCURRENT_MODIFICATION. Lock timeout 55P03 trả 409, không replay; xung đột nghiệp vụ như ALREADY_SHARED không retry. Không tự retry HTTP tạo comment hoặc upload khi mất response. Log chỉ ghi event và UUID, không ghi nội dung bình luận, SQL hoặc token.
+
+SessionGuardFilter giới hạn các request ghi bài/tương tác ở 60 lần/phút/user, bảng theo dõi có TTL và tối đa 4096 user. Trả 429 kèm Retry-After, chặn trước controller/procedure. Giới hạn này dùng chung giữa các session của cùng user trong một backend; login/signup vẫn dùng giới hạn IP riêng, upload vẫn có quota riêng. Backend restart sẽ reset các bảng đếm trong bộ nhớ.
+
+CommentPopup đọc cây rồi chuyển sang danh sách phẳng bằng vòng lặp, giữ thứ tự mới nhất trước, placeholder và ID parent thật. UI thụt lề tối đa 3 tầng, hiển thị đang trả lời ai; không đặt trần độ sâu dữ liệu. Tác giả được sửa/xóa; khi gặp 409 UI đọc lại dữ liệu nhưng không tự gửi lại bản sửa với version mới. Các ô nhập còn mở giữ draft để người dùng đối chiếu và quyết định gửi lại. Popup hỗ trợ Escape, vòng focus Tab và trả focus khi đóng.
+
+ListPost, PostDetailPage và CommentPopup dùng chung useLikes: hiển thị ý định ngay, tối đa một request đang chạy trên mỗi mục, gộp các lần nhấn thành ý định cuối. Counter chuẩn lấy từ response; lỗi không có ý định mới hơn thì khôi phục trạng thái đã xác nhận. Phản hồi GET bắt đầu trước thay đổi like không ghi đè ý định hoặc response mới hơn. UserPage đọc danh sách share thực, gỡ share qua API có CSRF và không coi lỗi tải là danh sách rỗng.
+
+Avatar mặc định dùng URL công khai đã được chủ dự án chỉ định ở USR01. MediaConstants và config/assets.js là hai nơi khai báo cho Java/JavaScript; response đăng ký, đăng nhập, hồ sơ, bài, bình luận và share dùng cùng ảnh. avatar_media_id vẫn NULL cho user chưa có avatar riêng; ảnh dùng chung không tham gia queue cleanup. Không thay schema, index, procedure, trigger hoặc ERD cho quyết định này.
+
+Kiểm chứng: 32/32 test backend đạt (13 local authentication/filter, 16 API/JPA trên PostgreSQL 17.11 tách biệt, 3 unit test retry/rollback). Flyway V1–V5 chạy bằng role migrator; API dùng role runtime. Các ca kiểm tra version cũ, placeholder/replies, parent sai bài, dữ liệu không hợp lệ, quyền private, share trùng, unshare lặp, counter/notification đúng, avatar thống nhất, share đồng thời và like chạy cùng xóa comment. Các test retry dùng lỗi SQL mô phỏng và transaction manager mock; không coi đó là bằng chứng đã gây deadlock PostgreSQL thật.
+
+Test EXPLAIN dùng SET LOCAL enable_seqscan=off và enable_bitmapscan=off trong transaction kiểm thử để xác nhận comments_blog_idx và blog_shares_user_time_idx có thể phục vụ ORDER BY mà không cần Sort riêng khi dùng ordered index scan. Đây là kiểm tra khả năng của index, không phải benchmark hay cam kết planner luôn chọn index scan trên fixture ít dữ liệu. Cấu hình này không được áp dụng lên datasource runtime.
+
+Frontend có 7 test Node đạt cho session/CSRF, thứ tự/placeholder, cây 5.000 cấp không dùng call stack đệ quy, like optimistic/gộp lần bấm/lỗi và phản hồi GET cũ. Các file Java được format/check theo AOSP; frontend lint/build được kiểm tra riêng. Chưa thực hiện kiểm thử thủ công đầy đủ trên browser/LAN hoặc nghiệm thu Neon. Thông báo đã được trigger ghi vào DB; API/chuông thông báo, Google OIDC và sửa/xóa bài vẫn là các mốc riêng.

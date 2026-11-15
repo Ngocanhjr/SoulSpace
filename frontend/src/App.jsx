@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import {
   DndContext,
@@ -20,11 +20,17 @@ import Navigation from "./Components/Navigation/Navigation";
 import Router from "./routes/Routes";
 import Login from "./Components/Login/Login";
 import Explore from "./page/ExplorePage/Explore";
+import { refreshSession, useAuth } from "./config/auth";
 
 function App() {
   const [showSecond, setShowSecond] = useState(false);
   const [isGuest, setGuest] = useState(false);
   const location = useLocation(); 
+  const auth = useAuth();
+
+  useEffect(() => {
+    refreshSession().catch(() => {});
+  }, []);
 
   const [items, setItems] = useState(["page", "explore"]);
 
@@ -62,8 +68,7 @@ function App() {
     );
   }
 
-  // Kiểm tra đăng nhập từ localStorage
-  const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+  const isLoggedIn = Boolean(auth.user);
 
   return (
     <div className={appCSS["layout-web"]}>
@@ -99,7 +104,13 @@ function App() {
               )
             )}
 
-            {!isGuest && !isLoggedIn && <Login guest={setGuest} />}
+            {auth.error && (
+              <div role="alert">
+                {auth.error}
+                <button onClick={() => refreshSession().catch(() => {})}>Retry</button>
+              </div>
+            )}
+            {auth.ready && !auth.error && !isGuest && !isLoggedIn && <Login guest={setGuest} />}
           </div>
         </SortableContext>
       </DndContext>

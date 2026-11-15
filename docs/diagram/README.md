@@ -1,5 +1,7 @@
 # Sơ đồ SQL: procedure, counter và invariant
 
+Đối chiếu với code ngày 15/11/2026: luồng comment/reply/sửa/xóa mềm dùng InteractionService với khóa actor → blog → comment; trigger V3 vẫn kiểm invariant, cập nhật count/version và tạo thông báo trong cùng transaction. Các luồng like/share gọi procedure V4 như bộ sơ đồ riêng. Không đổi SQL hoặc cấu trúc sơ đồ trong mốc này; xem [kết quả kiểm chứng tương tác](../spec/05-trien-khai.md#bình-luận-lượt-thích-và-chia-sẻ-ngày-15112026) để phân biệt thiết kế và test đã chạy.
+
 Bộ sơ đồ được đối chiếu trực tiếp với [V3__counters_and_invariants.sql](../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql), hiện có **10 function, 18 trigger**; 22 trang V3 dưới đây mô tả 9 function/14 trigger counters và invariants, phần thông báo mới được tách tại [V4/05](v4/05-interaction-notification.drawio.png). Lập ngày 31/10/2026; cập nhật phạm vi constraint trigger, bỏ giới hạn độ sâu comment và chỉnh bố cục ngày 01/11/2026.
 
 Mở [v3-counters-and-invariants.drawio](v3-counters-and-invariants.drawio) bằng draw.io để xem và chỉnh sửa **22 trang, gồm 11 cặp A/B**. Mỗi trang có một ảnh PNG riêng, kèm XML nhúng để mở lại bằng draw.io. Các file Mermaid trong `v3/source/` được giữ làm nguồn biên soạn có thể tái sử dụng khi tiếp tục review V3.

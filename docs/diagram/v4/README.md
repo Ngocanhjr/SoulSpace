@@ -1,5 +1,7 @@
 # Sơ đồ V4: tương tác và trigger liên quan
 
+Đối chiếu implementation ngày 15/11/2026: InteractionService gọi đủ bốn procedure V4 bằng CALL có bind parameters, trong transaction của service; counter/thông báo vẫn do trigger quản lý. Các sơ đồ hiện có giữ nguyên điều kiện và thứ tự khóa, không cần thay hình hoặc SQL. Chi tiết API/index/transaction và kết quả test nằm tại [mốc triển khai tương tác](../../spec/05-trien-khai.md#bình-luận-lượt-thích-và-chia-sẻ-ngày-15112026); không suy ra toàn bộ chức năng đã được nghiệm thu chỉ từ sơ đồ.
+
 ## 01. Thích/bỏ thích bài viết và cập nhật bộ đếm
 
 Đối chiếu ngày 12/11/2026 với [sp_set_blog_like trong V4](../../../soulspace/src/main/resources/db/migration/V4__interaction_procedures.sql) và [blog_likes_counter/update_relation_counter trong V3](../../../soulspace/src/main/resources/db/migration/V3__counters_and_invariants.sql).

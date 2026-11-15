@@ -123,6 +123,24 @@
     margin-top: 8px;
 }
 
+.replyContext {
+    color: #777;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+.commentActions {
+    flex-wrap: wrap;
+}
+
+.replyForm {
+    flex-wrap: wrap;
+}
+
+.replyForm input {
+    min-width: 100px;
+}
+
 .textButton {
     background: none;
     border: none;

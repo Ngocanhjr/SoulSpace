@@ -1,368 +1,230 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import style from "./CommentPopup.module.css";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api, apiErrorMessage } from "../../config/api";
+import { useAuth } from "../../config/auth";
+import { useLikes } from "../../config/useLikes";
+import { COMMENT_INDENT_PX, MAX_COMMENT_LENGTH, MAX_VISIBLE_COMMENT_LEVELS, flattenComments } from "../../config/comments";
 import { toast } from "sonner";
-import { assetUrl } from "../../config/assets";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import Timestamp from "../Timestamp";
 
-function HeartButton({ liked, onClick }) {
-  return (
-    <button
-      type="button"
-      className={`${style.iconButton} ${liked ? style.iconButtonActive : ""}`}
-      onClick={onClick}
-      aria-label="Like comment"
-    >
-      ♥
-    </button>
-  );
+function checkedContent(value) {
+  const content = value.trim();
+  if (!content || Array.from(content).length > MAX_COMMENT_LENGTH) {
+    toast.warning("Bình luận cần từ 1 đến 2.000 ký tự.");
+    return null;
+  }
+  return content;
 }
 
-function CommentItem({
-  comment,
-  postId,
-  currentUserId,
-  onToggleLike,
-  onReplySubmit,
-  level = 0,
-}) {
-  const [isReplying, setIsReplying] = useState(false);
-  const [replyText, setReplyText] = useState("");
-  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+function CommentItem({ comment, currentUserId, onLike, onReply, onEdit, onDelete }) {
+  const [mode, setMode] = useState(null);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const input = useRef(null);
+  useEffect(() => { if (mode) input.current?.focus(); }, [mode]);
 
-  const liked = Array.isArray(comment.likedUserIds)
-    ? comment.likedUserIds.includes(currentUserId)
-    : false;
-
-  const handleSubmitReply = async (e) => {
-    e.preventDefault();
-
-    const content = replyText.trim();
-    if (!content || !currentUserId || isSubmittingReply) return;
-
+  const open = (next) => {
+    setText(next === "edit" ? comment.content : "");
+    setMode(next);
+  };
+  const submit = async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    const content = mode === "delete" ? null : checkedContent(text);
+    if (mode !== "delete" && content === null) return;
+    setBusy(true);
     try {
-      setIsSubmittingReply(true);
-      await onReplySubmit(comment.id, content);
-      setReplyText("");
-      setIsReplying(false);
+      if (mode === "reply") await onReply(comment.id, content);
+      else if (mode === "edit") await onEdit(comment.id, content, comment.version);
+      else await onDelete(comment.id, comment.version);
+      setMode(null);
+      setText("");
+    } catch {
+      // Keep the draft when the write was not confirmed.
     } finally {
-      setIsSubmittingReply(false);
+      setBusy(false);
     }
   };
-
+  const author = comment.username ? "@" + comment.username : "Tài khoản đã xóa";
   return (
-    <div className={`${style.commentBlock} ${level > 0 ? style.replyBlock : ""}`}>
+    <article className={style.commentBlock}
+      style={{ marginLeft: Math.min(comment.depth, MAX_VISIBLE_COMMENT_LEVELS - 1) * COMMENT_INDENT_PX }}>
       <div className={style.commentRow}>
-        <img
-          src={comment.userAvatarUrl || assetUrl("default-avatar.png")}
-          alt="Comment avatar"
-          className={style.avatar}
-        />
-
+        {comment.userId ? (
+          <Link to={"/user/" + comment.userId} aria-label={"Xem trang của " + author}>
+            <img src={comment.userAvatarUrl || DEFAULT_AVATAR_URL} alt="" className={style.avatar} />
+          </Link>
+        ) : <img src={DEFAULT_AVATAR_URL} alt="" className={style.avatar} />}
         <div className={style.commentBody}>
           <div className={style.commentBubble}>
             <div className={style.commentHeader}>
-              <strong>
-                {comment.username ? `@${comment.username}` : "Unknown user"}
-              </strong>
+              {comment.userId ? <Link to={"/user/" + comment.userId}><strong>{author}</strong></Link> : <strong>{author}</strong>}
               <Timestamp value={comment.createdAt} />
             </div>
-            <p>{comment.content}</p>
+            {comment.depth > 0 && <div className={style.replyContext}>
+              Trả lời {comment.parentUsername ? "@" + comment.parentUsername : "bình luận của tài khoản đã xóa"}
+            </div>}
+            <p>{comment.isDeleted ? "Bình luận đã xóa" : comment.content}</p>
           </div>
-
-          <div className={style.commentActions}>
-            <button
-              type="button"
-              className={style.textButton}
-              onClick={() => setIsReplying((prev) => !prev)}
-            >
-              {isReplying ? "Huỷ" : "Phản hồi"}
-            </button>
-            <span className={style.likeCount}>{comment.likesCount || 0} tim</span>
-          </div>
-
-          {isReplying && (
-            <form className={style.replyForm} onSubmit={handleSubmitReply}>
-              <input
-                type="text"
-                placeholder="Viết phản hồi..."
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                disabled={isSubmittingReply}
-              />
-              <button
-                type="submit"
-                disabled={isSubmittingReply || !replyText.trim()}
-              >
-                {isSubmittingReply ? "..." : "Trả lời"}
-              </button>
-            </form>
-          )}
-
-          {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-            <div className={style.replyList}>
-              {comment.replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  postId={postId}
-                  currentUserId={currentUserId}
-                  onToggleLike={onToggleLike}
-                  onReplySubmit={onReplySubmit}
-                  level={level + 1}
-                />
-              ))}
+          {!comment.isDeleted && (
+            <div className={style.commentActions}>
+              <button type="button" className={style.textButton} disabled={!currentUserId || busy}
+                onClick={() => open("reply")}>Phản hồi</button>
+              {comment.userId === currentUserId && <>
+                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("edit")}>Sửa</button>
+                <button type="button" className={style.textButton} disabled={busy} onClick={() => open("delete")}>Xóa</button>
+              </>}
+              <span className={style.likeCount}>{comment.likesCount || 0} tim</span>
             </div>
           )}
+          {mode && !comment.isDeleted && (
+            <form className={style.replyForm} onSubmit={submit}>
+              {mode === "delete" ? <span>Xóa bình luận này? Các phản hồi vẫn được giữ.</span> : (
+                <input ref={input} type="text" aria-label={mode === "edit" ? "Sửa bình luận" : "Viết phản hồi"}
+                  placeholder={mode === "edit" ? "Sửa bình luận..." : "Viết phản hồi..."}
+                  value={text} onChange={(event) => setText(event.target.value)} disabled={busy} />
+              )}
+              <button type="submit" disabled={busy || (mode !== "delete" && !text.trim())}>
+                {busy ? "Đang lưu..." : mode === "delete" ? "Xác nhận xóa" : "Gửi"}
+              </button>
+              <button type="button" disabled={busy} onClick={() => setMode(null)}>Hủy</button>
+            </form>
+          )}
         </div>
-
         <div className={style.commentAside}>
-          <HeartButton liked={liked} onClick={() => onToggleLike(comment.id)} />
+          <button type="button" className={style.iconButton + (comment.liked ? " " + style.iconButtonActive : "")}
+            onClick={() => onLike(comment)} aria-label="Thích bình luận" aria-pressed={comment.liked}
+            disabled={!currentUserId || comment.isDeleted}>♥</button>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
 
 export default function CommentPopup({ postId, onClose, onCommentAdded }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const currentUserId = useMemo(
-    () => String(localStorage.getItem("userId") || "").replaceAll('"', ""),
-    []
-  );
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { user } = useAuth();
+  const currentUserId = user?.id || "";
+  const base = "/api/v1/blogs/" + postId + "/comments";
+  const requestVersion = useRef({ value: 0 });
+  const close = useRef(null);
+  const panel = useRef(null);
+  const closeHandler = useRef(onClose);
+  useEffect(() => { closeHandler.current = onClose; }, [onClose]);
+  const likes = useLikes(currentUserId, (path, next) => {
+    setComments((rows) => rows.map((row) => !row.isDeleted && path === base + "/" + row.id + "/like" ? { ...row, ...next } : row));
+  });
+  const loadComments = useCallback(async (signal, initial = false) => {
+    const counter = requestVersion.current;
+    const version = ++counter.value;
+    const read = likes.startRead();
+    if (initial) setLoading(true);
+    setLoadError("");
+    try {
+      const { data } = await api.get(base, { signal });
+      if (!Array.isArray(data)) throw new Error("Invalid comments response");
+      if (version === counter.value && !signal?.aborted) {
+        setComments(flattenComments(data, currentUserId).map((row) => row.isDeleted ? row
+          : likes.merge(base + "/" + row.id + "/like", row, read)));
+      }
+    } catch (error) {
+      if (signal?.aborted || version !== counter.value) return;
+      setLoadError(apiErrorMessage(error, "Không thể tải bình luận."));
+      if ([401, 403, 404].includes(error.response?.status)) setComments([]);
+    } finally {
+      if (version === counter.value && !signal?.aborted) setLoading(false);
+    }
+  }, [base, currentUserId, likes]);
 
   useEffect(() => {
-    const fetchComments = async () => {
-      setIsLoading(true);
-      try {
-        const rs = await axios.get(
-          buildApiUrl(`/api/v1/blogs/${postId}/comments`)
-        );
-        setComments(Array.isArray(rs.data) ? rs.data : []);
-      } catch (error) {
-        console.error("Không thể tải bình luận:", error);
-        toast.error("Không thể tải bình luận");
-      } finally {
-        setIsLoading(false);
+    const controller = new AbortController();
+    const counter = requestVersion.current;
+    loadComments(controller.signal, true);
+    return () => { controller.abort(); counter.value++; };
+  }, [loadComments]);
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    close.current?.focus();
+    const key = (event) => {
+      if (event.key === "Escape") closeHandler.current();
+      if (event.key !== "Tab") return;
+      const controls = [...panel.current.querySelectorAll("button:not(:disabled), input:not(:disabled), a[href]")];
+      const first = controls[0];
+      const last = controls.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first?.focus();
       }
     };
+    window.addEventListener("keydown", key);
+    return () => {
+      window.removeEventListener("keydown", key);
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, []);
 
-    if (postId) {
-      fetchComments();
-    }
-  }, [postId]);
-
-  const updateCommentTree = (items, targetId, updater) =>
-    items.map((item) => {
-      if (item.id === targetId) {
-        return updater(item);
-      }
-
-      if (Array.isArray(item.replies) && item.replies.length > 0) {
-        return {
-          ...item,
-          replies: updateCommentTree(item.replies, targetId, updater),
-        };
-      }
-
-      return item;
-    });
-
-  const appendReplyToTree = (items, targetId, reply) =>
-    items.map((item) => {
-      if (item.id === targetId) {
-        return {
-          ...item,
-          replies: [...(Array.isArray(item.replies) ? item.replies : []), reply],
-        };
-      }
-
-      if (Array.isArray(item.replies) && item.replies.length > 0) {
-        return {
-          ...item,
-          replies: appendReplyToTree(item.replies, targetId, reply),
-        };
-      }
-
-      return item;
-    });
-
-  const handleCommentSubmit = async (e) => {
-    e.preventDefault();
-
-    const content = newComment.trim();
-    if (!content || isSubmitting) return;
-
-    if (!currentUserId) {
-      toast.error("Please sign in to comment.");
-      return;
-    }
-
+  const mutate = async (method, path, data) => {
     try {
-      setIsSubmitting(true);
-
-      const rs = await axios.post(
-        buildApiUrl(`/api/v1/blogs/${postId}/comments`),
-        {
-          userId: currentUserId,
-          content,
-        }
-      );
-
-      const createdComment = rs.data?.comment;
-      const nextCommentsCount = rs.data?.commentsCount;
-
-      if (createdComment) {
-        setComments((prevComments) => [...prevComments, createdComment]);
-      }
-
-      if (typeof onCommentAdded === "function") {
-        onCommentAdded(nextCommentsCount);
-      }
-
-      setNewComment("");
-      toast.success(rs.data?.message || "Gửi bình luận thành công");
+      const response = await api.request({ method, url: path, data });
+      onCommentAdded?.(response.data.commentsCount);
+      await loadComments();
+      toast.success(response.data.message);
+      return response.data;
     } catch (error) {
-      console.error("Không thể gửi bình luận:", error);
-      toast.error(
-        error?.response?.data?.message ||
-          error?.response?.data ||
-          "Gửi bình luận thất bại!"
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handleReplySubmit = async (commentId, content) => {
-    if (!currentUserId) {
-      toast.error("Please sign in to reply.");
-      return;
-    }
-
-    try {
-      const rs = await axios.post(
-        buildApiUrl(`/api/v1/blogs/${postId}/comments/${commentId}/reply`),
-        {
-          userId: currentUserId,
-          content,
-        }
-      );
-
-      const createdReply = rs.data?.reply;
-      const nextCommentsCount = rs.data?.commentsCount;
-
-      if (createdReply) {
-        setComments((prevComments) =>
-          appendReplyToTree(prevComments, commentId, createdReply)
-        );
-      }
-
-      if (typeof onCommentAdded === "function") {
-        onCommentAdded(nextCommentsCount);
-      }
-
-      toast.success(rs.data?.message || "Phản hồi thành công");
-    } catch (error) {
-      console.error("Không thể phản hồi bình luận:", error);
-      toast.error(
-        error?.response?.data?.message ||
-          error?.response?.data ||
-          "Phản hồi thất bại!"
-      );
+      if (error.response?.status === 409) await loadComments();
+      toast.error(apiErrorMessage(error, "Không thể lưu bình luận. Nội dung bạn nhập vẫn được giữ."));
       throw error;
     }
   };
-
-  const handleToggleCommentLike = async (commentId) => {
-    if (!currentUserId) {
-      toast.error("Please sign in to like comments.");
-      return;
-    }
-
+  const submit = async (event) => {
+    event.preventDefault();
+    if (submitting || !currentUserId) return;
+    const content = checkedContent(newComment);
+    if (content === null) return;
+    setSubmitting(true);
     try {
-      const rs = await axios.post(
-        buildApiUrl(`/api/v1/blogs/${postId}/comments/${commentId}/like`),
-        {
-          userId: currentUserId,
-        }
-      );
-
-      setComments((prevComments) =>
-        updateCommentTree(prevComments, commentId, (comment) => {
-          const previousLikedUserIds = Array.isArray(comment.likedUserIds)
-            ? comment.likedUserIds
-            : [];
-
-          return {
-            ...comment,
-            likesCount:
-              typeof rs.data?.likesCount === "number"
-                ? rs.data.likesCount
-                : comment.likesCount || 0,
-            likedUserIds: rs.data?.liked
-              ? [...new Set([...previousLikedUserIds, currentUserId])]
-              : previousLikedUserIds.filter((id) => id !== currentUserId),
-          };
-        })
-      );
-    } catch (error) {
-      console.error("Không thể thích bình luận:", error);
-      toast.error(
-        error?.response?.data?.message ||
-          error?.response?.data ||
-          "Không thể thả tim bình luận"
-      );
+      await mutate("post", base, { content });
+      setNewComment("");
+    } catch {
+      // Keep the text so the user can retry deliberately.
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <div className={style.overlay} onClick={onClose}>
-      <div className={style.popup} onClick={(e) => e.stopPropagation()}>
-        <button className={style.closeButton} onClick={onClose}>
-          &times;
-        </button>
-        <h3>Bình luận</h3>
-
+      <section ref={panel} className={style.popup} role="dialog" aria-modal="true" aria-labelledby="comments-title"
+        onClick={(event) => event.stopPropagation()}>
+        <button ref={close} className={style.closeButton} type="button" onClick={onClose} aria-label="Đóng bình luận">×</button>
+        <h3 id="comments-title">Bình luận</h3>
+        {loadError && <div role="alert"><p>{loadError}</p>
+          <button type="button" onClick={() => loadComments()}>Thử tải lại</button></div>}
         <div className={style.commentList}>
-          {isLoading ? (
-            <p className={style.emptyState}>Đang tải bình luận...</p>
-          ) : comments.length > 0 ? (
-            comments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                postId={postId}
-                currentUserId={currentUserId}
-                onToggleLike={handleToggleCommentLike}
-                onReplySubmit={handleReplySubmit}
-              />
-            ))
-          ) : (
-            <p className={style.emptyState}>
-              Chưa có bình luận nào. Hãy là người đầu tiên!
-            </p>
-          )}
+          {loading ? <p className={style.emptyState}>Đang tải bình luận...</p> : comments.length ? comments.map((comment) => (
+            <CommentItem key={comment.id} comment={comment} currentUserId={currentUserId}
+              onLike={(row) => likes.toggle(base + "/" + row.id + "/like", row.liked, row.likesCount)}
+              onReply={(id, content) => mutate("post", base + "/" + id + "/reply", { content })}
+              onEdit={(id, content, expectedVersion) => mutate("patch", base + "/" + id, { content, expectedVersion })}
+              onDelete={(id, expectedVersion) => mutate("delete", base + "/" + id, { expectedVersion })} />
+          )) : !loadError && <p className={style.emptyState}>Chưa có bình luận nào.</p>}
         </div>
-
-        <form className={style.commentInputBox} onSubmit={handleCommentSubmit}>
-          <input
-            type="text"
-            placeholder="Viết bình luận..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            disabled={isSubmitting}
-          />
-          <button type="submit" disabled={isSubmitting || !newComment.trim()}>
-            {isSubmitting ? "..." : "Gửi"}
+        <form className={style.commentInputBox} onSubmit={submit}>
+          <input type="text" aria-label="Viết bình luận" placeholder={currentUserId ? "Viết bình luận..." : "Đăng nhập để bình luận"}
+            value={newComment} onChange={(event) => setNewComment(event.target.value)}
+            disabled={submitting || !currentUserId || Boolean(loadError)} />
+          <button type="submit" disabled={submitting || !currentUserId || !newComment.trim() || Boolean(loadError)}>
+            {submitting ? "Đang gửi..." : "Gửi"}
           </button>
         </form>
-      </div>
+      </section>
     </div>
   );
 }

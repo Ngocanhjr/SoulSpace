@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import './SignIn.css';
-import axios from 'axios';
-import { buildApiUrl } from "../../config/api";
+import { apiErrorMessage } from "../../config/api";
+import { signIn } from "../../config/auth";
 import { toast } from "sonner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
@@ -10,47 +10,23 @@ const SignIn = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSignIn = async (e) => {
     e.preventDefault();  //ngăn form reload page khi submit
 
-    const formData = { username, password };
-
-    //----------------------------------------connect to backend------------------------------------------------------
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
-      const response = await axios.post(buildApiUrl("/api/v1/auth/log-in"), formData, {
-        headers: { "Content-Type": "application/json" },
-      });
-
-      console.log("Sign in success:", response.data);
-
-      if (response.data.authentication === true) {
-        toast.success("Sign in successfully!");
-
-        localStorage.setItem("isLoggedIn", "true"); // Lưu trạng thái đăng nhập thành công
-        localStorage.setItem("userId", JSON.stringify(response.data.user.id));
-        localStorage.setItem("username", JSON.stringify(response.data.user.username)); // Lưu thông tin user nếu cần
-        localStorage.setItem("userAvatarUrl", JSON.stringify(response.data.user.avatarUrl)); // Lưu thông tin user nếu cần
-
-        navigate("/");
-      } else {
-        toast.error("Incorrect username or password!");
-      }
-
+      await signIn(username, password);
+      setPassword("");
+      toast.success("Sign in successfully!");
+      navigate("/");
     } catch (error) {
-      console.error("Sign in failed:", error);
-
-      if (error.response) {
-        const { status, data } = error.response;
-        if (status === 400) {
-          toast.error(data.message || "Acoount does not exist. Please sign up first.");
-        } else if (status === 500) {
-          toast.error("Server error! Please try again later.");
-        }
-      } else {
-        toast.error("Cannot connect to server!");
-      }
+      toast.error(apiErrorMessage(error));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -61,7 +37,9 @@ const SignIn = () => {
         <form onSubmit={handleSignIn} className="signin-form">
           <input
             type="text"
-            placeholder="Username, phone or email"
+            placeholder="Username"
+            autoComplete="username"
+            required
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="signin-input"
@@ -70,6 +48,8 @@ const SignIn = () => {
             <input
               type={showPassword ? "text" : "password"}
               placeholder="Password"
+              autoComplete="current-password"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="signin-input"
@@ -84,8 +64,8 @@ const SignIn = () => {
             </span>
           </div>
 
-          <button type="submit" className="signin-button">
-            Sign In
+          <button type="submit" className="signin-button" disabled={isSubmitting}>
+            {isSubmitting ? "Signing in…" : "Sign In"}
           </button>
         </form>
         <a href="#" className="forgot-password">

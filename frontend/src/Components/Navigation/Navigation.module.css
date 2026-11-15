@@ -69,6 +69,35 @@
     animation: spin 1s ease infinite;
 }
 
+.session {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 64px;
+    margin-bottom: 14px;
+    font-size: 12px;
+    text-align: center;
+}
+
+.session span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.session button {
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    padding: 6px 3px;
+    cursor: pointer;
+}
+
+.session button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+
 @keyframes spin {
     from {
         transform: rotate(0deg);
@@ -124,6 +153,10 @@
     .top-bar,
     .bottom-bar {
         flex: none;
+    }
+
+    .session {
+        margin-bottom: 0;
     }
 
     .logo {

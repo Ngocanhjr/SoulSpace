@@ -2,6 +2,8 @@
 
 Đây là kế hoạch kiểm chứng cho implementation tương lai. Không có test, benchmark, kết nối Neon, Docker hoặc Cloudinary thực tế nào được xác nhận PASS bởi việc tạo bộ spec.
 
+Kết quả implementation cập nhật ngày 15/11/2026 được ghi riêng tại [triển khai và kiểm chứng](05-trien-khai.md#bình-luận-lượt-thích-và-chia-sẻ-ngày-15112026): 32 test backend và 7 test frontend đã đạt trong phạm vi mô tả. Các bảng nghiệm thu dưới đây vẫn là tiêu chí tổng thể; không coi toàn bộ Neon/LAN, benchmark hoặc UI đã PASS chỉ từ các test tự động đó.
+
 ## Dữ liệu seed chức năng
 
 Seed runner chạy khi được gọi rõ bằng `app.seed-demo=true`, sau Flyway và trước khi backend nhận request nghiệp vụ. Không tự seed mọi lần khởi động. DEMO_USER_PASSWORD lấy từ môi trường và đạt policy; salt được sinh độc lập cho từng user, không nhúng hash/password demo cố định vào repository.

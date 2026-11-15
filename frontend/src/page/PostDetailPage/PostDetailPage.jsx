@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api, apiErrorMessage } from "../../config/api";
+import { useAuth } from "../../config/auth";
+import { useLikes } from "../../config/useLikes";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import CommentPopup from "../../Components/Comment/CommentPopup.jsx";
 import style from "./PostDetailPage.module.css";
-import { assetUrl } from "../../config/assets";
+import { DEFAULT_AVATAR_URL } from "../../config/assets";
 import Timestamp from "../../Components/Timestamp";
 
 export default function PostDetailPage() {
@@ -17,10 +18,12 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [isCommentPopupOpen, setIsCommentPopupOpen] = useState(false);
 
-  const currentUserId = String(localStorage.getItem("userId") || "").replaceAll(
-    '"',
-    ""
-  );
+  const { user } = useAuth();
+  const currentUserId = user?.id || "";
+  const [sharing, setSharing] = useState(false);
+  const likes = useLikes(currentUserId, (path, next) => {
+    setPost((current) => current && path === "/api/v1/blogs/" + current.id + "/like" ? { ...current, ...next } : current);
+  });
 
   const isSearchMode = useMemo(
     () => location.pathname.startsWith("/search/"),
@@ -28,14 +31,15 @@ export default function PostDetailPage() {
   );
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchPost = async () => {
+      const read = likes.startRead();
       try {
         setLoading(true);
-        const response = await axios.get(
-          buildApiUrl(`/api/v1/blogs/${postId}`)
-        );
+        const response = await api.get(`/api/v1/blogs/${postId}`, { signal: controller.signal });
+        if (controller.signal.aborted) return;
 
-        const nextPost = response.data || null;
+        let nextPost = response.data || null;
 
         if (nextPost) {
           nextPost.liked =
@@ -45,22 +49,25 @@ export default function PostDetailPage() {
           nextPost.likesCount = nextPost.likesCount || 0;
           nextPost.commentsCount = nextPost.commentsCount || 0;
           nextPost.sharesCount = nextPost.sharesCount || 0;
+          nextPost = likes.merge("/api/v1/blogs/" + postId + "/like", nextPost, read);
         }
 
         setPost(nextPost);
       } catch (error) {
+        if (controller.signal.aborted) return;
         console.error("Cannot get post detail:", error);
         toast.error("Không thể tải chi tiết bài viết");
         setPost(null);
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     if (postId) {
       fetchPost();
     }
-  }, [postId, currentUserId]);
+    return () => controller.abort();
+  }, [postId, currentUserId, likes]);
 
   const handleBack = () => {
     if (isSearchMode) {
@@ -87,78 +94,28 @@ export default function PostDetailPage() {
 
   const handleAction = async (type) => {
     if (!post) return;
-
-    if (type === "LIKE") {
-      if (!currentUserId) {
-        toast.error("Please sign in to like posts.");
-        return;
-      }
-
-      try {
-        const response = await axios.post(
-          buildApiUrl(`/api/v1/blogs/${post.id}/like`),
-          {
-            userId: currentUserId,
-          }
-        );
-
-        setPost((prev) =>
-          prev
-            ? {
-                ...prev,
-                liked: !!response.data?.liked,
-                likesCount:
-                  typeof response.data?.likesCount === "number"
-                    ? response.data.likesCount
-                    : prev.likesCount,
-              }
-            : prev
-        );
-      } catch (error) {
-        console.error("Error liking post:", error);
-        toast.error(
-          error?.response?.data?.message ||
-            error?.response?.data ||
-            "Failed to like post."
-        );
-      }
-    }
-
     if (type === "COMMENT") {
       setIsCommentPopupOpen(true);
+      return;
     }
-
-    if (type === "SHARE") {
-      if (!currentUserId) {
-        toast.error("Please sign in to share posts.");
-        return;
-      }
-
-      try {
-        const response = await axios.post(
-          buildApiUrl(`/api/v1/blogs/${post.id}/share`),
-          { userId: currentUserId }
-        );
-
-        setPost((prev) =>
-          prev
-            ? {
-                ...prev,
-                sharesCount:
-                  typeof response?.data?.sharesCount === "number"
-                    ? response.data.sharesCount
-                    : (prev.sharesCount || 0) + 1,
-              }
-            : prev
-        );
-
-        toast.success(response?.data?.message || "Chia sẻ bài viết thành công");
-      } catch (error) {
-        console.error("Error sharing post:", error);
-        toast.error(
-          error?.response?.data?.message || "You have already shared it."
-        );
-      }
+    if (!currentUserId) {
+      toast.error("Vui lòng đăng nhập để tương tác.");
+      return;
+    }
+    if (type === "LIKE") {
+      likes.toggle("/api/v1/blogs/" + post.id + "/like", post.liked, post.likesCount);
+      return;
+    }
+    if (sharing || !post.published) return;
+    setSharing(true);
+    try {
+      const { data } = await api.post("/api/v1/blogs/" + post.id + "/share", {});
+      setPost((current) => current?.id === post.id ? { ...current, sharesCount: data.sharesCount } : current);
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, "Không thể chia sẻ bài viết."));
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -187,7 +144,7 @@ export default function PostDetailPage() {
         <div className={style.card}>
           <div className={style.header}>
             <img
-              src={post.userAvatarUrl || assetUrl("default-avatar.png")}
+              src={post.userAvatarUrl || DEFAULT_AVATAR_URL}
               alt="User Avatar"
               className={style.avatar}
             />
@@ -216,6 +173,7 @@ export default function PostDetailPage() {
                 post.liked ? style.btnLikeActive : ""
               }`}
               aria-label="Like"
+              aria-pressed={post.liked}
               onClick={() => handleAction("LIKE")}
             >
               <span className={style.icon} />
@@ -236,6 +194,8 @@ export default function PostDetailPage() {
               type="button"
               className={`${style.btn} ${style.btnShare}`}
               aria-label="Share"
+              disabled={sharing || !post.published}
+              title={post.published ? "Chia sẻ bài viết" : "Chỉ chia sẻ được bài công khai"}
               onClick={() => handleAction("SHARE")}
             >
               <span className={style.icon} />

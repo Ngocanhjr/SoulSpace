@@ -1,7 +1,6 @@
 import { useState } from "react";
 import "./SignUp.css";
-import axios from "axios";
-import { buildApiUrl } from "../../config/api";
+import { api, apiErrorMessage } from "../../config/api";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
@@ -24,42 +23,16 @@ export default function SignUp() {
 
     setIsSubmit(true); // chặn click nút lần 2
 
-    const formData = { fullname, username, birthday, password }; //tạo object chứa data form
+    const formData = { fullname, username, dob: birthday || null, password };
 
     try {
-      const response = await axios.post(buildApiUrl("/api/v1/users/sign-up"), formData);
-
-      console.log("Sign up success:", response.data);
+      await api.post("/api/v1/users/sign-up", formData);
+      setPassword("");
       toast.success("Sign up successfully! Please sign in.");
       navigate("/signin");
 
     } catch (error) {
-      console.error("Sign up failed:", error);
-
-      if (error.response) {
-        const { status, data } = error.response;
-        console.log("Error status:", status);
-        console.log("Error data:", data);
-
-        if (status === 400) {
-          toast.error(data.message || "Invalid input or username already exists!");
-        } else if (status === 409) {
-          toast.error("Username already exists! Please choose another username.");
-        } else if (status === 500) {
-          toast.error("Server error! Please try again later.");
-        } else {
-          toast.error(data.message || "Unexpected error occurred!");
-        }
-
-      } else if (error.request) {
-        // Request được gửi đi nhưng không nhận được phản hồi
-        console.error("No response from server:", error.request);
-        toast.error("Cannot connect to the server. Please check your backend.");
-      } else {
-        // Lỗi khác (vd: bug trong code React)
-        console.error("Error setting up the request:", error.message);
-        toast.error("Something went wrong in the app. Check the console for details.");
-      }
+      toast.error(apiErrorMessage(error));
     } finally {
       setIsSubmit(false);
     }
@@ -74,6 +47,7 @@ export default function SignUp() {
         <input
           type="text"
           placeholder="Enter full name"
+          autoComplete="name"
           value={fullname}
           onChange={(e) => setFullName(e.target.value)}
           required
@@ -83,6 +57,7 @@ export default function SignUp() {
         <input
           type="text"
           placeholder="Enter username"
+          autoComplete="username"
           value={username}
           onChange={(e) => setUserName(e.target.value)}
           required
@@ -94,7 +69,6 @@ export default function SignUp() {
           value={birthday}
           max={today}
           onChange={(e) => setBirthday(e.target.value)}
-          required
         />
 
         <label>Password</label>
@@ -102,6 +76,7 @@ export default function SignUp() {
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Enter password"
+            autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="signup-input"
@@ -118,7 +93,7 @@ export default function SignUp() {
         </div>
 
         <small className="password-hint">
-          At least 8 chars, include a special symbol (e.g. @ #).
+          4–128 characters. Spaces are allowed.
         </small>
 
         <button
@@ -126,7 +101,7 @@ export default function SignUp() {
           className="signup-btn"
           disabled={isSubmit}>
           {/* tránh click nhiều lần => gây lỗi */}
-          Sign Up
+          {isSubmit ? "Creating account…" : "Sign Up"}
         </button>
 
         <p className="signin-link">

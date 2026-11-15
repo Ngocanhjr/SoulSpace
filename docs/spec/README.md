@@ -77,7 +77,7 @@ Kiểm SQL trên PostgreSQL WASM đạt với chuỗi 100 cấp và reply cấp 
 - [POM target](../../soulspace/pom.xml): Java 21, Spring Boot 4.1.1, JPA, PostgreSQL, Flyway, Security, Validation, Actuator; target đã có các entity đang được viết; các bước kiểm và hoàn thiện còn tiếp tục.
 - [Cấu hình target](../../soulspace/src/main/resources/application.properties) đã có datasource/Flyway, validate schema,
   giới hạn upload và cấu hình nền. Đã tạo Compose, profile Docker/Neon, provision roles và
-  V1–V5; [kết quả kiểm tra SQL và giới hạn](../../infra/postgres/README.md). Entity đang được viết; service/API nghiệp vụ theo thiết kế vẫn cần triển khai và kiểm chứng.
+  V1–V5; [kết quả kiểm tra SQL và giới hạn](../../infra/postgres/README.md). Đã có repository, DTO, service và API đăng ký local cùng các endpoint session/CSRF; xem [phạm vi xác thực local](05-trien-khai.md#triển-khai-xác-thực-local). Các nghiệp vụ khác vẫn cần triển khai và kiểm chứng.
 - Bốn controller legacy có 29 endpoint đang được khai báo hoạt động; hợp đồng target giữ đủ 29 và bổ sung 6 endpoint: session/CSRF/media và sửa/xóa comment, tổng 35. Đây là số route thiết kế, chưa triển khai trong target.
 - [README legacy](../../old/Blog_api/README.md) ghi `pre-v1`, có route và HTTP method lệch controller; nguồn hợp đồng là controller, DTO và caller frontend đã đối chiếu.
 - `docs/Ke_hoach.docx` là kế hoạch tổng thể SoulSpace AI. Trong bộ spec này, chỉ đưa phần backend core và các kỹ thuật SQL phù hợp vào giai đoạn đầu.

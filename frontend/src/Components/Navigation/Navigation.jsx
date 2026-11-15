@@ -1,10 +1,30 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { signOut, useAuth } from "../../config/auth";
+import { apiErrorMessage } from "../../config/api";
 import { assetUrl } from "../../config/assets";
 import navcss from "./Navigation.module.css";
 
 export default function Navigation({ showPage }) {
   const [compassActive, setCPActive] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const logout = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await signOut();
+      toast.success("Signed out successfully!");
+      navigate("/");
+    } catch (error) {
+      toast.error(apiErrorMessage(error));
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   return (
     <nav>
@@ -70,6 +90,16 @@ export default function Navigation({ showPage }) {
         </div>
 
         <div className={navcss["bottom-bar"]}>
+          {user && (
+            <div className={navcss["session"]}>
+              <span title={user.username} aria-label={`Signed in as ${user.username}`}>
+                @{user.username}
+              </span>
+              <button type="button" onClick={logout} disabled={signingOut}>
+                {signingOut ? "…" : "Sign out"}
+              </button>
+            </div>
+          )}
           <div
             className={`${navcss["bar"]} ${
               compassActive === true ? navcss["active"] : ""
