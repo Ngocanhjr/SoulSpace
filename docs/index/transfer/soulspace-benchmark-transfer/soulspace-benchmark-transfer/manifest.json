@@ -1,0 +1,85 @@
+{
+  "exported_at": "2026-11-16T15:54:28.897635+07:00",
+  "original_benchmark_commit": "cfec4e4a3880f0d12b4180835728f4717e677259",
+  "database": "soulspace_benchmark_with_index",
+  "postgres_major": 17,
+  "pg_dump_version": "pg_dump (PostgreSQL) 17.11",
+  "archive": {
+    "file": "soulspace-benchmark.dump",
+    "bytes": 30544750,
+    "sha256": "9e6b19a213b6fb4ea0c7d925b2ef22ed9ce438d7f0523a85c0f717a30ad402cd"
+  },
+  "tables": {
+    "blog_categories": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "blog_images": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "blog_likes": {
+      "rows": 50000,
+      "sha256": "1e6cdf1744edb9b237e85b285966e9dab25f1cd525e08e5a23a0f1c02d7d8b7a"
+    },
+    "blog_shares": {
+      "rows": 5000,
+      "sha256": "cc274317edc068c2d419733ce3bf3d6a03eb246a0654c82c7cba19fb46615c99"
+    },
+    "blogs": {
+      "rows": 10000,
+      "sha256": "63d3ade0f1017b2896ea25bba81d1396d471a6adc3c8549586c9cdfbd8f1d0aa"
+    },
+    "categories": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "comment_likes": {
+      "rows": 2000,
+      "sha256": "a006f3e16511b4d447141596dd60b526ebc7bd8e50f508d70574679a22df6efe"
+    },
+    "comments": {
+      "rows": 10000,
+      "sha256": "b2efcf1f80fd444b01d7a9f0895fc3b3d32ba9c2ff4d0ce8a045ce2a915ec16c"
+    },
+    "external_identities": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "flyway_schema_history": {
+      "rows": 5,
+      "sha256": "45fc9c5d3fed874be0ab42af2db853160a82567e7d6028c1f6efb72129d3ee02"
+    },
+    "media_assets": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "media_cleanup_jobs": {
+      "rows": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "notifications": {
+      "rows": 65750,
+      "sha256": "2d44f8bb570bed99924a87538821295b4bc3e12d9579aa551be0b6df02ac2e01"
+    },
+    "users": {
+      "rows": 1000,
+      "sha256": "28044d7713aea1d9ed8bf3b683dafd8e7fee1236c28ac98d0491d59e1ef40a30"
+    }
+  },
+  "index_count": 44,
+  "constraint_count": 82,
+  "application_trigger_count": 18,
+  "contains_role_passwords": false,
+  "round_trip": {
+    "passed": true,
+    "target": "fresh PostgreSQL 17.11 instance with only package-created application roles",
+    "table_hashes_match": true,
+    "indexes_constraint_metadata_functions_triggers_owners_and_effective_acls_match": true,
+    "runtime_restrictions_preserved": true,
+    "constraint_note": "Constraint names/types/columns/FK actions/deferrability/validation match. PostgreSQL can deparse equivalent CHECK casts differently after restore.",
+    "without_v2_clone_data_match": true,
+    "without_v2_index_count": 25,
+    "sql_benchmark_samples_per_database": 180
+  }
+}

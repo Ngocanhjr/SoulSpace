@@ -4,6 +4,8 @@ File gửi cho người nhận: **[soulspace-benchmark-transfer.zip](soulspace-b
 Giải nén để có bản sao `soulspace-benchmark.dump`, các script SQL và manifest
 ghi số hàng, SHA-256, phiên bản PostgreSQL cùng kết quả thử khôi phục.
 
+Nếu đang dùng Docker Compose của repository, xem [mục 7 — nạp vào Docker](#7-nạp-vào-docker-compose-của-repository) để có lệnh PowerShell dùng ngay.
+
 Đây là **bộ lớn đã dùng để benchmark**, không phải bộ demo 40 người dùng. Bản sao
 gồm schema, dữ liệu, 44 index, constraints, triggers, procedures, view, quyền của
 hai role ứng dụng và lịch sử Flyway V1–V5. Giữ nguyên ID/timestamp, kể cả 65.750
@@ -117,3 +119,83 @@ tham số thực tế vào báo cáo riêng của lần đo mới.
 Nếu chỉ muốn gửi **bộ demo nhỏ**, các file CSV có sẵn ở `data/demo-seed/*.csv`.
 Gửi kèm cả thư mục demo-seed và hướng dẫn seed của nó; CSV không chứa schema,
 trigger hoặc đầy đủ trạng thái thông báo như bản sao database lớn ở gói này.
+
+## 7. Nạp vào Docker Compose của repository
+
+Gói này chứa **10.000 bài mô phỏng dùng đo index**, khác bộ 350 bài/ground truth trong `semantic-search/experiment/data/`. Restore gói này không tạo lại bộ 350 bài. Nếu cần tiếp tục đánh giá 15 query với nhãn hiện tại, chuyển đúng dữ liệu gốc từ Neon, giữ nguyên ID và nội dung.
+
+Các bước dưới tạo database riêng `soulspace_benchmark_with_index` trong container PostgreSQL, giữ nguyên database `soulspace`. Không nạp file dump vào database đã có schema V1–V5. Không chạy `large-dataset.sql`, clone hoặc drop index để thực hiện việc restore này.
+
+### 7.1. Khởi động container và giải nén
+
+Chạy từ thư mục gốc; `.env.docker` phải có cấu hình Docker đang dùng:
+
+```powershell
+cd D:\3-SoulSpace
+docker compose --env-file .env.docker up -d postgres
+docker compose --env-file .env.docker ps
+
+Expand-Archive -LiteralPath docs/index/transfer/soulspace-benchmark-transfer.zip -DestinationPath docs/index/transfer/unpacked
+$transferDir = (Resolve-Path -LiteralPath docs/index/transfer/unpacked/soulspace-benchmark-transfer).Path
+```
+
+Chỉ giải nén một lần. Nếu đã giải nén, bỏ qua `Expand-Archive` và chỉ đặt lại `$transferDir`. Hai công cụ `psql` và `pg_restore` được chạy **bên trong container** nên không cần cài PostgreSQL client riêng trên Windows.
+
+### 7.2. Tạo database trống
+
+Docker của repository đã có sẵn role cần thiết, nên bỏ qua `00-create-roles.sql`. Chỉ tạo database trống để nhận bản dump:
+
+```powershell
+Get-Content -LiteralPath "$transferDir/01-create-database.sql" -Raw -Encoding utf8 | docker compose --env-file .env.docker exec -T postgres psql -U postgres -d postgres -v ON_ERROR_STOP=1
+if ($LASTEXITCODE -ne 0) { throw "Không tạo được database mới. Nếu đã tồn tại, kiểm tra nó; không ghi đè." }
+```
+
+### 7.3. Chép file dump vào container và restore
+
+```powershell
+docker compose --env-file .env.docker cp "$transferDir/soulspace-benchmark.dump" postgres:/tmp/soulspace-benchmark.dump
+if ($LASTEXITCODE -ne 0) { throw "Không chép được dump vào container." }
+
+docker compose --env-file .env.docker exec -T postgres pg_restore -U postgres --exit-on-error --single-transaction --dbname=soulspace_benchmark_with_index /tmp/soulspace-benchmark.dump
+if ($LASTEXITCODE -ne 0) { throw "Restore thất bại; transaction được rollback. Kiểm tra lỗi trước khi thử lại." }
+```
+
+Không dùng `Get-Content` để truyền file `.dump` nhị phân. `docker compose cp` giữ nguyên dữ liệu nhị phân. Restore giữ owner/ACL trong gói, không dùng `--clean`, `--create`, `--no-owner` hay `--no-acl`.
+
+### 7.4. Kiểm tra sau restore
+
+```powershell
+docker compose --env-file .env.docker exec -T postgres psql -U postgres -d soulspace_benchmark_with_index -v ON_ERROR_STOP=1 -c "SELECT current_database(), (SELECT count(*) FROM public.users) AS users, (SELECT count(*) FROM public.blogs) AS blogs, (SELECT count(*) FROM public.comments) AS comments;"
+```
+
+Kỳ vọng: **1.000 users, 10.000 blogs, 10.000 comments**. Để đối chiếu đầy đủ hash/index/constraints, chạy bằng role sở hữu schema:
+
+```powershell
+"SET ROLE soulspace_migrator;`n" + (Get-Content -LiteralPath "$transferDir/verify-benchmark.sql" -Raw -Encoding utf8) | docker compose --env-file .env.docker exec -T postgres psql -U postgres -d soulspace_benchmark_with_index -v ON_ERROR_STOP=1
+```
+
+Đối chiếu kết quả với `manifest.json` trước khi bổ sung bảng hoặc dữ liệu khác.
+
+### 7.5. Nếu muốn thử embedding với bộ benchmark này
+
+Sửa **cả hai URL** trong `.env.docker`, giữ mật khẩu role đang có và `JINA_API_KEY`:
+
+```properties
+DB_URL=jdbc:postgresql://127.0.0.1:5432/soulspace_benchmark_with_index
+FLYWAY_URL=jdbc:postgresql://127.0.0.1:5432/soulspace_benchmark_with_index
+```
+
+Sau đó tạo bảng vector/job trên **đúng database vừa restore** và chỉ nạp thử 3 bài:
+
+```powershell
+Get-Content -LiteralPath semantic-search/sql/setup-embeddings.sql -Raw -Encoding utf8 | docker compose --env-file .env.docker exec -T postgres psql -U postgres -d soulspace_benchmark_with_index -v ON_ERROR_STOP=1
+if ($LASTEXITCODE -ne 0) { throw "Không tạo được bảng embedding; dừng trước khi gọi Jina." }
+
+.\data\demo-seed\.venv\Scripts\python.exe -X utf8 semantic-search/scripts/embeddings.py --env-file .env.docker --limit 3
+```
+
+Bổ sung bảng vector/job sẽ thay đổi số lượng bảng/index/constraints so với manifest benchmark gốc; chỉ đối chiếu manifest trước bước này. Nếu tiếp tục làm thí nghiệm index, giữ một bản DB benchmark gốc riêng.
+
+1.000 user mô phỏng trong gói có `password_hash=NULL`, không đăng nhập được bằng mật khẩu. Backfill Python không cần đăng nhập web; nếu muốn dùng giao diện, cần tài khoản local có thể đăng nhập.
+
+Không dùng bộ ground truth 350 bài để chấm bộ 10.000 bài này. Các lệnh thử embedding gọi Jina thật và dùng hạn mức API; không nạp toàn bộ bộ lớn chỉ để xác nhận kết nối.

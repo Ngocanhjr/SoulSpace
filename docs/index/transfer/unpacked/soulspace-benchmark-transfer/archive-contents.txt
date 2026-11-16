@@ -1,0 +1,177 @@
+;
+; Archive created at 2026-11-16 15:47:35 +07
+;     dbname: soulspace_benchmark_with_index
+;     TOC Entries: 167
+;     Compression: none
+;     Dump Version: 1.16-0
+;     Format: CUSTOM
+;     Integer: 4 bytes
+;     Offset: 8 bytes
+;     Dumped from database version: 17.11
+;     Dumped by pg_dump version: 17.11
+;
+;
+; Selected TOC Entries:
+;
+8; 2615 2200 SCHEMA - public soulspace_migrator
+2846; 0 0 ACL - SCHEMA public soulspace_migrator
+253; 1255 17064 FUNCTION public check_deleted_comment_likes() soulspace_migrator
+2847; 0 0 ACL public FUNCTION check_deleted_comment_likes() soulspace_migrator
+255; 1255 17069 FUNCTION public check_nonempty_blog() soulspace_migrator
+2848; 0 0 ACL public FUNCTION check_nonempty_blog() soulspace_migrator
+257; 1255 17076 FUNCTION public create_interaction_notification() soulspace_migrator
+2849; 0 0 ACL public FUNCTION create_interaction_notification() soulspace_migrator
+252; 1255 17062 FUNCTION public guard_comment_like() soulspace_migrator
+2850; 0 0 ACL public FUNCTION guard_comment_like() soulspace_migrator
+256; 1255 17074 FUNCTION public guard_media_identity() soulspace_migrator
+2851; 0 0 ACL public FUNCTION guard_media_identity() soulspace_migrator
+254; 1255 17067 FUNCTION public lock_image_blog() soulspace_migrator
+2852; 0 0 ACL public FUNCTION lock_image_blog() soulspace_migrator
+250; 1255 17056 FUNCTION public reject_relation_update() soulspace_migrator
+2853; 0 0 ACL public FUNCTION reject_relation_update() soulspace_migrator
+258; 1255 17081 PROCEDURE public sp_set_blog_like(uuid, uuid, boolean) soulspace_migrator
+2854; 0 0 ACL public PROCEDURE sp_set_blog_like(IN p_actor uuid, IN p_blog uuid, IN p_desired boolean) soulspace_migrator
+259; 1255 17082 PROCEDURE public sp_set_comment_like(uuid, uuid, uuid, boolean) soulspace_migrator
+2855; 0 0 ACL public PROCEDURE sp_set_comment_like(IN p_actor uuid, IN p_blog uuid, IN p_comment uuid, IN p_desired boolean) soulspace_migrator
+260; 1255 17083 PROCEDURE public sp_share_blog(uuid, uuid) soulspace_migrator
+2856; 0 0 ACL public PROCEDURE sp_share_blog(IN p_actor uuid, IN p_blog uuid) soulspace_migrator
+261; 1255 17084 PROCEDURE public sp_unshare_blog(uuid, uuid) soulspace_migrator
+2857; 0 0 ACL public PROCEDURE sp_unshare_blog(IN p_actor uuid, IN p_blog uuid) soulspace_migrator
+251; 1255 17060 FUNCTION public update_comment_counter() soulspace_migrator
+2858; 0 0 ACL public FUNCTION update_comment_counter() soulspace_migrator
+249; 1255 17052 FUNCTION public update_relation_counter() soulspace_migrator
+2859; 0 0 ACL public FUNCTION update_relation_counter() soulspace_migrator
+236; 1255 16998 FUNCTION public uuid_v7() soulspace_migrator
+2860; 0 0 ACL public FUNCTION uuid_v7() soulspace_migrator
+248; 1255 17050 FUNCTION public validate_comment() soulspace_migrator
+2861; 0 0 ACL public FUNCTION validate_comment() soulspace_migrator
+227; 1259 16860 TABLE public blog_categories soulspace_migrator
+2862; 0 0 ACL public TABLE blog_categories soulspace_migrator
+232; 1259 16959 TABLE public blog_images soulspace_migrator
+2863; 0 0 ACL public TABLE blog_images soulspace_migrator
+229; 1259 16911 TABLE public blog_likes soulspace_migrator
+2864; 0 0 ACL public TABLE blog_likes soulspace_migrator
+231; 1259 16943 TABLE public blog_shares soulspace_migrator
+2865; 0 0 ACL public TABLE blog_shares soulspace_migrator
+225; 1259 16826 TABLE public blogs soulspace_migrator
+2866; 0 0 ACL public TABLE blogs soulspace_migrator
+226; 1259 16851 TABLE public categories soulspace_migrator
+2867; 0 0 ACL public TABLE categories soulspace_migrator
+230; 1259 16927 TABLE public comment_likes soulspace_migrator
+2868; 0 0 ACL public TABLE comment_likes soulspace_migrator
+228; 1259 16878 TABLE public comments soulspace_migrator
+2869; 0 0 ACL public TABLE comments soulspace_migrator
+223; 1259 16782 TABLE public external_identities soulspace_migrator
+2870; 0 0 ACL public TABLE external_identities soulspace_migrator
+221; 1259 16758 TABLE public flyway_schema_history soulspace_migrator
+224; 1259 16795 TABLE public media_assets soulspace_migrator
+2871; 0 0 ACL public TABLE media_assets soulspace_migrator
+233; 1259 16978 TABLE public media_cleanup_jobs soulspace_migrator
+2872; 0 0 ACL public TABLE media_cleanup_jobs soulspace_migrator
+234; 1259 16999 TABLE public notifications soulspace_migrator
+2873; 0 0 ACL public TABLE notifications soulspace_migrator
+2874; 0 0 ACL public COLUMN notifications.read_at soulspace_migrator
+222; 1259 16767 TABLE public users soulspace_migrator
+2875; 0 0 ACL public TABLE users soulspace_migrator
+235; 1259 17085 VIEW public v_public_blog_feed soulspace_migrator
+2876; 0 0 COMMENT public VIEW v_public_blog_feed soulspace_migrator
+2877; 0 0 ACL public TABLE v_public_blog_feed soulspace_migrator
+2831; 0 16860 TABLE DATA public blog_categories soulspace_migrator
+2836; 0 16959 TABLE DATA public blog_images soulspace_migrator
+2833; 0 16911 TABLE DATA public blog_likes soulspace_migrator
+2835; 0 16943 TABLE DATA public blog_shares soulspace_migrator
+2829; 0 16826 TABLE DATA public blogs soulspace_migrator
+2830; 0 16851 TABLE DATA public categories soulspace_migrator
+2834; 0 16927 TABLE DATA public comment_likes soulspace_migrator
+2832; 0 16878 TABLE DATA public comments soulspace_migrator
+2827; 0 16782 TABLE DATA public external_identities soulspace_migrator
+2825; 0 16758 TABLE DATA public flyway_schema_history soulspace_migrator
+2828; 0 16795 TABLE DATA public media_assets soulspace_migrator
+2837; 0 16978 TABLE DATA public media_cleanup_jobs soulspace_migrator
+2838; 0 16999 TABLE DATA public notifications soulspace_migrator
+2826; 0 16767 TABLE DATA public users soulspace_migrator
+2602; 2606 16867 CONSTRAINT public blog_categories blog_categories_pkey soulspace_migrator
+2621; 2606 16966 CONSTRAINT public blog_images blog_image_position soulspace_migrator
+2623; 2606 16964 CONSTRAINT public blog_images blog_images_pkey soulspace_migrator
+2611; 2606 16916 CONSTRAINT public blog_likes blog_likes_pkey soulspace_migrator
+2618; 2606 16948 CONSTRAINT public blog_shares blog_shares_pkey soulspace_migrator
+2594; 2606 16845 CONSTRAINT public blogs blogs_pkey soulspace_migrator
+2598; 2606 16857 CONSTRAINT public categories categories_pkey soulspace_migrator
+2600; 2606 16859 CONSTRAINT public categories categories_slug_key soulspace_migrator
+2614; 2606 16932 CONSTRAINT public comment_likes comment_likes_pkey soulspace_migrator
+2606; 2606 16895 CONSTRAINT public comments comments_id_blog_id_key soulspace_migrator
+2609; 2606 16893 CONSTRAINT public comments comments_pkey soulspace_migrator
+2581; 2606 16787 CONSTRAINT public external_identities external_identities_pkey soulspace_migrator
+2583; 2606 16789 CONSTRAINT public external_identities external_identities_user_id_provider_key soulspace_migrator
+2572; 2606 16765 CONSTRAINT public flyway_schema_history flyway_schema_history_pk soulspace_migrator
+2586; 2606 16811 CONSTRAINT public media_assets media_assets_pkey soulspace_migrator
+2588; 2606 16815 CONSTRAINT public media_assets media_assets_provider_asset_id_key soulspace_migrator
+2590; 2606 16813 CONSTRAINT public media_assets media_assets_provider_public_id_key soulspace_migrator
+2627; 2606 16992 CONSTRAINT public media_cleanup_jobs media_cleanup_jobs_asset_id_key soulspace_migrator
+2629; 2606 16990 CONSTRAINT public media_cleanup_jobs media_cleanup_jobs_pkey soulspace_migrator
+2634; 2606 17010 CONSTRAINT public notifications notifications_interaction_unique soulspace_migrator
+2636; 2606 17008 CONSTRAINT public notifications notifications_pkey soulspace_migrator
+2575; 2606 16781 CONSTRAINT public users users_avatar_media_id_key soulspace_migrator
+2577; 2606 16777 CONSTRAINT public users users_pkey soulspace_migrator
+2579; 2606 16779 CONSTRAINT public users users_username_key soulspace_migrator
+2612; 1259 17037 INDEX public blog_likes_user_idx soulspace_migrator
+2616; 1259 17039 INDEX public blog_shares_blog_idx soulspace_migrator
+2619; 1259 17040 INDEX public blog_shares_user_time_idx soulspace_migrator
+2592; 1259 17032 INDEX public blogs_author_idx soulspace_migrator
+2595; 1259 17033 INDEX public blogs_public_author_idx soulspace_migrator
+2596; 1259 17031 INDEX public blogs_public_feed_idx soulspace_migrator
+2624; 1259 17044 INDEX public cleanup_expired_idx soulspace_migrator
+2625; 1259 17043 INDEX public cleanup_ready_idx soulspace_migrator
+2615; 1259 17038 INDEX public comment_likes_user_idx soulspace_migrator
+2603; 1259 17036 INDEX public comments_author_idx soulspace_migrator
+2604; 1259 17034 INDEX public comments_blog_idx soulspace_migrator
+2607; 1259 17035 INDEX public comments_parent_idx soulspace_migrator
+2573; 1259 16766 INDEX public flyway_schema_history_s_idx soulspace_migrator
+2584; 1259 17041 INDEX public media_assets_owner_idx soulspace_migrator
+2591; 1259 17042 INDEX public media_assets_stale_idx soulspace_migrator
+2630; 1259 17049 INDEX public notifications_actor_idx soulspace_migrator
+2631; 1259 17047 INDEX public notifications_blog_idx soulspace_migrator
+2632; 1259 17048 INDEX public notifications_comment_idx soulspace_migrator
+2637; 1259 17045 INDEX public notifications_recipient_time_idx soulspace_migrator
+2638; 1259 17046 INDEX public notifications_unread_idx soulspace_migrator
+2677; 2620 17072 TRIGGER public blog_images blog_images_nonempty soulspace_migrator
+2667; 2620 17053 TRIGGER public blog_likes blog_likes_counter soulspace_migrator
+2668; 2620 17057 TRIGGER public blog_likes blog_likes_immutable soulspace_migrator
+2669; 2620 17077 TRIGGER public blog_likes blog_likes_notify soulspace_migrator
+2674; 2620 17055 TRIGGER public blog_shares blog_shares_counter soulspace_migrator
+2675; 2620 17059 TRIGGER public blog_shares blog_shares_immutable soulspace_migrator
+2676; 2620 17079 TRIGGER public blog_shares blog_shares_notify soulspace_migrator
+2662; 2620 17070 TRIGGER public blogs blogs_nonempty soulspace_migrator
+2670; 2620 17063 TRIGGER public comment_likes comment_like_active soulspace_migrator
+2671; 2620 17054 TRIGGER public comment_likes comment_likes_counter soulspace_migrator
+2672; 2620 17058 TRIGGER public comment_likes comment_likes_immutable soulspace_migrator
+2673; 2620 17078 TRIGGER public comment_likes comment_likes_notify soulspace_migrator
+2663; 2620 17061 TRIGGER public comments comments_counter soulspace_migrator
+2664; 2620 17080 TRIGGER public comments comments_notify soulspace_migrator
+2665; 2620 17051 TRIGGER public comments comments_validate soulspace_migrator
+2666; 2620 17065 TRIGGER public comments deleted_comment_no_likes soulspace_migrator
+2678; 2620 17068 TRIGGER public blog_images image_blog_lock soulspace_migrator
+2661; 2620 17075 TRIGGER public media_assets media_identity_immutable soulspace_migrator
+2643; 2606 16868 FK CONSTRAINT public blog_categories blog_categories_blog_id_fkey soulspace_migrator
+2644; 2606 16873 FK CONSTRAINT public blog_categories blog_categories_category_id_fkey soulspace_migrator
+2654; 2606 16973 FK CONSTRAINT public blog_images blog_images_asset_id_fkey soulspace_migrator
+2655; 2606 16968 FK CONSTRAINT public blog_images blog_images_blog_id_fkey soulspace_migrator
+2648; 2606 16917 FK CONSTRAINT public blog_likes blog_likes_blog_id_fkey soulspace_migrator
+2649; 2606 16922 FK CONSTRAINT public blog_likes blog_likes_user_id_fkey soulspace_migrator
+2652; 2606 16954 FK CONSTRAINT public blog_shares blog_shares_blog_id_fkey soulspace_migrator
+2653; 2606 16949 FK CONSTRAINT public blog_shares blog_shares_user_id_fkey soulspace_migrator
+2642; 2606 16846 FK CONSTRAINT public blogs blogs_author_id_fkey soulspace_migrator
+2650; 2606 16933 FK CONSTRAINT public comment_likes comment_likes_comment_id_fkey soulspace_migrator
+2651; 2606 16938 FK CONSTRAINT public comment_likes comment_likes_user_id_fkey soulspace_migrator
+2645; 2606 16901 FK CONSTRAINT public comments comments_author_id_fkey soulspace_migrator
+2646; 2606 16896 FK CONSTRAINT public comments comments_blog_id_fkey soulspace_migrator
+2647; 2606 16906 FK CONSTRAINT public comments comments_parent_id_blog_id_fkey soulspace_migrator
+2640; 2606 16790 FK CONSTRAINT public external_identities external_identities_user_id_fkey soulspace_migrator
+2641; 2606 16816 FK CONSTRAINT public media_assets media_assets_owner_id_fkey soulspace_migrator
+2656; 2606 16993 FK CONSTRAINT public media_cleanup_jobs media_cleanup_jobs_asset_id_fkey soulspace_migrator
+2657; 2606 17016 FK CONSTRAINT public notifications notifications_actor_id_fkey soulspace_migrator
+2658; 2606 17021 FK CONSTRAINT public notifications notifications_blog_id_fkey soulspace_migrator
+2659; 2606 17026 FK CONSTRAINT public notifications notifications_comment_id_blog_id_fkey soulspace_migrator
+2660; 2606 17011 FK CONSTRAINT public notifications notifications_recipient_id_fkey soulspace_migrator
+2639; 2606 16821 FK CONSTRAINT public users users_avatar_fk soulspace_migrator
+2118; 826 16757 DEFAULT ACL public DEFAULT PRIVILEGES FOR TABLES soulspace_migrator

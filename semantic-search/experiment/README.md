@@ -64,6 +64,8 @@ Baseline giữ nguyên quy tắc: NFC + chữ thường + gộp khoảng trắng
 
 ## 3. Chạy riêng semantic search và đánh giá kết quả
 
+Các lệnh dưới mặc định dùng Neon. Nếu chuyển sang DB local, chuẩn bị/backfill theo [hướng dẫn embedding local](../docs/run-local-embedding.md), thêm `--env-file .env.docker` vào bước 01 và khởi động backend bằng `db-local,web-local`. Lệnh bước 02 và evaluate bước 03 giữ nguyên.
+
 ### Bước 01 — Kiểm tra DB trước khi đo
 
 Giữ nguyên nội dung, trạng thái công khai và embedding của 350 bài trong suốt thực nghiệm. Chạy kiểm tra chỉ đọc:

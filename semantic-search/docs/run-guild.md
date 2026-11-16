@@ -21,7 +21,7 @@ cd soulspace
 
 ## Backend — Local DB
 
-DB local cần có schema và bảng vector/job theo [plan-neon-reset.md](plan-neon-reset.md), bước 10.
+Chuẩn bị DB local, bảng vector/job và backfill theo [hướng dẫn embedding local](run-local-embedding.md). Script Python dùng `--env-file .env.docker`; backend dùng profile dưới đây.
 
 ```powershell
 docker compose --env-file .env.docker up -d postgres
