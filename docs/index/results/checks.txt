@@ -1,0 +1,55 @@
+prepare.log:
+{'status': 'seeded', 'phase': 3, 'counts': {'users': 40, 'categories': 16, 'blogs': 400, 'blog_categories': 640, 'comments': 700, 'blog_likes': 1000, 'comment_likes': 200, 'blog_shares': 150, 'external_identities': 0, 'media_assets': 0, 'blog_images': 0, 'media_cleanup_jobs': 0, 'notifications': 1898}}
+{'status': 'verified', 'phase': 3, 'counts': {'users': 40, 'categories': 16, 'blogs': 400, 'blog_categories': 640, 'comments': 700, 'blog_likes': 1000, 'comment_likes': 200, 'blog_shares': 150, 'external_identities': 0, 'media_assets': 0, 'blog_images': 0, 'media_cleanup_jobs': 0, 'notifications': 1898}}
+Demo pair ready
+
+demo-measure.log:
+demo SQL complete
+demo API complete
+
+large-measure.log:
+psql:/home/duypy/Documents/MySource/SoulSpace/infra/postgres/provision.sql:25: NOTICE:  role "duypy" has already been granted membership in role "soulspace_migrator" by role "duypy"
+Large dataset seeded
+large SQL complete
+large API complete
+
+stable-measure.log:
+large SQL complete
+large API complete
+
+concurrent.log:
+{'soulspace_benchmark_with_index': 10236, 'soulspace_benchmark_without_index': 5655}
+
+soulspace_benchmark_without_index.log:
+2026-11-16T14:06:21.507+07:00  INFO 39557 --- [soulspace] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 5 migrations (execution time 00:00.028s)
+2026-11-16T14:06:21.544+07:00  INFO 39557 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 5
+2026-11-16T14:06:21.547+07:00  INFO 39557 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-16T14:06:22.656+07:00  INFO 39557 --- [soulspace] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T14:06:23.702+07:00  INFO 39557 --- [soulspace] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18082 (http) with context path '/'
+2026-11-16T14:06:23.708+07:00  INFO 39557 --- [soulspace] [           main] ctu.soulspace.SoulspaceApplication       : Started SoulspaceApplication in 3.827 seconds (process running for 4.019)
+
+soulspace_benchmark_with_index.log:
+2026-11-16T14:06:16.919+07:00  INFO 39488 --- [soulspace] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 5 migrations (execution time 00:00.025s)
+2026-11-16T14:06:16.937+07:00  INFO 39488 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 5
+2026-11-16T14:06:16.939+07:00  INFO 39488 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-16T14:06:17.939+07:00  INFO 39488 --- [soulspace] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T14:06:19.365+07:00  INFO 39488 --- [soulspace] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18081 (http) with context path '/'
+2026-11-16T14:06:19.371+07:00  INFO 39488 --- [soulspace] [           main] ctu.soulspace.SoulspaceApplication       : Started SoulspaceApplication in 4.092 seconds (process running for 4.27)
+
+soulspace_without_index.log:
+2026-11-16T14:00:58.461+07:00  INFO 33989 --- [soulspace] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 5 migrations (execution time 00:00.028s)
+2026-11-16T14:00:58.492+07:00  INFO 33989 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 5
+2026-11-16T14:00:58.495+07:00  INFO 33989 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-16T14:00:59.449+07:00  INFO 33989 --- [soulspace] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T14:01:00.493+07:00  INFO 33989 --- [soulspace] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18082 (http) with context path '/'
+2026-11-16T14:01:00.500+07:00  INFO 33989 --- [soulspace] [           main] ctu.soulspace.SoulspaceApplication       : Started SoulspaceApplication in 3.909 seconds (process running for 4.085)
+
+soulspace_with_index.log:
+2026-11-16T14:00:53.916+07:00  INFO 33888 --- [soulspace] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 5 migrations (execution time 00:00.025s)
+2026-11-16T14:00:53.948+07:00  INFO 33888 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 5
+2026-11-16T14:00:53.951+07:00  INFO 33888 --- [soulspace] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-16T14:00:54.996+07:00  INFO 33888 --- [soulspace] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-16T14:00:56.195+07:00  INFO 33888 --- [soulspace] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 18081 (http) with context path '/'
+2026-11-16T14:00:56.203+07:00  INFO 33888 --- [soulspace] [           main] ctu.soulspace.SoulspaceApplication       : Started SoulspaceApplication in 4.207 seconds (process running for 4.41)
+
+Post-run hashes/schema/indexes/history unchanged: PASS

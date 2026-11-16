@@ -1,0 +1,127 @@
+{
+  "recorded_at": "2026-11-16T14:08:12.564730+07:00",
+  "source_commit": "cfec4e4a3880f0d12b4180835728f4717e677259",
+  "os": {
+    "PRETTY_NAME": "\"Ubuntu 26.04.1 LTS\"",
+    "NAME": "\"Ubuntu\"",
+    "VERSION_ID": "\"26.04\"",
+    "VERSION": "\"26.04.1 LTS (Resolute Raccoon)\"",
+    "VERSION_CODENAME": "resolute",
+    "ID": "ubuntu",
+    "ID_LIKE": "debian",
+    "HOME_URL": "\"https://www.ubuntu.com/\"",
+    "SUPPORT_URL": "\"https://help.ubuntu.com/\"",
+    "BUG_REPORT_URL": "\"https://bugs.launchpad.net/ubuntu/\"",
+    "PRIVACY_POLICY_URL": "\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"",
+    "UBUNTU_CODENAME": "resolute",
+    "LOGO": "ubuntu-logo"
+  },
+  "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           39 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  12\nOn-line CPU(s) list:                     0-11\nVendor ID:                               GenuineIntel\nModel name:                              13th Gen Intel(R) Core(TM) i5-1334U\nCPU family:                              6\nModel:                                   186\nThread(s) per core:                      2\nCore(s) per socket:                      10\nSocket(s):                               1\nStepping:                                3\nCPU(s) scaling MHz:                      67%\nCPU max MHz:                             4600.0000\nCPU min MHz:                             400.0000\nBogoMIPS:                                4992.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx pdpe1gb rdtscp lm constant_tsc art arch_perfmon pebs bts rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq dtes64 monitor ds_cpl vmx smx est tm2 ssse3 sdbg fma cx16 xtpr pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand lahf_lm abm 3dnowprefetch cpuid_fault epb ssbd ibrs ibpb stibp ibrs_enhanced tpr_shadow flexpriority ept vpid ept_ad fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid rdseed adx smap clflushopt clwb intel_pt sha_ni xsaveopt xsavec xgetbv1 xsaves split_lock_detect user_shstk avx_vnni dtherm ida arat pln pts hwp hwp_notify hwp_act_window hwp_epp hwp_pkg_req hfi vnmi umip pku ospke waitpkg gfni vaes vpclmulqdq rdpid movdiri movdir64b fsrm md_clear serialize arch_lbr ibt flush_l1d arch_capabilities\nVirtualization:                          VT-x\nL1d cache:                               352 KiB (10 instances)\nL1i cache:                               576 KiB (10 instances)\nL2 cache:                                6.5 MiB (4 instances)\nL3 cache:                                12 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-11\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Mitigation; Clear Register File\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n",
+  "meminfo": "MemTotal:       15482340 kB\nMemFree:         1526656 kB\nMemAvailable:    4993300 kB\nBuffers:          227400 kB\nCached:          6989956 kB\nSwapCached:         9540 kB\nActive:          3245524 kB\nInactive:        9123100 kB\nActive(anon):    2233300 kB\nInactive(anon):  6718912 kB\nActive(file):    1012224 kB\nInactive(file):  2404188 kB\nUnevictable:      388796 kB\nMlocked:              32 kB\nSwapTotal:       4194300 kB\nSwapFree:        4142040 kB\nZswap:                 0 kB\nZswapped:              0 kB\nDirty:              8656 kB\nWriteback:             0 kB\nAnonPages:       5531008 kB\nMapped:          2187284 kB\nShmem:           3801428 kB\nKReclaimable:     453492 kB\nSlab:             809044 kB\nSReclaimable:     453492 kB\nSUnreclaim:       355552 kB\nKernelStack:       33968 kB\nPageTables:       110476 kB\nSecPageTables:      7592 kB\nNFS_Unstable:          0 kB\nBounce:                0 kB\nWritebackTmp:          0 kB\nCommitLimit:    11935468 kB\nCommitted_AS:   42236656 kB\nVmallocTotal:   34359738367 kB\nVmallocUsed:       84584 kB\nVmallocChunk:          0 kB\nPercpu:            15216 kB\nHardwareCorrupted:     0 kB\nAnonHugePages:         0 kB\nShmemHugePages:  1318912 kB\nShmemPmdMapped:        0 kB\nFileHugePages:     24576 kB\nFilePmdMapped:     12288 kB\nCmaTotal:              0 kB\nCmaFree:               0 kB\nUnaccepted:            0 kB\nBalloon:               0 kB\nGPUActive:             0 kB\nGPUReclaim:            0 kB\nHugePages_Total:       0\nHugePages_Free:        0\nHugePages_Rsvd:        0\nHugePages_Surp:        0\nHugepagesize:       2048 kB\nHugetlb:               0 kB\nDirectMap4k:      323732 kB\nDirectMap2M:    10846208 kB\nDirectMap1G:     5242880 kB\n",
+  "disk": "Filesystem      Size  Used Avail Use% Mounted on\n/dev/nvme0n1p2  468G   74G  371G  17% /\n",
+  "java": "openjdk version \"21.0.13.0.3\" 2026-10-24\nOpenJDK Runtime Environment (build 21.0.13.0.3+1-1-26.04.1-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.13.0.3+1-1-26.04.1-Ubuntu, mixed mode, sharing)\n",
+  "python": "Python 3.14.4\n",
+  "postgres_source_url": "https://ftp.postgresql.org/pub/source/v17.11/postgresql-17.11.tar.bz2",
+  "postgres_source_sha256": "dd27f2b3c59e73ed14aa3324901242bf69a032a6347805f274e6260322d42979",
+  "postgres_configure": " '--prefix=/tmp/soulspace-index-20261116-wKmYO9/pg' '--without-readline' '--without-zlib' '--without-icu'\n",
+  "isolated_cluster": "/tmp/soulspace-index-20261116-wKmYO9/pgdata",
+  "postgres_port": 55437,
+  "backend_ports": [
+    18081,
+    18082
+  ],
+  "jvm_options": [
+    "-Xms128m",
+    "-Xmx512m",
+    "-Dspring.devtools.restart.enabled=false"
+  ],
+  "profiles": [
+    "benchmark",
+    "web-local"
+  ],
+  "initial_available_memory_gib_approx": 8.1,
+  "notes": [
+    "Docker socket denied; sudo noninteractive authentication unavailable.",
+    "System PostgreSQL 18/main at 5432 left running.",
+    "Benchmark PostgreSQL 17.11 compiled from checksum-verified official source.",
+    "JDK 21 extracted from Ubuntu packages; Maven HTTPS used existing JBR trust store.",
+    "Initial large results had autovacuum on. Final large run used VACUUM ANALYZE on both and autovacuum off in private cluster."
+  ],
+  "postgres_version": "PostgreSQL 17.11 on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 15.2.0-16ubuntu1) 15.2.0, 64-bit",
+  "final_autovacuum": "off",
+  "pg_settings": [
+    [
+      "autovacuum",
+      "off",
+      null
+    ],
+    [
+      "block_size",
+      "8192",
+      null
+    ],
+    [
+      "effective_cache_size",
+      "524288",
+      "8kB"
+    ],
+    [
+      "fsync",
+      "on",
+      null
+    ],
+    [
+      "jit",
+      "on",
+      null
+    ],
+    [
+      "max_connections",
+      "40",
+      null
+    ],
+    [
+      "random_page_cost",
+      "4",
+      null
+    ],
+    [
+      "seq_page_cost",
+      "1",
+      null
+    ],
+    [
+      "shared_buffers",
+      "16384",
+      "8kB"
+    ],
+    [
+      "synchronous_commit",
+      "on",
+      null
+    ],
+    [
+      "work_mem",
+      "4096",
+      "kB"
+    ]
+  ],
+  "databases": [
+    [
+      "soulspace_benchmark_with_index",
+      114276019
+    ],
+    [
+      "soulspace_benchmark_without_index",
+      97736371
+    ],
+    [
+      "soulspace_with_index",
+      11466419
+    ],
+    [
+      "soulspace_without_index",
+      10589875
+    ]
+  ]
+}
