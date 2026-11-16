@@ -63,6 +63,27 @@ Các file V1–V5, cấu hình ứng dụng và `.env.docker` không bị sửa.
 
 Bộ lớn dùng ID từ MD5 chuỗi cố định, nội dung tiếng Việt mô phỏng với độ dài thay đổi, timestamp cố định, mỗi user 10 bài có cả public/private; 10.000 comment phân bố trên 2.000 bài. Giữ trigger và constraints trong khi nạp, không tự ghi counters/notifications. Session nạp được nâng timeout lên 120 giây; session đo giữ 5 giây. Notifications có UUID/thời gian do DB sinh, nên một lần dựng lại nguồn có thể khác; clone đảm bảo hai bản trong cùng phép so sánh có cả các trường này giống hệt nhau.
 
+### Nguồn dữ liệu và thông số chi tiết bộ lớn
+
+Bộ demo lấy từ `data/demo-seed` đã có trong dự án. Bộ lớn được tạo thêm trong lần benchmark này bằng `large-dataset.sql`, không lấy từ dữ liệu thật hoặc nhân bản nội dung demo. Số hàng trong bảng trên là số đã đối soát trên database; các phân bố và độ dài dưới đây được tính lại từ công thức sinh SQL cố định.
+
+| Thành phần | Thông số cụ thể của bộ lớn |
+|---|---|
+| Tài khoản | `bench0001`–`bench1000`; tên `Nhân vật mô phỏng N`; `password_hash` để NULL, không dùng để thử đăng nhập |
+| Bài/user | Đúng 10 bài/user; 750 user có 9 public + 1 private; 250 user có 8 public + 2 private |
+| Nội dung bài | 93–898 ký tự Unicode, gồm số thứ tự và một câu tiếng Việt lặp 1–12 lần; không phải 10.000 bài viết biên soạn độc lập |
+| Bình luận | 2.000 bài đầu theo số thứ tự có đúng 5 comment/bài; 8.000 bài còn lại không có comment; tất cả là comment gốc, không reply, không xóa mềm |
+| Nội dung comment | 60–177 ký tự Unicode, dùng mẫu câu và số thứ tự |
+| Like bài | 8.333 bài có 6 like, 1 bài có 2 like, 1.666 bài không có like; chỉ like bài public |
+| Share | 5.000 bài public khác nhau có 1 share/bài; 179 user có 4 share, 642 user có 5 share, 179 user có 6 share |
+| Like comment | 2.000 lượt trên 2.000 comment khác nhau thuộc bài public |
+| Thời gian | User tạo ngày 01/05/2026; bài trong 01–12/07; comment tháng 8; like bài tháng 9; share và like comment tháng 10 |
+| ID | ID nghiệp vụ từ `md5('indexbench.<loại>.' || số_thứ_tự)::uuid`, tái lập theo công thức; không dùng UUID v7 cho các ID này |
+| Thông báo | 65.750 hàng do trigger tạo; ID/thời điểm theo lúc nạp, không gán về thời gian lịch sử của tương tác |
+| Thành phần không có | Không media, ảnh, avatar, cleanup job, liên kết Google, category hoặc liên kết category; không gọi model AI |
+
+Phân bố này khá đều và chỉ có một mẫu nội dung thay đổi độ dài. Nó phù hợp kiểm tác động của index theo kích thước/chọn lọc đã nêu, chưa đại diện mạng xã hội thật có bài rất nóng, tài khoản hàng nghìn bài hoặc cây reply sâu. Hai bản được clone sau nạp nên nội dung mô phỏng và các giá trị ngẫu nhiên do trigger sinh vẫn giống hệt nhau trong từng cặp.
+
 Mỗi cặp đạt:
 
 - Nội dung **13 bảng nghiệp vụ và bảng lịch sử Flyway** có SHA-256 trùng nhau sau khi sắp xếp biểu diễn JSON của từng hàng; không chỉ so COUNT.
