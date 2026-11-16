@@ -16,7 +16,7 @@ Push-Location soulspace
 Pop-Location
 ```
 
-PostgreSQL chỉ bind loopback; dữ liệu ở named volume. Script init tạo role `soulspace_migrator` (schema owner) và `soulspace_runtime` (DML), dùng mật khẩu riêng. Backend/Flyway chạy trên máy, Flyway dùng migrator; container không nhận Cloudinary credentials. Image pin `postgres:17.11-bookworm` theo [official image](https://hub.docker.com/_/postgres).
+PostgreSQL chỉ bind loopback; dữ liệu ở named volume. Script init tạo role `soulspace_migrator` (schema owner) và `soulspace_runtime` (DML), dùng mật khẩu riêng. Backend/Flyway chạy trên máy, Flyway dùng migrator; container không nhận Cloudinary credentials. Image pin `pgvector/pgvector:0.8.7-pg17-bookworm` theo [hướng dẫn Docker của pgvector](https://github.com/pgvector/pgvector#docker), có sẵn pgvector trên PostgreSQL major 17. Chuẩn bị bảng vector/job theo [hướng dẫn embedding local](../../semantic-search/docs/run-local-embedding.md).
 
 Init chỉ chạy khi volume còn trống. Đổi env không tự đổi mật khẩu của volume đã có; cập nhật role bằng thao tác quản trị riêng. Nếu init lỗi giữa chừng, sửa nguyên nhân rồi chạy lại provision bằng owner trên đúng database, không xóa volume. Không chạy `down -v` để chữa lỗi thông thường.
 

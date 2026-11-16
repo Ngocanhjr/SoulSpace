@@ -1,4 +1,9 @@
-"""Backfill Jina v3 embeddings for public SoulSpace posts."""
+"""Tạo embedding cho bài công khai và tìm kiếm trên DB local hoặc Neon.
+
+Local: python semantic-search/scripts/embeddings.py --env-file .env.docker --limit 3
+Neon: giữ lệnh cũ; mặc định đọc .env.neon. Chỉ các bài thiếu vector hoặc đổi
+nội dung mới được backfill. Vector vẫn do Jina API tạo, không chạy model local.
+"""
 
 import argparse
 import hashlib
@@ -27,13 +32,17 @@ UPSERT = """
 """
 
 
-def database_config():
+def database_config(env_file=None):
+    env_file = env_file or ENV_FILE
     settings = {}
-    for line in ENV_FILE.read_text(encoding="utf-8-sig").splitlines():
+    for line in env_file.read_text(encoding="utf-8-sig").splitlines():
         if line.strip() and not line.lstrip().startswith("#"):
             key, separator, value = line.partition("=")
             if not separator or not key.strip():
-                raise ValueError(".env.neon cần dùng định dạng KEY=value.")
+                raise ValueError(f"{env_file.name} cần dùng định dạng KEY=value.")
+            value = value.strip()
+            if len(value) >= 2 and value[0] in ("\"", "'") and value[-1] == value[0]:
+                value = value[1:-1]
             settings[key.strip()] = value
     for key in ("DB_URL", "DB_USER", "DB_PASSWORD"):
         settings[key] = os.environ.get(key, settings.get(key))
@@ -47,11 +56,12 @@ def database_config():
     options.pop("sslfactory", None)  # JDBC only.
     if "channelBinding" in options:
         options["channel_binding"] = options.pop("channelBinding")
-    if options.get("sslmode") != "verify-full" or options.get("channel_binding") != "require":
+    local = url.hostname.lower() in ("localhost", "127.0.0.1", "::1")
+    if not local and (options.get("sslmode") != "verify-full" or options.get("channel_binding") != "require"):
         raise ValueError("DB_URL cần sslmode=verify-full và channelBinding=require.")
     api_key = os.environ.get("JINA_API_KEY", settings.get("JINA_API_KEY", "")).strip()
     if not api_key:
-        raise ValueError("Thiếu JINA_API_KEY trong .env.neon hoặc môi trường.")
+        raise ValueError(f"Thiếu JINA_API_KEY trong {env_file.name} hoặc môi trường.")
 
     url_without_options = urlunsplit((url.scheme, url.netloc, url.path, "", ""))
     options = {
@@ -149,6 +159,8 @@ def search(conn, api_key, query):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--env-file", type=Path, default=ENV_FILE,
+                        help="File cấu hình DB/Jina: .env.docker cho local, mặc định .env.neon")
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--limit", type=int, help="Giới hạn số bài để chạy thử.")
     parser.add_argument("--query", help="Tìm 10 bài công khai gần nghĩa.")
@@ -158,7 +170,7 @@ def main():
     if args.batch_size < 1 or (args.limit is not None and args.limit < 1):
         parser.error("--batch-size và --limit phải lớn hơn 0.")
     try:
-        url, options, api_key = database_config()
+        url, options, api_key = database_config(args.env_file)
         with psycopg.connect(url, **options, autocommit=True) as conn:
             if args.query is None:
                 backfill(conn, api_key, args.batch_size, args.limit)
@@ -168,7 +180,7 @@ def main():
         print(f"DỪNG: {error}", file=sys.stderr)
         return 1
     except OSError:
-        print("DỪNG: Không đọc được .env.neon.", file=sys.stderr)
+        print(f"DỪNG: Không đọc được file cấu hình {args.env_file.name}.", file=sys.stderr)
         return 1
     except psycopg.Error as error:
         print(f"DỪNG: Lỗi PostgreSQL ({type(error).__name__}, SQLSTATE={error.sqlstate or 'n/a'}).",

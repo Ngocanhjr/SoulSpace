@@ -1,5 +1,11 @@
 # So sánh SoulSpace có và không có index bổ sung
 
+Để tự chạy từ đầu và chụp ảnh từng bước gửi giáo viên, xem
+[hướng dẫn chụp minh chứng](huong-dan-chup-minh-chung.md).
+
+Để chuyển đúng bộ dữ liệu lớn đã dùng sang máy khác, xem
+[gói sao lưu và hướng dẫn khôi phục](transfer/README.md).
+
 Dùng một bản source, hai database và cùng một bộ dữ liệu để đo tác động của các index trong [V2__query_indexes.sql](../../soulspace/src/main/resources/db/migration/V2__query_indexes.sql). Hướng dẫn này dành cho database benchmark local, không thực hiện trên database đang dùng chung hoặc chứa dữ liệu thật.
 
 | Database | Vai trò |
@@ -8,6 +14,21 @@ Dùng một bản source, hai database và cùng một bộ dữ liệu để đ
 | `soulspace_without_index` | Sao chép từ bản trên, sau đó bỏ đúng các index V2. |
 
 “Không index” trong tài liệu này nghĩa là không có **index bổ sung V2**. Cả hai bản vẫn giữ PRIMARY KEY, UNIQUE, FOREIGN KEY, CHECK, procedure, trigger, view và dữ liệu. PostgreSQL tự tạo index để thực thi PRIMARY KEY/UNIQUE; giữ chúng để username và các quan hệ like/share vẫn có tính duy nhất. Xem [unique indexes của PostgreSQL](https://www.postgresql.org/docs/17/indexes-unique.html).
+
+### File SQL đo trực tiếp
+
+Sau khi chuẩn bị cặp database theo các bước dưới đây, có thể mở
+[compare-index.sql](compare-index.sql) trong SQL console IntelliJ/pgAdmin hoặc psql.
+Kết nối bằng `soulspace_runtime`, chạy toàn bộ file trên bản có V2, lưu các bảng kết
+quả, rồi chạy cùng file trên bản không V2. File tự chọn tham số, warmup 5 lần, đo
+60 lần/query và trả p50/p95, Planning Time, buffers cùng plan của từng mẫu. Hai bản
+phải hiển thị cùng UUID và số hàng; kiểm tra nội dung dữ liệu theo mục 5 trước khi đo.
+
+File chỉ đọc dữ liệu nghiệp vụ và ghi bảng tạm trong session; cần quyền TEMP trên
+database. Nó không tự tạo/clone database hoặc bỏ index. Lưu kết quả trước khi đóng
+console hoặc chạy lại file vì bảng tạm sẽ mất/bị thay thế. Đảo thứ tự chạy hai bản
+giữa các đợt. Lịch chạy này khác 6 block xen kẽ hai database của
+[measure_sql.py](measure_sql.py), nên ghi rõ phương pháp khi báo cáo số đo mới.
 
 ## 1. Chuẩn bị
 

@@ -1,7 +1,7 @@
 name: soulspace
 services:
   postgres:
-    image: postgres:17.11-bookworm
+    image: pgvector/pgvector:0.8.7-pg17-bookworm
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env.docker}
