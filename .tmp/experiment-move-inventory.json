@@ -1,0 +1,206 @@
+[
+  {
+    "RelativePath": ".gitignore",
+    "Hash": "E5CEFD046795D6750F9D32A85EF5E0313F17383ED182F771DCD892C15C66E3B6"
+  },
+  {
+    "RelativePath": "corpus.csv",
+    "Hash": "9786C32A9C69BB2034CE67DD548BBE4217A73FE1C71845F3915EFC7DCBD28C48"
+  },
+  {
+    "RelativePath": "dataset-info.json",
+    "Hash": "C4EE81114ACABBB5F4D4E1040B0B213FDB045E13CC8412BAC8E408ACC9900DAC"
+  },
+  {
+    "RelativePath": "evaluate.py",
+    "Hash": "176A6068B21A1F475B9ECB5699574037CAA73C35444F179DEEA6AAFCFA4A0C08"
+  },
+  {
+    "RelativePath": "experiment_data.py",
+    "Hash": "83A5CE92155A0C7BC936B6012C912D18E80A01289E0FB49C47BAD0F5103C74F9"
+  },
+  {
+    "RelativePath": "export-corpus.py",
+    "Hash": "49A60BD62F2F00605E44CC4DC27139E3B8DD524ACA24BC611F5273A676936290"
+  },
+  {
+    "RelativePath": "ground-truth-final-info.json",
+    "Hash": "FC35D16EEAAB04E84E5FF86B0E68B3C49C5604BE105C56CA46461B4F610648F5"
+  },
+  {
+    "RelativePath": "ground-truth-final.csv",
+    "Hash": "0D08BE2CC2B40FDE265CF0C699ABE00C0F63F42B0388D9023A91EAAC5BB41CB9"
+  },
+  {
+    "RelativePath": "plan-thuc-nghiem.md",
+    "Hash": "F033E111E3A41A4F4F8A0DF83E684B0FE5C2D65D9723F93CF0F7A4B13ED85CF9"
+  },
+  {
+    "RelativePath": "queries.csv",
+    "Hash": "F2FCF4C3244A5CD86728557862CBA3CB5FD537D1423E762BDA021CE7B3F63742"
+  },
+  {
+    "RelativePath": "README.md",
+    "Hash": "505B710F0FF01F3083756C461522FE0092EDAC6141B7D9DE769EB31FA3ED747C"
+  },
+  {
+    "RelativePath": "run-experiment.py",
+    "Hash": "2136FD64D85B45C5D96C962A707C61C11678487EAD71845628DB01EA0F1444C6"
+  },
+  {
+    "RelativePath": "test_evaluate.py",
+    "Hash": "0C0D69C793E91A9508E1EDF0D92364C5814128856D1DD9651FC20450B5147955"
+  },
+  {
+    "RelativePath": "test_experiment.py",
+    "Hash": "0C0E1CC418021034279578D5320A517AB5CD51398AAC203C227A05050324D4F9"
+  },
+  {
+    "RelativePath": "test_export.py",
+    "Hash": "13705A7D547E5DC419B92D3F2FEAC5D8BBD1675580E99F9F58439A7C349864A2"
+  },
+  {
+    "RelativePath": "test_helpers.py",
+    "Hash": "B4AFB0DF7A279FF94069DA071C77405F66326AC726E7EDA8EAC6482C4380ABCD"
+  },
+  {
+    "RelativePath": "label-comparison\\bao-cao-doi-chieu.md",
+    "Hash": "58CB0C26744DD204A914BEB4984956E8EA00E2607B63BC1AB34F6CB18494B8EE"
+  },
+  {
+    "RelativePath": "label-comparison\\doi-chieu-toan-bo.csv",
+    "Hash": "6701E138FE6492596DCA0E171FBD00F27577828945457AFBDA44B1796327D4E4"
+  },
+  {
+    "RelativePath": "label-comparison\\ground-truth-chatweb.csv",
+    "Hash": "125FC38EB748A2E8015E98E4037BFA7F64767D78D8FDA5ED16B5E38B481C09B1"
+  },
+  {
+    "RelativePath": "label-comparison\\ground-truth-claude.csv",
+    "Hash": "74755325CB4AF10D5E52B1415DBCC402447B0D801176EBE4BBCC4FA6F36F5358"
+  },
+  {
+    "RelativePath": "label-comparison\\ground-truth-gemini.csv",
+    "Hash": "2E0A63C156AFD960D3B00F43F6A5F561701E56718640AFDAC56B2991EBAB9CB3"
+  },
+  {
+    "RelativePath": "label-comparison\\nhan-bat-dong.csv",
+    "Hash": "8D198850E35B729FF413CC9038DF106BC5765894513CCCD8B5408C91C115D39E"
+  },
+  {
+    "RelativePath": "label-comparison\\thong-ke-theo-query.csv",
+    "Hash": "00D93D44C9434970F1826D556F1314F981AB6DDFC1A9C35214AF3AC51511E987"
+  },
+  {
+    "RelativePath": "runs\\20261115T182846523451Z-keyword\\judgments.csv",
+    "Hash": "4CB1148FBDECB314E690C44326A1C1B618F82B233B4C80D98CD0FFB12D3B2029"
+  },
+  {
+    "RelativePath": "runs\\20261115T182846523451Z-keyword\\results.csv",
+    "Hash": "A8D8C995FE4437451C377FBDC50566362BD81BCABE22A1B37D5B79C6FD1671B3"
+  },
+  {
+    "RelativePath": "runs\\20261115T182846523451Z-keyword\\run-info.json",
+    "Hash": "0C1852C13A2940963000A1B89071FD2D6D153D2AB2C2C16F55BB672A23F280E9"
+  },
+  {
+    "RelativePath": "runs\\20261115T182846523451Z-keyword\\timings.csv",
+    "Hash": "2CACF9EB4F21834D85DFA2F495C18910CF37EDC473298F4D4F0B5D09729602D1"
+  },
+  {
+    "RelativePath": "runs\\20261115T183036538706Z-keyword\\judgments.csv",
+    "Hash": "4CB1148FBDECB314E690C44326A1C1B618F82B233B4C80D98CD0FFB12D3B2029"
+  },
+  {
+    "RelativePath": "runs\\20261115T183036538706Z-keyword\\results.csv",
+    "Hash": "A8D8C995FE4437451C377FBDC50566362BD81BCABE22A1B37D5B79C6FD1671B3"
+  },
+  {
+    "RelativePath": "runs\\20261115T183036538706Z-keyword\\run-info.json",
+    "Hash": "2E2A4F4F7E3C2BAF3B56538446553C81DE4D6B15D251F5E1C11EA52C28F46DB0"
+  },
+  {
+    "RelativePath": "runs\\20261115T183036538706Z-keyword\\timings.csv",
+    "Hash": "2CACF9EB4F21834D85DFA2F495C18910CF37EDC473298F4D4F0B5D09729602D1"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\corpus.csv",
+    "Hash": "9786C32A9C69BB2034CE67DD548BBE4217A73FE1C71845F3915EFC7DCBD28C48"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\dataset-info.json",
+    "Hash": "C4EE81114ACABBB5F4D4E1040B0B213FDB045E13CC8412BAC8E408ACC9900DAC"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\ground-truth-final.csv",
+    "Hash": "0D08BE2CC2B40FDE265CF0C699ABE00C0F63F42B0388D9023A91EAAC5BB41CB9"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\queries.csv",
+    "Hash": "F2FCF4C3244A5CD86728557862CBA3CB5FD537D1423E762BDA021CE7B3F63742"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\results.csv",
+    "Hash": "BAD04374C4406836EA099EF19892CE0028E213CB2CB85D9667DB6E7A02F891ED"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\run-info.json",
+    "Hash": "22A5E918A36BD7BA2C3BDD1F333A1F13D61FA35C00407AF0DA9EF933D6F251B8"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\timings.csv",
+    "Hash": "2CACF9EB4F21834D85DFA2F495C18910CF37EDC473298F4D4F0B5D09729602D1"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\evaluation-20261116T045314389515Z\\evaluation-info.json",
+    "Hash": "7ABFB4761627F8338ED30811FD82CF3E14840EFD3290D8209CADCFE287A718CD"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\evaluation-20261116T045314389515Z\\latency-summary.csv",
+    "Hash": "A3283A07F07D163E7391FF3980916100270F4A3D8DA61B399E3F2F0AA3CC6117"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\evaluation-20261116T045314389515Z\\metrics-per-query.csv",
+    "Hash": "A3B4E685F08750708553F710CD7796521500329DFF9997D047F01505595AD155"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\evaluation-20261116T045314389515Z\\metrics-summary.csv",
+    "Hash": "80D841ED85523B6AFFDB4CB6E8AA806470A13AF42BE291134CF7F3504F75FBE5"
+  },
+  {
+    "RelativePath": "runs\\keyword-validation-1e4e141d\\evaluation-20261116T045314389515Z\\summary.md",
+    "Hash": "5D01D64F85EC542E98C5517109AF65E2AD636B3E92984AD0ADEFF178DDE5EB36"
+  },
+  {
+    "RelativePath": "__pycache__\\evaluate.cpython-311.pyc",
+    "Hash": "9475FC6170C5AED2FCDD2B4E872D520BCB14DEA878B70DDA828BC5FE3986D006"
+  },
+  {
+    "RelativePath": "__pycache__\\experiment_data.cpython-311.pyc",
+    "Hash": "BDDCE96BD899F66F0AD2AB795B7829D5B7C2698F5DE990BF53FE9CEC68EAFC6F"
+  },
+  {
+    "RelativePath": "__pycache__\\export-corpus.cpython-311.pyc",
+    "Hash": "9DF6C611971DF703EF7E346D21160C05C271BA6953F0E6DF2D16009C3A18D04C"
+  },
+  {
+    "RelativePath": "__pycache__\\run-experiment.cpython-311.pyc",
+    "Hash": "14B6F974811B3E69DC2C1883770CEC3DEACD4AE602681345B997E34107E74C7C"
+  },
+  {
+    "RelativePath": "__pycache__\\test_evaluate.cpython-311.pyc",
+    "Hash": "730E0A4205B5AA69AAC1A785FFD002B831A9DBC1BA798550A7F588052156FA70"
+  },
+  {
+    "RelativePath": "__pycache__\\test_experiment.cpython-311.pyc",
+    "Hash": "B02B5417FA3746A509F48499B26D731F0D92981FEFC6C664417126F510EEF96B"
+  },
+  {
+    "RelativePath": "__pycache__\\test_export.cpython-311.pyc",
+    "Hash": "39A75F449436477702C301E9B0CFFB963157E8976C4E8B2BC18564CEB7501734"
+  },
+  {
+    "RelativePath": "__pycache__\\test_helpers.cpython-311.pyc",
+    "Hash": "393732DBFD18DEE62CFFCFC3A7A81F5DFC1EF6CF16364A70BD59BAC9D33C0BA0"
+  }
+]

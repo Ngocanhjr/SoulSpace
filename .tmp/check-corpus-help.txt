@@ -1,0 +1,16 @@
+usage: 01-check-corpus.py [-h] [--env-file ENV_FILE] [--check]
+
+Bước 01 — Kiểm tra corpus trên DB trước khi chạy tìm kiếm ngữ nghĩa. Mục đích:
+xác nhận các bài trong ../data/corpus.csv có nội dung và embedding khớp DB.
+Chỉ đọc DB; không gọi Jina. Chạy keyword đơn thuần thì bỏ qua bước này. Đầu
+vào: dữ liệu trong ../data/ và cấu hình .env.neon ở gốc repository. Kết quả:
+thông báo kiểm tra đạt hoặc lỗi; --check không ghi đè dữ liệu. Chạy từ gốc
+repository bằng Python có psycopg: python sematic-
+search/experiment/runner/01-check-corpus.py --check Tiếp theo: 02-run-
+experiment.py. Chế độ không có --check chỉ dùng để xuất snapshot ban đầu khi
+chưa có corpus/metadata; không dùng với bộ đã chốt.
+
+options:
+  -h, --help           show this help message and exit
+  --env-file ENV_FILE
+  --check              Compare DB with snapshot; do not overwrite files

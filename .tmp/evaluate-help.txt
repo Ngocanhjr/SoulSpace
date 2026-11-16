@@ -1,0 +1,25 @@
+usage: 03-evaluate.py [-h] [--dataset-dir DATASET_DIR]
+                      [--ground-truth GROUND_TRUTH]
+                      run_dir
+
+Bước 03 — Tính Precision@5, Recall@5, MRR@10 và nDCG@10. Chạy sau 02-run-
+experiment.py; chỉ nhận lượt có complete=true và hash hợp lệ. Đầu vào: thư mục
+lượt chạy, gồm kết quả và snapshot dữ liệu/nhãn 0/1/2. Đầu ra: thư mục
+evaluation-<timestamp>/ bên trong lượt chạy, chứa metrics từng query, tổng hợp
+A–E/ALL, thời gian API và báo cáo summary.md. Ví dụ chạy từ gốc repository
+(thay <ma-luot> bằng thư mục thực tế): python sematic-
+search/experiment/runner/03-evaluate.py sematic-
+search/experiment/results/keyword-search/<ma-luot> Nếu chạy cả hai phương
+pháp, đánh giá riêng từng nhánh keyword-search và semantic-search. Bước này
+chạy local, không cần DB/backend và không gọi Jina.
+
+positional arguments:
+  run_dir               Thư mục lượt chạy mới, có dữ liệu và ground truth đã
+                        đóng băng
+
+options:
+  -h, --help            show this help message and exit
+  --dataset-dir DATASET_DIR
+                        Mặc định dùng dữ liệu snapshot trong run_dir
+  --ground-truth GROUND_TRUTH
+                        Phải khớp hash ground truth đã chốt trước lượt chạy

@@ -1,0 +1,31 @@
+{
+  "status": "finalized",
+  "dataset_file": "ground-truth-final.csv",
+  "columns": [
+    "group",
+    "query_id",
+    "query",
+    "blog_id",
+    "content",
+    "label"
+  ],
+  "label_column": "label",
+  "pair_key": [
+    "query_id",
+    "blog_id"
+  ],
+  "query_count": 15,
+  "corpus_count": 350,
+  "pair_count": 5250,
+  "label_definitions": {
+    "0": "Không liên quan",
+    "1": "Liên quan một phần",
+    "2": "Liên quan rõ ràng"
+  },
+  "label_counts": {
+    "0": 5181,
+    "1": 52,
+    "2": 17
+  },
+  "dataset_sha256": "0ad697ca8ae557598a3a3923454c035aaa1a2b65f8d42605b07c612eda8834fd"
+}

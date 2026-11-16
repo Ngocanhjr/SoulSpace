@@ -1,0 +1,16 @@
+﻿query_id,group,query,intent
+Q01,A,tự đặt câu hỏi sau mỗi buổi học,Tìm trải nghiệm học chủ động bằng cách tự đặt câu hỏi và tự giải thích kiến thức thay vì chỉ chép bài.
+Q02,A,migration trên một database thử,Tìm trải nghiệm chạy migration trong cơ sở dữ liệu thử nghiệm tách khỏi dữ liệu sử dụng hằng ngày.
+Q03,A,nấu canh chua,Tìm chia sẻ về nấu canh chua và điều chỉnh thời điểm cho rau vào để rau không bị mềm quá.
+Q04,B,Sắp xếp vật dụng để buổi sáng khỏi cuống cuồng tìm trước khi ra ngoài,Tìm trải nghiệm để chìa khóa hoặc đồ thường dùng ở vị trí cố định gần cửa nhằm giảm thời gian tìm kiếm.
+Q05,B,Món có giá thấp chưa chắc tiết kiệm nếu hiếm khi dùng tới,Tìm suy nghĩ về chi phí theo số lần sử dụng thay vì chỉ nhìn giá mua ban đầu.
+Q06,B,Cho phép mình vụng về khi bắt đầu một thú vui mới,Tìm trải nghiệm duy trì sở thích dù sản phẩm ban đầu chưa đẹp và giảm áp lực phải làm tốt ngay.
+Q07,C,"Tối nào mình cũng bị cuốn vào xem video trên giường rồi ngủ muộn, có ai từng thay đổi thói quen này chưa?",Tìm trải nghiệm thay đổi cách dùng điện thoại vào giờ ngủ để ngắt việc xem video kéo dài.
+Q08,C,"Mình cứ thấy có lỗi mỗi khi dừng làm việc để nghỉ, làm sao cho bản thân được nghỉ một chút?",Tìm chia sẻ về cảm giác có lỗi khi nghỉ ngơi và thử dành khoảng dừng thực sự khỏi công việc.
+Q09,C,"Mình nhận quá nhiều việc nhưng sợ bị nghĩ là lười nếu nói không kham nổi, nên trao đổi với quản lý thế nào?",Tìm trải nghiệm báo tình trạng quá tải với quản lý và cùng sắp xếp ưu tiên hoặc điều chỉnh khối lượng công việc.
+Q10,D,Những bài viết về cảm giác lạc lõng khi mới lên thành phố đi học,Tìm chia sẻ về người mới lên thành phố học còn bỡ ngỡ với nơi ở và quá trình làm quen môi trường sống.
+Q11,D,Những chia sẻ về việc khó kết bạn khi đã đi làm,Tìm bài mô tả khó xây dựng tình bạn khi trưởng thành hoặc thiếu người trò chuyện sau giờ làm.
+Q12,D,Những bài viết về việc tập bỏ thói quen liên lạc với người cũ sau chia tay,Tìm trải nghiệm thích nghi sau chia tay khi vẫn muốn gửi tin hoặc ảnh cho người cũ và đang tập dừng thói quen đó.
+Q13,E,Đi chơi ngắn ngày với ngân sách hạn chế nhưng vẫn đủ tiền trả trọ,Tìm trải nghiệm rút ngắn hoặc điều chỉnh chuyến đi và tính tổng chi phí để vẫn bảo đảm tiền sinh hoạt hoặc tiền trọ.
+Q14,E,Tự nấu bữa trưa có rau và đạm nhưng đơn giản để duy trì lâu dài,Tìm chia sẻ chuẩn bị bữa trưa có rau và nguồn đạm với cách nấu không cầu kỳ và phù hợp để duy trì thường xuyên.
+Q15,E,Làm việc ở nhà và trao đổi với gia đình để có giờ yên tĩnh khi họp,Tìm trải nghiệm giải thích lịch làm việc tại nhà cho người thân và thống nhất thời gian yên tĩnh phục vụ công việc hoặc cuộc họp.

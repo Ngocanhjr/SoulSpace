@@ -1,0 +1,21 @@
+usage: 02-run-experiment.py [-h] [--method {keyword,semantic,both}]
+                            [--base-url BASE_URL] [--repeats REPEATS]
+                            [--output OUTPUT]
+
+Bước 02 — Chạy tìm kiếm keyword, semantic hoặc cả hai trên bộ đã chốt. Đầu
+vào: corpus.csv, queries.csv, ground-truth-final.csv và dataset-info.json
+trong ../data/. Script kiểm tra dữ liệu rồi lưu snapshot trước khi tìm kiếm.
+Đầu ra: ../results/keyword-search/<ma-luot>/ và/hoặc ../results/semantic-
+search/<ma-luot>/, mỗi phương pháp có kết quả riêng. Chạy từ gốc repository,
+không cần DB/backend nếu chỉ chọn keyword: python sematic-
+search/experiment/runner/02-run-experiment.py --method keyword Semantic/both:
+chạy bước 01 --check trước; cần backend, Jina và cookie đăng nhập. Tiếp theo:
+03-evaluate.py với đường dẫn từng thư mục lượt chạy đã hoàn tất.
+
+options:
+  -h, --help            show this help message and exit
+  --method {keyword,semantic,both}
+  --base-url BASE_URL
+  --repeats REPEATS
+  --output OUTPUT       Thư mục gốc kết quả; mặc định experiment/results, luôn
+                        tách hai phương pháp

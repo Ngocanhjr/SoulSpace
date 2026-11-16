@@ -5,7 +5,7 @@
 ```text
 3-SoulSpace/
 ├── .env.neon                                        # Cập nhật cấu hình kết nối
-├── sematic-search/
+├── semantic-search/
 │   ├── scripts/
 │   │   └── embeddings.py                            # Tạo mới · nạp vector và thử tìm kiếm
 │   └── sql/
@@ -126,14 +126,14 @@ Cả hai cột phải có kết quả.
 2. **Nạp vector cho bài viết nếu chưa nạp.** Chạy thử 3 bài trước, sau đó bỏ `--limit 3` để nạp phần còn lại. Script bỏ qua các bài đã có vector khớp nội dung. Nếu đã nạp hết, chuyển sang mục 3.
 
    ```powershell
-   python .\sematic-search\scripts\embeddings.py --limit 3
-   python .\sematic-search\scripts\embeddings.py
+   python .\semantic-search\scripts\embeddings.py --limit 3
+   python .\semantic-search\scripts\embeddings.py
    ```
 
 3. **Chạy tìm kiếm.** `--query` tạo vector cho câu tìm kiếm bằng `retrieval.query` và trả tối đa 10 bài công khai có vector khớp nội dung hiện tại, xếp theo độ tương đồng cosine. Có thể chạy khi backend tắt.
 
    ```powershell
-   python .\sematic-search\scripts\embeddings.py --query "Áp lực ôn thi"
+   python .\semantic-search\scripts\embeddings.py --query "Áp lực ôn thi"
    ```
 
    Kết quả hiện tác giả, điểm tương đồng và đoạn trích. Nếu báo không tìm thấy bài công khai có embedding khớp nội dung, kiểm tra kết quả nạp ở mục 2 và đảm bảo `.env.neon` đang trỏ đúng database đã nạp. Xem [luồng chính](flowmain.md).
@@ -329,7 +329,7 @@ Phạm vi hiện tại là tự động xử lý bài mới được tạo qua A
 
 4. **Điều kiện database và bật worker.** Database chạy ứng dụng cần có `blog_embeddings`, `blog_embedding_jobs` và quyền cần thiết cho `soulspace_runtime`. Bảng job cần khóa chính `blog_id`, FK tới `blogs.id` với `ON DELETE CASCADE`, các trường `generation`, `status` (`PENDING`, `RUNNING`, `DONE`, `DEAD`), `attempts`, `available_at`, `lease_until`, `last_error`, cùng index nhận job đến hạn. Mỗi bài có một dòng job; enqueue lại tăng generation và đặt về trạng thái chờ.
 
-   Chưa kiểm tra trực tiếp schema/quyền trên Neon trong lần bổ sung code này. File SQL dự kiến `sematic-search/sql/blog_embedding_jobs.sql` hiện chưa có trong repo, và Flyway V1–V5 chưa chứa bảng job; cần lưu lại SQL đã chạy trên Neon để tái tạo môi trường. Nếu thiếu bảng hoặc quyền ghi job, transaction tạo bài sẽ rollback.
+   Chưa kiểm tra trực tiếp schema/quyền trên Neon trong lần bổ sung code này. File SQL dự kiến `semantic-search/sql/blog_embedding_jobs.sql` hiện chưa có trong repo, và Flyway V1–V5 chưa chứa bảng job; cần lưu lại SQL đã chạy trên Neon để tái tạo môi trường. Nếu thiếu bảng hoặc quyền ghi job, transaction tạo bài sẽ rollback.
 
    `.env.neon` trên máy đã có cấu hình sau và có `JINA_API_KEY`; không ghi giá trị secret vào tài liệu:
 

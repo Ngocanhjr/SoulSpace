@@ -1,0 +1,34 @@
+{
+  "exported_at_utc": "2026-11-15T18:23:12.478441+00:00",
+  "source": "Neon PostgreSQL public.v_public_blog_feed + blog_embeddings",
+  "corpus_fingerprint": "9b1a6e4a6a39d3f7dc829e30e31d7f16913c9f1cf9c0d8cdfe5814413ceaaf25",
+  "model_config_from_source": {
+    "model": "jina-embeddings-v3",
+    "dimensions": 1024,
+    "query_task": "retrieval.query",
+    "passage_task": "retrieval.passage"
+  },
+  "embedding_origin_note": "Cấu hình lấy từ source; không suy ra lịch sử tạo vector chỉ từ hash.",
+  "query_counts": {
+    "A": 3,
+    "B": 3,
+    "C": 3,
+    "D": 3,
+    "E": 3
+  },
+  "query_source": "AI-authored from current public corpus; not real user search logs",
+  "original_export_counts": {
+    "public_text_posts": 351,
+    "eligible_posts": 351
+  },
+  "corpus_count": 350,
+  "query_count": 15,
+  "queries_sha256": "f2fcf4c3244a5cd86728557862cba3cb5fd537d1423e762bda021ce7b3f63742",
+  "ground_truth_sha256": "0ad697ca8ae557598a3a3923454c035aaa1a2b65f8d42605b07c612eda8834fd",
+  "ground_truth_file": "ground-truth-final.csv",
+  "ground_truth_policy": "Finalized relevance labels 0/1/2.",
+  "excluded_blog_ids": [
+    "01a1df83-427c-77a0-b1cc-68ad4e30c81f"
+  ],
+  "exclusion_note": "Text-only hihi post excluded before labeling the 350-post evaluation corpus."
+}
