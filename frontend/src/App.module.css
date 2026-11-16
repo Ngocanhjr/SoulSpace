@@ -19,21 +19,15 @@
   /* flex-wrap: wrap; */
 }
 
-/* Khi chỉ có 1 page thì căn giữa */
-.pages-container.one {
-  justify-content: center;
-}
-.pages-container.one .page-render {
-  margin: auto;
-}
-/* Khi có 2 page thì chia đều */
-.pages-container.two {
-  justify-content: center;
-  gap: 10px;
+.page-slot {
+  flex: 1;
+  min-width: 0;
+  padding-top: 8px;
 }
 
 /* Page hiển thị */
 .page-render {
+  margin: auto;
   flex: 1;
   width: 100%;
   min-width: 0;

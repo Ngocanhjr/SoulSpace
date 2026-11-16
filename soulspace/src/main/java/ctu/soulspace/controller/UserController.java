@@ -4,12 +4,14 @@ import ctu.soulspace.constants.ErrorCode;
 import ctu.soulspace.dto.request.SignUpRequest;
 import ctu.soulspace.dto.response.ProfileResponse;
 import ctu.soulspace.dto.response.UserResponse;
+import ctu.soulspace.dto.response.UserSearchResponse;
 import ctu.soulspace.exception.AppException;
 import ctu.soulspace.service.ProfileService;
 import ctu.soulspace.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import tools.jackson.databind.JsonNode;
@@ -145,6 +148,14 @@ public class UserController {
     @PostMapping("/sign-up")
     public UserResponse signUp(@Valid @RequestBody SignUpRequest request) {
         return userService.signUp(request);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserSearchResponse>> search(
+            @RequestParam(defaultValue = "") String q) {
+        return ResponseEntity.ok()
+                .header("Cache-Control", "no-store")
+                .body(userService.search(q));
     }
 
     @GetMapping("/{id}")

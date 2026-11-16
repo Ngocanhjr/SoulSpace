@@ -29,6 +29,7 @@ import ctu.soulspace.service.UserService;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
@@ -45,6 +46,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.context.SecurityContext;
@@ -375,6 +377,37 @@ class LocalAuthenticationTests {
         } finally {
             org.springframework.security.core.context.SecurityContextHolder.clearContext();
         }
+    }
+
+    @Test
+    void guestPeopleSearchReturnsAnEmptyListForBlankQueries() throws Exception {
+        mvc.perform(client(get("/api/v1/users")).param("q", "   "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void guestPeopleSearchTrimsQueryLimitsResultsAndReturnsOnlyPublicFields() throws Exception {
+        user.setFullname("Nguyễn Thị Minh");
+        when(users.searchByName("ThỊ", PageRequest.of(0, 20)))
+                .thenReturn(List.of(user));
+
+        mvc.perform(client(get("/api/v1/users")).param("q", "  ThỊ  "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].id").value(user.getId().toString()))
+                .andExpect(jsonPath("$[0].username").value(user.getUsername()))
+                .andExpect(jsonPath("$[0].fullname").value("Nguyễn Thị Minh"))
+                .andExpect(jsonPath("$[0].userAvatarUrl").isNotEmpty())
+                .andExpect(jsonPath("$[0].dob").doesNotExist())
+                .andExpect(jsonPath("$[0].passwordHash").doesNotExist());
+    }
+
+    @Test
+    void peopleSearchRejectsOversizedQueries() throws Exception {
+        mvc.perform(client(get("/api/v1/users")).param("q", "a".repeat(2001)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
     }
 
     private MockHttpSession authenticatedSession() throws Exception {
