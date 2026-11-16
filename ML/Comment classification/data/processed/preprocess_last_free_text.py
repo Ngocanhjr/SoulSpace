@@ -1,7 +1,7 @@
 """Deduplicate free_text regardless of label, then filter low-information comments.
 
-The first occurrence wins (crawl precedes ViHSD in the merged input).
-Conflicting later labels are recorded in the removed output, never voted on.
+For same-label duplicates, keep the first occurrence.
+For conflicting labels, remove every occurrence of the normalized text.
 """
 
 import argparse
@@ -58,29 +58,35 @@ def preprocess_file(input_path, output_dir):
     if clean_path.exists() or removed_path.exists():
         raise ValueError("Output already exists; choose a new --output-dir to preserve it.")
     counts = Counter(total=0, kept=0, duplicate=0, duplicate_label_conflict=0, name_only=0, icon_only=0, timestamp_only=0, timestamp_reference=0, punctuation_only=0, single_letter=0, empty=0)
-    seen = {}
+    seen = set()
     with input_path.open(encoding="utf-8-sig", newline="") as original:
         reader = csv.DictReader(original, strict=True)
         fields = reader.fieldnames
         if not fields or "free_text" not in fields or len(set(fields)) != len(fields) or "filter_reason" in fields:
             raise ValueError("Expected unique CSV columns including free_text, without filter_reason.")
+        rows = list(reader)
+        labels_by_text = {}
+        for row in rows:
+            if None in row or any(value is None for value in row.values()):
+                raise ValueError("Malformed CSV row; no outputs written.")
+            labels_by_text.setdefault(duplicate_key(row), set()).add(row.get("label_id", ""))
+        conflicts = {key for key, labels in labels_by_text.items() if len(labels) > 1}
         output_dir.mkdir(parents=True, exist_ok=True)
         with clean_path.open("x", encoding="utf-8", newline="") as clean, removed_path.open("x", encoding="utf-8", newline="") as removed:
             clean_writer = csv.DictWriter(clean, fieldnames=fields)
             removed_writer = csv.DictWriter(removed, fieldnames=[*fields, "filter_reason"])
             clean_writer.writeheader()
             removed_writer.writeheader()
-            for row in reader:
-                if None in row or any(value is None for value in row.values()):
-                    raise ValueError(f"Malformed CSV row near line {reader.line_num}; outputs may be partial.")
+            for row in rows:
                 counts["total"] += 1
                 key = duplicate_key(row)
-                if key in seen:
-                    reason = ("duplicate" if seen[key] == row.get("label_id", "")
-                              else "duplicate_label_conflict")
+                if key in conflicts:
+                    reason = "duplicate_label_conflict"
+                elif key in seen:
+                    reason = "duplicate"
                 else:
                     reason = removal_reason(row["free_text"])
-                    seen[key] = row.get("label_id", "")
+                seen.add(key)
                 if reason:
                     removed_writer.writerow({**row, "filter_reason": reason})
                     counts[reason] += 1
