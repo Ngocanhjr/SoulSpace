@@ -13,7 +13,7 @@ class DatasetTests(unittest.TestCase):
     def test_dataset_and_relationships(self):
         data = generate.build_dataset()
         self.assertEqual({name: len(rows) for name, rows in data.items()}, {
-            "users": 40, "categories": 16, "blogs": 400,
+            "users": 41, "categories": 16, "blogs": 400,
             "blog_categories": 640, "comments": 700,
             "blog_likes": 1000, "comment_likes": 200, "blog_shares": 150,
         })

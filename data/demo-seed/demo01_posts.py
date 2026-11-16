@@ -1,4 +1,4 @@
-"""Bài mô phỏng để thử phân trang hồ sơ demo01."""
+"""Bài mô phỏng để thử phân trang hồ sơ demo."""
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import product
@@ -83,22 +83,40 @@ PRIVATE_ENDINGS = (
     "Nhắc mình đừng đặt mục tiêu quá nhiều cho lần tới.",
 )
 
+DEMO41_ENDINGS = {
+    "true": (
+        "Có ai đang thử giống mình không?",
+        "Lần tới mình sẽ thử một cách khác rồi kể tiếp.",
+        "Ghi lên đây để tiện trao đổi với mọi người.",
+        "Nếu có kinh nghiệm với việc này, kể mình nghe với.",
+        "Mình chưa làm đều được, nhưng tuần này muốn thử tiếp.",
+        "Lưu lại một chút chuyện hôm nay.",
+    ),
+    "false": (
+        "Để mình đọc lại vào cuối tháng.",
+        "Ghi ở đây cho khỏi quên ý đang nghĩ dở.",
+        "Lần sau đọc lại xem việc này còn hợp với mình không.",
+    ),
+}
 
-def build_posts(data):
-    user_id = next(row["id"] for row in data["users"] if row["username"] == "demo01")
+
+def build_posts(data, username="demo01"):
+    user_id = next(row["id"] for row in data["users"] if row["username"] == username)
     counts = Counter(row["published"] for row in data["blogs"] if row["author_id"] == user_id)
     rng = random.Random(13112026)
     used = {row["content"] for row in data["blogs"]}
     posts = []
     for published, total in TARGET.items():
         endings = PUBLIC_ENDINGS if published == "true" else PRIVATE_ENDINGS
+        if username == "demo41":
+            endings = DEMO41_ENDINGS[published]
         texts = [" ".join(parts) for starts, observations in NOTES
                  for parts in product(starts, observations, endings)
                  if " ".join(parts) not in used]
         for content in rng.sample(texts, total - counts[published]):
             index = len(posts)
             created = datetime(2026, 7, 1, tzinfo=timezone.utc) + timedelta(hours=index * 2)
-            posts.append(dict(id=fixed_id("demo01-extra-blogs", index, created), author_id=user_id,
+            posts.append(dict(id=fixed_id(f"{username}-extra-blogs", index, created), author_id=user_id,
                               content=content, published=published, category_mode="MANUAL",
                               created_at=stamp(created), updated_at=stamp(created)))
     return posts

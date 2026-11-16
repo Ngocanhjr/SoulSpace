@@ -172,6 +172,11 @@ def build_dataset():
     interactions("blog_likes", data["blogs"], 1000, "blog_id", "created_at")
     interactions("comment_likes", data["comments"], 200, "comment_id", "created_at")
     interactions("blog_shares", data["blogs"], 150, "blog_id", "shared_at")
+    # Thêm sau khi sinh tương tác để giữ nguyên fixture của 40 tài khoản cũ.
+    created = datetime(2026, 6, 25, tzinfo=timezone.utc)
+    data["users"].append(dict(id=fixed_id("users", 40, created), username="demo41",
+                              fullname="Lâm Hoài An", dob="2001-06-18",
+                              created_at=stamp(created), updated_at=stamp(created)))
     validate(data)
     return data
 
@@ -188,7 +193,7 @@ def validate(data):
     for name, mapping in maps.items():
         require(len(mapping) == len(data[name]), f"Trùng ID {name}")
         require(all(uuid.UUID(key).version == 7 for key in mapping), f"UUID {name}")
-    require(len({u["username"] for u in data["users"]}) == 40, "Trùng username")
+    require(len({u["username"] for u in data["users"]}) == 41, "Thiếu hoặc trùng username")
     require(all(re.fullmatch(r"[a-z0-9]{3,32}", u["username"]) for u in data["users"]), "Username sai")
     require(len({c["slug"] for c in data["categories"]}) == 16, "Trùng slug")
     require(all(re.fullmatch(r"[a-z0-9]+(-[a-z0-9]+)*", c["slug"]) for c in data["categories"]), "Slug sai")
