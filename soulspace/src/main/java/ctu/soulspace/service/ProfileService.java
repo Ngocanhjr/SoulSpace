@@ -8,6 +8,7 @@ import ctu.soulspace.exception.AppException;
 import ctu.soulspace.repositories.UserRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.servlet.http.HttpSession;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -21,6 +22,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,6 +49,7 @@ public class ProfileService {
     private final PasswordEncoder encoder;
     private final SessionRegistry sessions;
     private final TransactionTemplate transactions;
+    private final ObjectProvider<GoogleService> google;
     private final Map<UUID, ConfirmationWindow> confirmations = new HashMap<>();
 
     public ProfileService(
@@ -55,12 +58,14 @@ public class ProfileService {
             MediaService media,
             PasswordEncoder encoder,
             SessionRegistry sessions,
-            PlatformTransactionManager manager) {
+            PlatformTransactionManager manager,
+            ObjectProvider<GoogleService> google) {
         this.users = users;
         this.userService = userService;
         this.media = media;
         this.encoder = encoder;
         this.sessions = sessions;
+        this.google = google;
         transactions = new WriteTransaction(manager);
     }
 
@@ -192,21 +197,33 @@ public class ProfileService {
         log.info("event=avatar_removed user_id={}", actor);
     }
 
-    public void delete(UUID actor, UUID id, JsonNode input) {
+    public void delete(UUID actor, UUID id, JsonNode input, HttpSession session) {
         requireOwner(actor, id);
         requireFields(input, Set.of("currentPassword", "reauthProof"));
         if (input.hasNonNull("currentPassword") && input.hasNonNull("reauthProof"))
             throw invalid("currentPassword", "Choose one reauthentication method");
         User before = snapshot(id);
         String verifiedHash = before.getPasswordHash();
-        if (verifiedHash == null || input.hasNonNull("reauthProof"))
+        if (verifiedHash != null) {
+            if (input.hasNonNull("reauthProof")) throw new AppException(ErrorCode.REAUTH_REQUIRED);
+            confirm(actor, input.get("currentPassword"), verifiedHash);
+        } else if (input.hasNonNull("currentPassword"))
             throw new AppException(ErrorCode.REAUTH_REQUIRED);
-        confirm(actor, input.get("currentPassword"), verifiedHash);
         transactions.executeWithoutResult(
                 status -> {
                     User user = lockUser(id);
                     if (!Objects.equals(user.getPasswordHash(), verifiedHash))
                         throw new AppException(ErrorCode.CONCURRENT_MODIFICATION);
+                    if (verifiedHash == null) {
+                        GoogleService service = google.getIfAvailable();
+                        if (service == null) throw new AppException(ErrorCode.REAUTH_REQUIRED);
+                        service.consumeProof(
+                                session,
+                                actor,
+                                "DELETE_ACCOUNT",
+                                input.hasNonNull("reauthProof") ? text(input, "reauthProof") : null,
+                                null);
+                    }
                     // Freeze every affected blog before locking comments or touching
                     // trigger-maintained counters.
                     em.createNativeQuery(

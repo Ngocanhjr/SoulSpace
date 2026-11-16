@@ -5,6 +5,7 @@ import { apiErrorMessage } from "../../config/api";
 import { signIn } from "../../config/auth";
 import { toast } from "sonner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import GoogleButton from "../../Components/Login/GoogleButton";
 
 const SignIn = () => {
   const [username, setUsername] = useState("");
@@ -72,11 +73,15 @@ const SignIn = () => {
             {isSubmitting ? "Signing in…" : "Sign In"}
           </button>
         </form>
+        <GoogleButton disabled={isSubmitting} />
         <a href="#" className="forgot-password">
           Forgot password?
         </a>
         <p className="signup-text">
-          Don’t have an account? <Link to="/signup">Sign Up</Link>
+          Don’t have an account?{" "}
+          <Link to="/signup" className="signup-link">
+            Sign Up
+          </Link>
         </p>
       </div>
     </div>

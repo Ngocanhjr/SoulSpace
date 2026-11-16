@@ -54,7 +54,7 @@ function App() {
   };
 
   // Nếu đang ở /signin thì chỉ render SignIn
-  if (location.pathname === "/signin") {
+  if (location.pathname === "/signin" || location.pathname.startsWith("/auth/google/")) {
     return (
       <div className={appCSS["signin-page"]}>
         <Router />

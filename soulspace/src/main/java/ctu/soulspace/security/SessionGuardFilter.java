@@ -74,7 +74,10 @@ public class SessionGuardFilter extends OncePerRequestFilter {
             boolean logoutRequest =
                     "POST".equals(request.getMethod())
                             && "/api/v1/auth/log-out".equals(request.getServletPath());
-            if (!csrfRequest && !logoutRequest) {
+            boolean googleCallback =
+                    "GET".equals(request.getMethod())
+                            && "/api/v1/auth/google/callback".equals(request.getServletPath());
+            if (!csrfRequest && !logoutRequest && !googleCallback) {
                 errors.write(request, response, ErrorCode.AUTH_REQUIRED);
                 return;
             }

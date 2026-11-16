@@ -192,7 +192,7 @@ Controller đăng nhập gọi SessionAuthenticationStrategy, đổi session ID,
 
 Rate limit local dùng chung cho đăng nhập/đăng ký: 10 request trong 5 phút trên mỗi remote IP, tối đa 4096 IP đang theo dõi; request vượt hạn mức trả 429 và Retry-After. Các client sau cùng NAT/proxy chia sẻ hạn mức; chưa nhận IP từ X-Forwarded-For. Exception nghiệp vụ và thông báo dùng ErrorCode/constant; filter bảo mật có handler riêng dùng cùng ErrorResponse. Mật khẩu/hash không nằm trong DTO response, không được đưa vào log lỗi. JSON ngoài danh sách field được phép bị từ chối.
 
-`LocalAuthenticationTests` chạy toàn bộ security filter cùng encoder Argon2id thật và repository giả lập, không kết nối database hoặc chạy Flyway. Chạy từ thư mục `soulspace`: `mvn -Dtest=LocalAuthenticationTests test` (hoặc Maven Wrapper đã hoạt động). Bộ test này không thay thế kiểm thử PostgreSQL, constraint race, idle timeout của container, cookie trên browser hay tích hợp frontend. Frontend cần gửi cookie/CSRF theo hợp đồng trước khi coi luồng giao diện hoạt động. Google OIDC, đổi mật khẩu/xóa tài khoản và thu hồi toàn bộ session từ các nghiệp vụ đó chưa triển khai.
+`LocalAuthenticationTests` chạy toàn bộ security filter cùng encoder Argon2id thật và repository giả lập, không kết nối database hoặc chạy Flyway. Chạy từ thư mục `soulspace`: `mvn -Dtest=LocalAuthenticationTests test` (hoặc Maven Wrapper đã hoạt động). Bộ test này không thay thế kiểm thử PostgreSQL, constraint race, idle timeout của container, cookie trên browser hay tích hợp frontend. Frontend cần gửi cookie/CSRF theo hợp đồng trước khi coi luồng giao diện hoạt động. Google OIDC và vòng đời tài khoản có kiểm thử riêng ở các mốc triển khai bên dưới.
 
 Kiểm tra ngày 14/11/2026: Maven trên Java 21 biên dịch thành công; 12 test trong LocalAuthenticationTests đạt. Bao gồm đăng ký/hash/DTO an toàn, login và context giữa request, session ID mới, CSRF, logout, thu hồi/giới hạn tuổi session, tài khoản đã xóa, lỗi database 503, lỗi đăng nhập chung, validation/field lạ, chuyển lỗi unique giả lập thành 409 và rate limit. Lỗi unique ở đây là exception do mock tạo, chưa chứng minh constraint hoặc race trên PostgreSQL thật.
 
@@ -266,7 +266,7 @@ Kiểm chứng: 32/32 test backend đạt (13 local authentication/filter, 16 AP
 
 Test EXPLAIN dùng SET LOCAL enable_seqscan=off và enable_bitmapscan=off trong transaction kiểm thử để xác nhận comments_blog_idx và blog_shares_user_time_idx có thể phục vụ ORDER BY mà không cần Sort riêng khi dùng ordered index scan. Đây là kiểm tra khả năng của index, không phải benchmark hay cam kết planner luôn chọn index scan trên fixture ít dữ liệu. Cấu hình này không được áp dụng lên datasource runtime.
 
-Frontend có 7 test Node đạt cho session/CSRF, thứ tự/placeholder, cây 5.000 cấp không dùng call stack đệ quy, like optimistic/gộp lần bấm/lỗi và phản hồi GET cũ. Các file Java được format/check theo AOSP; frontend lint/build được kiểm tra riêng. Chưa thực hiện kiểm thử thủ công đầy đủ trên browser/LAN hoặc nghiệm thu Neon. Thông báo đã được trigger ghi vào DB; API/chuông thông báo và Google OIDC vẫn là các mốc riêng. Sửa/xóa bài được triển khai trong mốc profile bên dưới.
+Frontend có 7 test Node đạt cho session/CSRF, thứ tự/placeholder, cây 5.000 cấp không dùng call stack đệ quy, like optimistic/gộp lần bấm/lỗi và phản hồi GET cũ. Các file Java được format/check theo AOSP; frontend lint/build được kiểm tra riêng. Chưa thực hiện kiểm thử thủ công đầy đủ trên browser/LAN hoặc nghiệm thu Neon. Thông báo đã được trigger ghi vào DB; API/chuông thông báo vẫn là mốc riêng. Google OIDC được mô tả tại tài liệu 11. Sửa/xóa bài được triển khai trong mốc profile bên dưới.
 
 ## Hoàn thiện trang cá nhân local ngày 15/11/2026
 
@@ -284,7 +284,7 @@ WriteTransaction dùng chung cho BlogService, ProfileService và InteractionServ
 
 Kiểm chứng tự động: 46/46 test backend đạt (13 local authentication, 16 BlogApiTests, 3 retry/rollback, 14 ProfileApiTests). Bộ chạy run-blog-api.ps1 dùng PostgreSQL 17.11 riêng, Flyway thật V1–V5 và role runtime. ProfileApiTests bao phủ field absent/null/không hợp lệ, giả owner, username trùng và rollback, đổi password/thu hồi nhiều session, hash bị thay sau xác thực, rate limit, avatar/queue/provider lỗi, ảnh sai bài, chỉnh nội dung/quyền/thứ tự ảnh, rollback khi enqueue lỗi, cascade xóa bài và giữ replies khi xóa tài khoản. Cloudinary được mock, kiểm lời gọi upload diễn ra ngoài transaction DB. Retry/deadlock được kiểm bằng SQLSTATE mô phỏng; chưa gây deadlock DB thật. Frontend đạt 10/10 test Node (session/CSRF, comment traversal, like queue và timestamp); ESLint các file sửa, Vite build và Spotless check 15 file Java đều đạt. Vite vẫn cảnh báo bundle hơn 500 kB.
 
-Google OIDC và reauth proof vẫn là mốc riêng: tài khoản chưa có local hash không được tự đặt password ở U06; U08 không chấp nhận proof giả để bỏ qua xác nhận mật khẩu. Chưa nghiệm thu trên Neon/LAN hoặc chạy upload/destroy với Cloudinary thật. Chưa kiểm tra render/thao tác UI trực tiếp: trình duyệt tích hợp không vào được localhost; Chrome riêng không khả dụng và quyền đọc cửa sổ Chrome đang mở ứng dụng khác bị duyệt tự động chặn.
+Google OIDC và reauth proof đã được bổ sung theo tài liệu 11: tài khoản chưa có local hash không được tự đặt password ở U06; U08 không chấp nhận proof giả để bỏ qua xác nhận mật khẩu. Chưa nghiệm thu trên Neon/LAN hoặc chạy upload/destroy với Cloudinary thật. Chưa kiểm tra render/thao tác UI trực tiếp: trình duyệt tích hợp không vào được localhost; Chrome riêng không khả dụng và quyền đọc cửa sổ Chrome đang mở ứng dụng khác bị duyệt tự động chặn.
 
 ## Nút chia sẻ lại và trạng thái viewer
 
@@ -295,3 +295,22 @@ Feed và chi tiết dùng icon Repeat2 từ lucide-react, giữ bố cục icon 
 Frontend tiếp tục gọi POST share và DELETE unshare hiện có, không đổi response text của U11. Sau DELETE thành công, cập nhật sharedByMe=false rồi GET chi tiết để lấy count chuẩn. Lỗi GET sau commit không hoàn tác trạng thái thành công hoặc tự gửi lại write; UI báo chưa tải lại được count. Nếu nguồn bài không còn được xem, bỏ bài khỏi màn hình. ALREADY_SHARED do dữ liệu cũ ở tab khác chỉ làm GET đồng bộ, không tự unshare. Phản hồi từ tài khoản cũ không ghi đè trạng thái sau khi đổi tài khoản. Tab Chia sẻ của UserPage giữ đường gỡ share hiện có.
 
 Kiểm chứng backend: 47/47 test đạt trên bộ chạy PostgreSQL tách biệt, gồm ca mới kiểm sharedByMe trước/sau share, viewer khác/guest, feed/hồ sơ/chi tiết, unshare/reload và gỡ khi bài của chủ đã private. Frontend đạt 16/16 test, gồm sáu ca mới cho share/unshare, CSRF, lỗi refresh sau commit, bài mất quyền xem, ALREADY_SHARED và lỗi DELETE. Build, ESLint các file frontend sửa và Spotless check đều đạt; Vite còn cảnh báo bundle lớn. Chưa kiểm tra trực tiếp giao diện trên browser.
+
+
+## Google OIDC — ngày 16/11/2026
+
+Đã bổ sung G01–G06, callback Spring Security và giao diện tiếng Anh theo [thiết kế Google](11-dang-nhap-google.md). `GOOGLE_ENABLED=false` là mặc định; credentials chỉ ở backend. Session ứng dụng chỉ lưu principal UUID nội bộ; OAuth authorized client dùng repository không lưu token. LINK/REAUTH không lưu principal Google đè lên tài khoản local. Luồng mới dùng lại schema hiện tại và transaction ghi của dự án; không sửa migration/ERD.
+
+Hướng dẫn cấu hình hiện hành và giới hạn kiểm chứng nằm tại [cấu hình chạy local](11-dang-nhap-google.md#cấu-hình-chạy-local).
+
+
+Kết quả kiểm tra ngày 16/11/2026: bộ hồi quy đầy đủ 66 ca backend đạt trên PostgreSQL riêng; sau đó ca bổ sung kiểm chính sách password có khoảng trắng đạt trong nhóm 6 GoogleSecurityTests (tổng 67 ca khác nhau trong các báo cáo hiện tại). Frontend có 17 ca Node đạt, lint các file sửa và Vite build đạt; Spotless check các file Java sửa đạt. UI giả lập kiểm nút Google khi chưa cấu hình, onboarding về trang cá nhân và menu tài khoản Google-only. Container PostgreSQL và server UI kiểm thử đã được dừng/dọn; không thay dữ liệu ứng dụng hoặc cấu hình Google Console thật.
+
+
+Cập nhật policy mật khẩu ngày 16/11/2026: validator chung từ chối mật khẩu mới rỗng sau `trim()` ở đăng ký, đổi password và đặt password Google-only. UI kiểm tra tương ứng và giữ nguyên chuỗi hợp lệ khi gửi. Login và xác nhận mật khẩu hiện tại không tự trim hoặc áp lại chính sách tạo mật khẩu, tránh khóa tài khoản cũ; kiểm thử bảo đảm dấu cách đầu/cuối vẫn được băm và so sánh nguyên bản.
+
+Kiểm chứng policy cập nhật: toàn bộ 69 ca backend đạt trên PostgreSQL riêng, gồm chặn password toàn dấu cách ở signup/đổi/đặt password, giữ nguyên dấu cách đầu/cuối và login tài khoản cũ. Spotless, lint các file frontend sửa và Vite build đạt.
+
+Callback Google hiện hành là `GET /api/v1/auth/google/callback`, do Spring Security xử lý và trả 302; không tính vào các API JSON. Cấu hình Google Console, GOOGLE_REDIRECT_URI và proxy `/api` phải dùng cùng địa chỉ. Không giữ alias `/login/oauth2/code/google`.
+
+Đổi callback sang `/api/v1/auth/google/callback`: 20 ca GoogleSecurityTests/LocalAuthenticationTests đạt, Spotless và frontend build đạt. Các ca Google dùng provider giả lập; chưa xác minh cấu hình Google Console thực tế.

@@ -5,20 +5,27 @@ import ctu.soulspace.repositories.UserRepository;
 import ctu.soulspace.security.AccessDeniedHandler;
 import ctu.soulspace.security.ApiErrorWriter;
 import ctu.soulspace.security.AuthenticationEntryPoint;
+import ctu.soulspace.security.GoogleLogin;
 import ctu.soulspace.security.SessionGuardFilter;
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.core.session.SessionRegistryImpl;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
@@ -27,6 +34,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.NullSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfAuthenticationStrategy;
@@ -89,6 +97,7 @@ public class SecurityConfig {
             AuthenticationEntryPoint entryPoint,
             AccessDeniedHandler deniedHandler,
             JsonMapper jsonMapper,
+            ObjectProvider<GoogleLogin> googleProvider,
             @Value("${server.servlet.session.cookie.name:SOULSPACESESSION}") String cookieName)
             throws Exception {
         http.securityContext(
@@ -110,6 +119,8 @@ public class SecurityConfig {
                                         .requestMatchers(
                                                 HttpMethod.GET,
                                                 "/api/v1/auth/csrf",
+                                                "/api/v1/auth/google/onboarding",
+                                                "/api/v1/auth/google/callback",
                                                 "/actuator/health")
                                         .permitAll()
                                         .requestMatchers(
@@ -125,6 +136,8 @@ public class SecurityConfig {
                                         .requestMatchers(
                                                 HttpMethod.POST,
                                                 "/api/v1/auth/log-in",
+                                                "/api/v1/auth/google/start",
+                                                "/api/v1/auth/google/onboarding",
                                                 "/api/v1/users/sign-up")
                                         .permitAll()
                                         .anyRequest()
@@ -170,6 +183,58 @@ public class SecurityConfig {
                 .httpBasic(basic -> basic.disable())
                 .addFilterBefore(
                         new SessionGuardFilter(sessions, users, errors), LogoutFilter.class);
+        GoogleLogin google = googleProvider.getIfAvailable();
+        if (google != null) {
+            http.oauth2Login(
+                    login ->
+                            login.loginPage("/api/v1/auth/google/start")
+                                    .redirectionEndpoint(
+                                            endpoint ->
+                                                    endpoint.baseUri(
+                                                            "/api/v1/auth/google/callback"))
+                                    .authorizationEndpoint(
+                                            endpoint ->
+                                                    endpoint.authorizationRequestRepository(google)
+                                                            .authorizationRequestResolver(
+                                                                    new OAuth2AuthorizationRequestResolver() {
+                                                                        @Override
+                                                                        public
+                                                                        OAuth2AuthorizationRequest
+                                                                                resolve(
+                                                                                        HttpServletRequest
+                                                                                                request) {
+                                                                            return null;
+                                                                        }
+
+                                                                        @Override
+                                                                        public
+                                                                        OAuth2AuthorizationRequest
+                                                                                resolve(
+                                                                                        HttpServletRequest
+                                                                                                request,
+                                                                                        String id) {
+                                                                            return null;
+                                                                        }
+                                                                    }))
+                                    .authorizedClientRepository(new GoogleLogin.TransientClients())
+                                    .successHandler(google::success)
+                                    .failureHandler(google::rejected)
+                                    .withObjectPostProcessor(
+                                            new ObjectPostProcessor<
+                                                    OAuth2LoginAuthenticationFilter>() {
+                                                @Override
+                                                public <O extends OAuth2LoginAuthenticationFilter>
+                                                        O postProcess(O filter) {
+                                                    filter.setSecurityContextRepository(
+                                                            new NullSecurityContextRepository());
+                                                    filter.setSessionAuthenticationStrategy(
+                                                            (authentication,
+                                                                    request,
+                                                                    response) -> {});
+                                                    return filter;
+                                                }
+                                            }));
+        }
         return http.build();
     }
 }

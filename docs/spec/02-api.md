@@ -3,7 +3,7 @@
 Phần dưới là 35 endpoint và DTO của migration core. Giai đoạn AI bổ sung GET /api/v1/categories, PATCH
 /api/v1/blogs/{blogId}/categories và categories/categoryMode trên BlogDTO/SharedBlogDTO
 theo [hợp đồng phân loại chủ đề](07-phan-loai-chu-de.md#hợp-đồng-api-bổ-sung). Tổng cùng 2 endpoint thông báo trong [tài liệu 10](10-thong-bao.md) là 39 endpoint; chưa
-triển khai các bổ sung này. [Google OIDC](11-dang-nhap-google.md#api-bổ-sung-mục-tiêu) thiết kế thêm 6 API JSON, nâng mục tiêu lên 45 API; callback framework GET `/login/oauth2/code/google` nằm ngoài số API JSON này. Các route Google chưa được triển khai; không thay response/route local đã chốt.
+triển khai các bổ sung này. [Google OIDC](11-dang-nhap-google.md#api-bổ-sung-mục-tiêu) thiết kế thêm 6 API JSON, nâng mục tiêu lên 45 API; callback framework GET `/api/v1/auth/google/callback` nằm ngoài số API JSON này. Các route Google đã có implementation và được tắt theo cấu hình mặc định; không thay response/route local đã chốt. Cần cấu hình OAuth Client và kiểm chứng Google thật theo tài liệu 11.
 
 ## Quy ước chung
 

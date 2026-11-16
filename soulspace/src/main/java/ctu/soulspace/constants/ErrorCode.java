@@ -13,6 +13,15 @@ public enum ErrorCode {
     PASSWORD_NOT_ENABLED(
             HttpStatus.CONFLICT, "Set a password after verifying your Google identity"),
     REAUTH_REQUIRED(HttpStatus.FORBIDDEN, "Reauthentication required"),
+    OIDC_FLOW_INVALID(
+            HttpStatus.BAD_REQUEST, "Google sign-in expired or was not valid. Please try again."),
+    ONBOARDING_REQUIRED(HttpStatus.UNAUTHORIZED, "Complete Google sign-up first"),
+    ONBOARDING_ALREADY_COMPLETED(HttpStatus.CONFLICT, "Google sign-up has already completed"),
+    IDENTITY_CONFLICT(HttpStatus.CONFLICT, "This Google account cannot be linked"),
+    PASSWORD_ALREADY_ENABLED(HttpStatus.CONFLICT, "A password has already been set"),
+    IDENTITY_PROVIDER_UNAVAILABLE(
+            HttpStatus.SERVICE_UNAVAILABLE,
+            "Google sign-in is unavailable. Please try again later."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User not found"),
     BLOG_NOT_FOUND(HttpStatus.NOT_FOUND, "Blog not found"),
     COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "Comment not found"),

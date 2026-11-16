@@ -111,7 +111,7 @@ public class UserController {
             Authentication authentication,
             HttpServletRequest request,
             HttpServletResponse response) {
-        profiles.delete(actor(authentication), id, input);
+        profiles.delete(actor(authentication), id, input, request.getSession(false));
         endSession(request, response);
         return ResponseEntity.ok()
                 .header("Cache-Control", "no-store")

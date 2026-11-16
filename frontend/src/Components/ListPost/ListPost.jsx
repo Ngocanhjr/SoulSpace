@@ -9,7 +9,7 @@ import { api, apiErrorMessage } from "../../config/api";
 import { useAuth } from "../../config/auth";
 import { useLikes } from "../../config/useLikes";
 import { toggleShare } from "../../config/shares";
-import { Repeat2 } from "lucide-react";
+import RepostIcon from "../RepostIcon";
 const CONTENT_PREVIEW_LENGTH = 220;
 
 export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoaded }) {
@@ -227,7 +227,7 @@ export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoad
 
                   <button
                     type="button"
-                    className={`${style.btn} ${style["btn-share"]} ${post.sharedByMe ? style["btn-share-active"] : ""}`}
+                    className={`${style.btn} ${style["btn-share"]}`}
                     aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
                     aria-pressed={Boolean(post.sharedByMe)}
                     aria-busy={Boolean(sharing[post.id])}
@@ -235,7 +235,7 @@ export default function ListPost({ sourceUrl = "/api/v1/soulspaces", onPostsLoad
                     disabled={Boolean(sharing[post.id])}
                     onClick={() => handleAction(post.id, "SHARE")}
                   >
-                    <Repeat2 className={style.icon} aria-hidden="true" />
+                    <RepostIcon checked={post.sharedByMe} className={style.icon} aria-hidden="true" />
                   </button>
                   <span>{post.sharesCount}</span>
                 </div>

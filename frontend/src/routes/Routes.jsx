@@ -8,6 +8,7 @@ import PublicProfilePage from "../page/PublicProfilePage/PublicProfilePage.jsx";
 import SignIn from "../page/SignInPage/SignIn.jsx";
 import SignUp from "../page/SignUpPage/SignUp.jsx";
 import PostDetailPage from "../page/PostDetailPage/PostDetailPage.jsx";
+import GooglePage from "../page/SignInPage/GooglePage.jsx";
 
 function ProfileRoute() {
   const { userId } = useParams();
@@ -33,6 +34,7 @@ export default function Router() {
       <Route path="/user" element={<UserPage />} />
       <Route path="/user/:userId" element={<ProfileRoute />} />
       <Route path="/signin" element={<SignIn />} />
+      <Route path="/auth/google/:step" element={<GooglePage />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/home" element={<HomePage />} />
     </Routes>

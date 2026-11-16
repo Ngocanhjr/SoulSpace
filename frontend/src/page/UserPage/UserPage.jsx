@@ -1,3 +1,5 @@
+import RepostIcon from "../../Components/RepostIcon";
+import { startGoogle } from "../../config/google";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
@@ -9,7 +11,6 @@ import {
   Settings,
   ArrowUpRight,
   Pencil,
-  Repeat2,
   ImagePlus,
 } from "lucide-react";
 import { api, apiErrorMessage, buildApiUrl } from "../../config/api";
@@ -261,6 +262,7 @@ export default function UserPage() {
   const id = sessionUser?.id;
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
+  const [methods, setMethods] = useState(null);
   const [posts, setPosts] = useState([]);
   const [shares, setShares] = useState([]);
   const [errors, setErrors] = useState({});
@@ -323,15 +325,16 @@ export default function UserPage() {
         api.get(`/api/v1/users/${id}`, { signal }),
         api.get(`/api/v1/blogs/${id}/all`, { signal }),
         api.get(`/api/v1/users/${id}/shared-blogs`, { signal }),
+        api.get("/api/v1/auth/methods", { signal }),
       ]);
       if (signal?.aborted) return;
       const nextErrors = {};
-      const names = ["profile", "posts", "shares"];
-      const setters = [setProfile, setPosts, setShares];
+      const names = ["profile", "posts", "shares", "methods"];
+      const setters = [setProfile, setPosts, setShares, setMethods];
       results.forEach((result, index) => {
         if (result.status === "fulfilled")
           setters[index](
-            index === 0
+            index === 0 || index === 3
               ? result.value.data
               : result.value.data.map((post) => {
                   const postId = post.blogId || post.id;
@@ -360,6 +363,7 @@ export default function UserPage() {
   useEffect(() => {
     const controller = new AbortController();
     setProfile(null);
+    setMethods(null);
     setPosts([]);
     setShares([]);
     setDialog(null);
@@ -449,13 +453,25 @@ export default function UserPage() {
     }
   }
 
+  async function googleAction(action) {
+    if (busy) return;
+    setBusy(true);
+    try { await startGoogle("REAUTH", { action }); }
+    catch (failure) { toast.error(apiErrorMessage(failure)); setBusy(false); }
+  }
+
   async function confirm(event) {
     event.preventDefault();
     if (busy) return;
     setBusy(true);
     setActionError("");
     try {
-      if (dialog.type === "account") {
+      if (dialog.type === "google") {
+        const { data } = await api.post("/api/v1/auth/reauthenticate", { intent: "LINK_GOOGLE", currentPassword });
+        setCurrentPassword("");
+        await startGoogle("LINK", { reauthProof: data.reauthProof });
+        return;
+      } else if (dialog.type === "account") {
         await api.delete(`/api/v1/users/${id}`, { data: { currentPassword } });
         clearSession();
         toast.success("Account deleted.");
@@ -557,16 +573,20 @@ export default function UserPage() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onSelect={() => setDialog({ type: "password" })}>
-              Change password
+            <DropdownMenuItem disabled={!methods} onSelect={() => methods.passwordEnabled ? setDialog({ type: "password" }) : googleAction("SET_PASSWORD")}>
+              {methods?.passwordEnabled ? "Change password" : "Set password"}
             </DropdownMenuItem>
+            {methods && <DropdownMenuItem disabled={methods.googleLinked || busy} onSelect={() => setDialog({ type: "google" })}>
+              {methods.googleLinked ? "Google connected" : "Connect Google"}
+            </DropdownMenuItem>}
             <DropdownMenuItem onSelect={logout}>
               <LogOut size={15} /> Sign out
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               variant="destructive"
-              onSelect={() => setDialog({ type: "account" })}
+              disabled={!methods}
+              onSelect={() => methods.passwordEnabled ? setDialog({ type: "account" }) : googleAction("DELETE_ACCOUNT")}
             >
               Delete account
             </DropdownMenuItem>
@@ -626,9 +646,9 @@ export default function UserPage() {
         aria-label={sharedTab ? "Reposted posts" : "Your posts"}
         aria-busy={loading}
       >
-        {(errors[tab] || errors.profile) && (
+        {(errors[tab] || errors.profile || errors.methods) && (
           <div className="profile-inline-error" role="alert">
-            <p>{errors[tab] || errors.profile}</p>
+            <p>{errors[tab] || errors.profile || errors.methods}</p>
             <Button variant="outline" onClick={() => load()} disabled={loading}>
               Reload
             </Button>
@@ -776,7 +796,7 @@ export default function UserPage() {
                 <span>{post.commentsCount || 0}</span>
                 <button
                   type="button"
-                  className={`${postStyle.btn} ${postStyle["btn-share"]} ${post.sharedByMe ? postStyle["btn-share-active"] : ""}`}
+                  className={`${postStyle.btn} ${postStyle["btn-share"]}`}
                   title={
                     !post.published
                       ? "Only public posts can be reposted"
@@ -793,7 +813,7 @@ export default function UserPage() {
                   }
                   onClick={() => share({ ...post, id: postId })}
                 >
-                  <Repeat2 className={postStyle.icon} aria-hidden="true" />
+                  <RepostIcon checked={post.sharedByMe} className={postStyle.icon} aria-hidden="true" />
                 </button>
                 <span>{post.sharesCount || 0}</span>
               </div>
@@ -835,7 +855,7 @@ export default function UserPage() {
           onSave={savedPost}
         />
       )}
-      {["account", "delete", "unshare"].includes(dialog?.type) && (
+      {["account", "delete", "unshare", "google"].includes(dialog?.type) && (
         <AlertDialog
           open
           onOpenChange={(open) => {
@@ -845,14 +865,14 @@ export default function UserPage() {
           <AlertDialogContent className="profile-dialog">
             <AlertDialogHeader>
               <AlertDialogTitle>
-                {dialog.type === "account"
+                {dialog.type === "google" ? "Connect Google" : dialog.type === "account"
                   ? "Delete account?"
                   : dialog.type === "delete"
                     ? "Delete post?"
                     : "Remove this repost?"}
               </AlertDialogTitle>
               <AlertDialogDescription>
-                {dialog.type === "account"
+                {dialog.type === "google" ? "Confirm your password, then choose the Google account to connect." : dialog.type === "account"
                   ? "Your account, posts, and interactions will be deleted. Your comments on other posts will become deleted placeholders to preserve replies. This cannot be undone."
                   : dialog.type === "delete"
                     ? "This post, its comments, and related interactions will be deleted. This cannot be undone."
@@ -860,7 +880,7 @@ export default function UserPage() {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <form className="profile-form" onSubmit={confirm} aria-busy={busy}>
-              {dialog.type === "account" && (
+              {["account", "google"].includes(dialog.type) && (
                 <label>
                   Current password
                   <input
@@ -895,7 +915,7 @@ export default function UserPage() {
                 >
                   {busy
                     ? "Processing…"
-                    : dialog.type === "unshare"
+                    : dialog.type === "google" ? "Continue with Google" : dialog.type === "unshare"
                       ? "Remove repost"
                       : "Confirm deletion"}
                 </Button>

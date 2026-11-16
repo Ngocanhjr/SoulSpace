@@ -5,7 +5,8 @@ import { useAuth } from "../../config/auth";
 import { useLikes } from "../../config/useLikes";
 import { toggleShare } from "../../config/shares";
 import { toast } from "sonner";
-import { ArrowLeft, Repeat2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import RepostIcon from "../../Components/RepostIcon";
 import CommentPopup from "../../Components/Comment/CommentPopup.jsx";
 import style from "./PostDetailPage.module.css";
 import { DEFAULT_AVATAR_URL } from "../../config/assets";
@@ -208,7 +209,7 @@ export default function PostDetailPage() {
 
             <button
               type="button"
-              className={`${style.btn} ${style.btnShare} ${post.sharedByMe ? style.btnShareActive : ""}`}
+              className={`${style.btn} ${style.btnShare}`}
               aria-label={post.sharedByMe ? "Remove repost" : "Repost"}
               aria-pressed={Boolean(post.sharedByMe)}
               aria-busy={sharing}
@@ -216,7 +217,7 @@ export default function PostDetailPage() {
               title={post.sharedByMe ? "Reposted · Click to remove" : post.published ? "Repost" : "Only public posts can be reposted"}
               onClick={() => handleAction("SHARE")}
             >
-              <Repeat2 className={style.icon} aria-hidden="true" />
+              <RepostIcon checked={post.sharedByMe} className={style.icon} aria-hidden="true" />
             </button>
             <span>{post.sharesCount}</span>
           </div>

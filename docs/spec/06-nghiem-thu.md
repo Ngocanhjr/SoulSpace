@@ -249,3 +249,6 @@ Nếu còn ca bắt buộc chưa chạy hoặc thất bại thì ghi rõ phần 
 | UUID04 | Rà generator và kiểm dữ liệu đồng thời | Không dựa vào mặc định GenerationType.UUID, UUID.randomUUID() hoặc Style.TIME để sinh v7. Ghi nhận Hibernate/generator thực tế; kiểm PK/UNIQUE, không coi thứ tự UUID là thứ tự commit hoặc bỏ ORDER BY thời gian nghiệp vụ. |
 
 Các ca này là tiêu chí triển khai, chưa có kết quả PASS trong lượt cập nhật spec. SQL fixture cố định và kết quả WASM trước đây không chứng minh generator Java hoặc database v7 đã hoạt động.
+
+
+Kiểm thử Google triển khai: xem `GoogleSecurityTests`, `GoogleServiceTests` và `GoogleIdentityTests`, cùng [phạm vi kiểm thử](11-dang-nhap-google.md#phạm-vi-kiểm-thử-triển-khai). Các ca provider dùng JWT ký bởi khóa kiểm thử và mock token/UserInfo; chưa thay thế nghiệm thu consent/callback/cookie với Google thật trên môi trường triển khai.

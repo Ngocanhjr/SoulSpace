@@ -1,0 +1,13 @@
+.google-button {
+  width: 100%;
+  min-height: 44px;
+  margin-top: 14px;
+  font: inherit;
+}
+
+.google-button-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}

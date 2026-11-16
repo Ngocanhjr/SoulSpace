@@ -135,6 +135,9 @@ public class UserService {
         if (password == null) {
             throw invalid("password", "Password is required");
         }
+        if (password.trim().isEmpty()) {
+            throw invalid("password", "Password must not contain only spaces");
+        }
         int length = password.codePointCount(0, password.length());
         if (length < 4
                 || length > 128

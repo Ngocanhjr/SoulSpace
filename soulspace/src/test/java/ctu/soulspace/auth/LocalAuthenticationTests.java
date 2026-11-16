@@ -121,7 +121,7 @@ class LocalAuthenticationTests {
 
     @Test
     void signupNormalizesFieldsHashesPasswordAndDoesNotLogin() throws Exception {
-        String password = "aaaa";
+        String password = " ab cd ";
         when(users.saveAndFlush(any(User.class)))
                 .thenAnswer(
                         invocation -> {
@@ -133,6 +133,8 @@ class LocalAuthenticationTests {
                                     .isNotEqualTo(password)
                                     .startsWith("$argon2id$");
                             assertThat(encoder.matches(password, saved.getPasswordHash())).isTrue();
+                            assertThat(encoder.matches(password.trim(), saved.getPasswordHash()))
+                                    .isFalse();
                             saved.setId(UUID.randomUUID());
                             return saved;
                         });
@@ -156,6 +158,13 @@ class LocalAuthenticationTests {
                                 .value(ctu.soulspace.constants.MediaConstants.DEFAULT_AVATAR_URL))
                 .andExpect(jsonPath("$.password").doesNotExist());
         mvc.perform(client(get(ME)).session(csrf.session())).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void existingPasswordContainingOnlySpacesCanStillLogin() throws Exception {
+        user.setPasswordHash(encoder.encode("    "));
+        CsrfSession csrf = csrf(null);
+        login(csrf, "user01", "    ", 200);
     }
 
     @Test
@@ -281,6 +290,7 @@ class LocalAuthenticationTests {
         String[] bodies = {
             "{\"username\":\"ab\",\"fullname\":\"User\",\"password\":\"simplepassword123\"}",
             "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"abc\"}",
+            "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"    \"}",
             "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"simplepassword123\",\"role\":\"ADMIN\"}",
             "{\"username\":\"validuser\",\"fullname\":\"User\",\"password\":\"simplepassword123\",\"dob\":\"2000-01-01\",\"birthday\":\"2001-01-01\"}"
         };

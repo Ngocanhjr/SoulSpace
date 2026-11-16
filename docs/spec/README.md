@@ -1,6 +1,6 @@
 # Đặc tả migration backend SoulSpace
 
-Ngày lập: 24/10/2026. Cập nhật: 15/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
+Ngày lập: 24/10/2026. Cập nhật: 16/11/2026. Phiên bản: 1.6. Trạng thái: thiết kế core và bổ sung đặc tả phân loại chủ đề
 giai đoạn AI cùng thông báo tương tác; chưa phải bằng chứng ứng dụng hoặc PostgreSQL đã chạy. Kết quả rà soát core và giới hạn nằm
 trong [báo cáo ERD](erd-review.md).
 
@@ -93,3 +93,6 @@ Giai đoạn AI tiếp theo được đặc tả tại [07 phân loại chủ đ
 tùy chọn. Schema categories, blog_categories.confidence và blogs.category_mode đã đưa vào V1 trước lần migrate đầu;
 model/API triển khai ở giai đoạn AI. Recommendation, xu hướng, semantic search và pgvector/pgai vẫn ngoài phạm vi. Chưa
 thêm dependency hoặc worker AI; bảng chủ đề được tạo sẵn trong V1.
+
+
+Google OIDC đã có backend/frontend và cấu hình bật tùy môi trường, gồm onboarding, LINK và REAUTH cho tài khoản Google-only. Xem [cấu hình và phạm vi kiểm chứng](11-dang-nhap-google.md#cấu-hình-chạy-local). Dùng lại schema `external_identities`, không thay đổi quan hệ ERD; chưa coi Google Console hoặc đăng nhập bằng tài khoản Google thật đã được nghiệm thu.

@@ -151,7 +151,19 @@ class ProfileApiTests {
         write(
                         session,
                         put(userPath()),
-                        "{\"fullname\":\"Must rollback\",\"password\":\"bbbb\",\"currentPassword\":\"wrong\"}",
+                        mapper.writeValueAsString(
+                                Map.of("password", "    ", "currentPassword", "aaaa")),
+                        400)
+                .andExpect(jsonPath("$.fieldErrors.password").exists());
+        assertThat(
+                        encoder.matches(
+                                PASSWORD,
+                                users.findById(owner.getId()).orElseThrow().getPasswordHash()))
+                .isTrue();
+        write(
+                        session,
+                        put(userPath()),
+                        "{\"fullname\":\"Must rollback\",\"password\":\" bb bb \",\"currentPassword\":\"wrong\"}",
                         401)
                 .andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
         mvc.perform(client(get("/api/v1/auth/me")).session(session.session()))
@@ -161,17 +173,17 @@ class ProfileApiTests {
         write(
                 session,
                 put(userPath()),
-                "{\"password\":\"bbbb\",\"currentPassword\":\"aaaa\"}",
+                "{\"password\":\" bb bb \",\"currentPassword\":\"aaaa\"}",
                 200);
         assertThat(session.session().isInvalid()).isTrue();
         mvc.perform(client(get("/api/v1/auth/me")).session(second.session()))
                 .andExpect(status().isUnauthorized());
         assertThat(
                         encoder.matches(
-                                "bbbb",
+                                " bb bb ",
                                 users.findById(owner.getId()).orElseThrow().getPasswordHash()))
                 .isTrue();
-        login(owner, "bbbb");
+        login(owner, " bb bb ");
     }
 
     @Test

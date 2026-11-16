@@ -26,6 +26,10 @@ export default function Edit({ user, mode = "profile", onClose, onSave }) {
     event.preventDefault();
     if (busy) return;
     setError("");
+    if (passwordMode && !password.trim()) {
+      setError("Password must not contain only spaces.");
+      return;
+    }
     if (passwordMode && (password !== confirmation || Array.from(password).length < MIN_PASSWORD_LENGTH || Array.from(password).length > MAX_PASSWORD_LENGTH)) {
       setError("Your new password must be 4–128 characters and match the confirmation.");
       return;

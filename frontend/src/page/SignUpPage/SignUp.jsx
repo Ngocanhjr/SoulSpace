@@ -1,12 +1,15 @@
 import { useState } from "react";
+import GoogleButton from "../../Components/Login/GoogleButton";
 import "./SignUp.css";
 import { api, apiErrorMessage } from "../../config/api";
+import { refreshGoogleSession } from "../../config/google";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 
-export default function SignUp() {
-  const [fullname, setFullName] = useState("");
+export default function SignUp({ googleProfile = null }) {
+  const isGoogle = googleProfile !== null;
+  const [fullname, setFullName] = useState(googleProfile?.suggestedFullname || "");
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -20,16 +23,26 @@ export default function SignUp() {
 
     // nếu đang gửi request thì bỏ qua
     if (isSubmit) return;
+    if (!isGoogle && !password.trim()) {
+      toast.error("Password must not contain only spaces.");
+      return;
+    }
 
     setIsSubmit(true); // chặn click nút lần 2
 
-    const formData = { fullname, username, dob: birthday || null, password };
+    const formData = { fullname, username, dob: birthday || null };
+    if (!isGoogle) formData.password = password;
 
     try {
-      await api.post("/api/v1/users/sign-up", formData);
+      await api.post(isGoogle ? "/api/v1/auth/google/onboarding" : "/api/v1/users/sign-up", formData);
       setPassword("");
-      toast.success("Sign up successfully! Please sign in.");
-      navigate("/signin");
+      if (isGoogle) {
+        await refreshGoogleSession();
+        navigate("/user", { replace: true });
+      } else {
+        toast.success("Sign up successfully! Please sign in.");
+        navigate("/signin");
+      }
     } catch (error) {
       toast.error(apiErrorMessage(error));
     } finally {
@@ -70,6 +83,7 @@ export default function SignUp() {
           onChange={(e) => setBirthday(e.target.value)}
         />
 
+        {!isGoogle && <>
         <label>Password</label>
         <div className="pass-container">
           <input
@@ -92,14 +106,16 @@ export default function SignUp() {
         </div>
 
         <small className="password-hint">
-          4–128 characters. Spaces are allowed.
+          4–128 characters. Spaces are allowed, but not on their own.
         </small>
+        </>}
 
         <button type="submit" className="signup-btn" disabled={isSubmit}>
           {/* tránh click nhiều lần => gây lỗi */}
           {isSubmit ? "Creating account…" : "Sign Up"}
         </button>
 
+        {!isGoogle && <GoogleButton disabled={isSubmit} />}
         <p className="signin-link">
           Already have an account? <Link to="/signin">Sign In</Link>
         </p>
