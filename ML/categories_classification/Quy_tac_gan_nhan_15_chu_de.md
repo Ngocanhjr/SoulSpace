@@ -1,8 +1,21 @@
 # Quy tắc gán nhãn chủ đề bài đăng SoulSpace
 
-**Dữ liệu:** `v2(40k).csv` — 40.000 bài tiếng Việt
+**Dữ liệu:** `v2(40k).csv` — 40.000 bài tiếng Việt, gắn nhãn bởi 4 nguồn
 **Nhãn:** 15 chủ đề, đa nhãn, nối bằng `|`
 **Mục đích:** Gán nhãn thống nhất và hợp nhất nhãn từ nhiều nguồn.
+
+**Các file trong pipeline**
+
+| Bước | File | Trạng thái |
+|---|---|---|
+| Thô | `0_raw/chua_gan_nhan.csv` | 120.000 bài chưa gán nhãn |
+| Từng nguồn | `1_model_output/<nguồn>/` | Nhãn riêng của chatweb, chatgpt, gemini, grok, claude |
+| Gốc | `2_tong_hop/tongHopNhan_goc.csv` | 6 cột nhãn từ 4 nguồn, chưa hợp nhất |
+| Rule | `2_tong_hop/tongHopNhan_rule.csv` | Đã hợp nhất bằng rule ở mục 4 |
+| AI | `2_tong_hop/tongHopNhan_rule_ai.csv` | Sau khi LLM xử lý các dòng `AI xác định` (mục 6) |
+| Final | `3_final/tongHopNhan_final.csv` | 39.995 dòng có nhãn, bỏ 5 dòng rác |
+| Báo cáo | `4_bao_cao/` | Thống kê nhãn qua từng giai đoạn |
+
 
 ## 1. 15 chủ đề
 
@@ -52,75 +65,75 @@
 4. Thiếu ngữ cảnh hoặc ngoài 15 chủ đề → **để `labels` trống**, không ép `cuoc_song`.<br>Ví dụ: "ok", "haha", "ừ đúng rồi" → `labels` trống
 5. Chỉ dùng đúng 15 nhãn, không tự thêm.<br>Ví dụ: ❌ `kinh_te`, ❌ `the_thao|game` — game đã nằm trong `giai_tri`
 
-## 4. Hợp nhất nhãn từ nhiều nguồn
+## 4. Hợp nhất nhãn từ 4 nguồn
 
-### Cách đếm
+4 nguồn: `labels_original`, `grok-4.7`, `gemini-hydrogen`, `gpt-6.1-sol`.
 
-Nhãn là tập hợp, **không so cả ô**. Tách theo `|` rồi đếm phiếu từng chủ đề:
+### Bước 1 — Đếm phiếu từng chủ đề
 
-```
-vote(t) = số nguồn có t trong ô nhãn của mình   (0..4)
-```
+Tách ô nhãn theo `|`, đếm xem **mỗi chủ đề** được bao nhiêu nguồn chọn (0–4). Không so nguyên cả ô.
 
-`am_thuc|tinh_cam` vs `am_thuc` → `am_thuc:2`, `tinh_cam:1`.
+> `am_thuc|tinh_cam` và `am_thuc` → `am_thuc` 2 phiếu, `tinh_cam` 1 phiếu.
 
-### Ngưỡng
+### Bước 2 — Xếp chủ đề theo số phiếu
 
-| vote | Xử lý | Cột |
+| Số phiếu | Kết quả | Ghi vào |
 |---:|---|---|
-| 4 hoặc 3 | Chốt | `labels_consensus` |
-| **2** | **Hòa, cần trọng tài** | `labels_review` |
-| 1 | Bỏ (chỉ đối chiếu) | `labels_weak` |
-| 0 | Bỏ | — |
+| 3 – 4 | **Chốt** | `labels` |
+| 2 | **Treo** — hòa, chưa quyết | `ghi_chu` |
+| 0 – 1 | Bỏ | — |
 
-### Trạng thái dòng
+### Bước 3 — Ghi ai quyết định
 
-| status | Điều kiện | Số dòng |
+| `quyet_dinh` | Khi nào | Số dòng |
 |---|---|---:|
-| `CLEAN` | Không có chủ đề nào `vote = 2` | 34.431 |
-| `DISPUTE` | Có `vote = 2`, vẫn còn nhãn chốt | 5.102 |
-| `EMPTY` | Có `vote = 2`, không còn nhãn chốt nào | 467 |
+| `rule` | Không có chủ đề nào treo → dòng đã xong | 34.431 |
+| `AI xác định` | Còn ít nhất 1 chủ đề treo → cần LLM quyết | 5.569 |
 
-### Hòa 2/2
+`AI xác định` **không có nghĩa là `labels` rỗng**:
+- Có chủ đề chốt + có chủ đề treo → `labels` có giá trị (5.102 dòng).
+- Không chủ đề nào chốt → `labels` rỗng (467 dòng).
 
-Dữ liệu chỉ có dạng **2 chọi 2**, không có 4 nguồn gắn 4 nhãn khác nhau. Model mạnh làm **trọng tài**, không phải phiếu thứ 5:
+### Ví dụ
 
-- `DISPUTE` → giữ `labels_consensus`, hỏi model mạnh *có/không* cho từng nhãn trong `labels_review`.
-- `EMPTY` → gắn lại từ đầu, `labels_review` là ứng viên gợi ý.
+| ID | original | grok | gemini | gpt | Đếm phiếu | `labels` | `quyet_dinh` | `ghi_chu` |
+|---|---|---|---|---|---|---|---|---|
+| SS_000016 | cuoc_song | cuoc_song | cuoc_song | cuoc_song | cuoc_song:4 | `cuoc_song` | `rule` | |
+| SS_000114 | cong_viec | hoc_tap | hoc_tap\|cong_viec | cong_viec | cong_viec:3, hoc_tap:2 | `cong_viec` | `AI xác định` | `hoc_tap` |
+| SS_000095 | cuoc_song | hoc_tap | hoc_tap | cuoc_song | cuoc_song:2, hoc_tap:2 | *(rỗng)* | `AI xác định` | `cuoc_song\|hoc_tap` |
 
-`labels_final = labels_consensus ∪ (nhãn trọng tài duyệt)`
+- **SS_000016** — 4/4 đồng ý → xong.
+- **SS_000114** — `cong_viec` đủ 3 phiếu nên chốt; `hoc_tap` hòa 2/2 nên treo.
+- **SS_000095** — hòa 2 chọi 2, không chủ đề nào chốt được.
 
-### Ví dụ thật
+## 5. Các cột trong `tongHopNhan_rule.csv`
 
-**`SS_000095`** — "chúc mừng sinh viên nhé ."
+| Cột | Ý nghĩa | Ai điền |
+|---|---|---|
+| `id` | Mã bài | Gốc, không sửa |
+| `content` | Nội dung bài | Gốc, không sửa |
+| `labels_original` | Nhãn của bộ dữ liệu gốc | Gốc, không sửa |
+| `grok-4.7` | Nhãn Grok gắn | Model, không sửa |
+| `gemini-hydrogen` | Nhãn Gemini gắn | Model, không sửa |
+| `gpt-6.1-sol` | Nhãn GPT gắn | Model, không sửa |
+| `labels` | Nhãn chốt (≥3 phiếu) — **nhãn dùng để train** | Rule (mục 4) |
+| `quyet_dinh` | `rule` hoặc `AI xác định` | Rule (mục 4) |
+| `ghi_chu` | Chủ đề đang treo (2 phiếu), chỉ có ở dòng `AI xác định` | Rule (mục 4) |
 
-| original | grok | gemini | gpt |
-|---|---|---|---|
-| cuoc_song | hoc_tap | hoc_tap | cuoc_song |
+## 6. Việc của LLM với dòng `AI xác định`
 
-→ `cuoc_song:2, hoc_tap:2` → `EMPTY`
+Chỉ xử lý 5.569 dòng có `quyet_dinh = AI xác định`. LLM là **trọng tài**, không phải phiếu thứ 5.
 
-**`SS_000151`** — "automation test java selenium..."
+1. Đọc `content`, áp quy tắc mục 1–3.
+2. Với từng chủ đề trong `ghi_chu`: quyết **có** hoặc **không**.
+3. Chủ đề **có** → thêm vào `labels` (giữ thứ tự STT). Giữ nguyên các nhãn đã chốt sẵn trong `labels`.
+4. Nếu sau cùng `labels` vẫn rỗng và bài không thuộc chủ đề nào → để rỗng, **không ép** `cuoc_song`.
 
-| original | grok | gemini | gpt |
-|---|---|---|---|
-| cong_nghe | cong_viec\|cong_nghe | cong_viec\|cong_nghe | cong_nghe |
+> SS_000114: LLM chỉ trả lời "bài có bàn rõ `hoc_tap` không?". `cong_viec` đã chốt, không hỏi lại.
 
-→ `cong_nghe:4, cong_viec:2` → chốt `cong_nghe`, review `cong_viec`, `DISPUTE`
+Kết quả ghi ra **`tongHopNhan_rule_ai.csv`** — giữ nguyên 9 cột, cập nhật `labels`, đổi `quyet_dinh` thành `rule + AI` cho các dòng đã xử lý. File `tongHopNhan_rule.csv` **không sửa**.
 
-## 5. Cột đầu ra
+## 7. Nguồn
 
-| Cột | Nội dung |
-|---|---|
-| `labels_votes` | `am_thuc:4\|cong_nghe:2` |
-| `labels_consensus` | chủ đề `vote ≥ 3` |
-| `labels_review` | chủ đề `vote = 2` |
-| `labels_weak` | chủ đề `vote = 1` |
-| `status` | `CLEAN` / `DISPUTE` / `EMPTY` |
-| `needs_strong_model` | `TRUE` cho 5.569 dòng (`DISPUTE` + `EMPTY`) |
-
-## 6. Nguồn
-
-- `thong_ke_15_nhan.csv` — định nghĩa và ranh giới 15 nhãn.
-- `tongHopNhan.csv` — 40.000 dòng × 4 nguồn (`labels_original`, `grok-4.7`, `gemini-hydrogen`, `gpt-6.1-sol`).
-- Majority vote per-label cho multi-label (Aroyo & Welty, *Crowd Truth*, 2015). Không cần Dawid-Skene vì không nguồn nào lệch hẳn (Jaccard cặp 0,816–0,851).
+- `thong_ke_15_nhan.csv` — định nghĩa và ranh giới 15 chủ đề.
+- Majority vote theo từng nhãn cho dữ liệu đa nhãn (Aroyo & Welty, *Crowd Truth*, 2015). Các nguồn đồng thuận khá cao (Jaccard từng cặp 0,816–0,851) nên không cần mô hình trọng số annotator như Dawid-Skene.
