@@ -91,7 +91,7 @@ Nạp toàn bộ ba đợt:
 
 Mong đợi `seeded`, sau đó `verified`, phase 3 và số hàng như bảng trên. Lần `--apply` kế tiếp trả `already-seeded`, không tạo thêm hàng, không đổi hash hoặc ID thông báo. Mã thoát 0 là thành công; khác 0 thì dừng và đọc thông báo.
 
-Tài khoản `demo01`–`demo40` cùng dùng `DEMO_USER_PASSWORD`. Hash Argon2id định dạng PHC, `m=19456 KiB, t=2, p=1`, salt riêng từng user; hash chỉ sinh khi nạp, không lưu vào CSV/Git. Đây là cơ chế theo đặc tả bảo mật hiện tại. Repo đang có entity JPA nhưng chưa có service/repository/API xác thực và PasswordEncoder được nối vào luồng đăng nhập, nên chưa thể xác nhận đăng nhập website. Khi tích hợp auth, kiểm tra bộ giải mã chấp nhận Argon2id PHC này, không seed lại để giả lập đăng nhập.
+40 tài khoản trong `users.csv` dùng username theo tên nhân vật như `minhkhoi`, `ngocan`, `hoaiphuong`, …, `vinhan`, cùng dùng `DEMO_USER_PASSWORD` khi nạp bằng `seed.py`. Hash Argon2id định dạng PHC, `m=19456 KiB, t=2, p=1`, salt riêng từng user; hash chỉ sinh khi nạp, không lưu vào CSV/Git. Đây là cơ chế theo đặc tả bảo mật hiện tại. CSV không chứa mật khẩu; nạp riêng user bằng SQL không tự tạo hash. Không seed lại để giả lập đăng nhập.
 
 ## 5. Ranh giới transaction và seed lại
 
@@ -122,9 +122,9 @@ Mỗi người có PostgreSQL riêng thì thực hiện bước 1–4 trên máy
 
 ## 7. Tạo lại CSV và kiểm tra
 
-### Thử hồ sơ demo01 với 1.300 bài
+### Thử hồ sơ tài khoản đầu tiên (`minhkhoi`) với 1.300 bài
 
-Thêm `--extend-demo01` khi nạp cả ba đợt. Tùy chọn dùng được trên database demo trống đã migrate hoặc database đang chứa bộ seed nguyên bản. Với bộ seed nguyên bản, runner chỉ thêm 988 bài công khai và 296 bài riêng tư, đưa riêng `demo01` lên đúng 1.000 bài công khai và 300 bài riêng tư. Cả database có 1.684 bài. Các bài bổ sung là dữ liệu mô phỏng từ mẫu câu tiếng Việt để thử phân trang, không có ảnh, nhãn hoặc tương tác bổ sung.
+Thêm `--extend-demo01` khi nạp cả ba đợt (giữ tên tham số cũ; tài khoản đầu tiên hiện là `minhkhoi`). Tùy chọn dùng được trên database demo trống đã migrate hoặc database đang chứa bộ seed nguyên bản. Với bộ seed nguyên bản, runner chỉ thêm 988 bài công khai và 296 bài riêng tư, đưa riêng tài khoản đầu tiên lên đúng 1.000 bài công khai và 300 bài riêng tư. Cả database có 1.684 bài. Các bài bổ sung là dữ liệu mô phỏng từ mẫu câu tiếng Việt để thử phân trang, không có ảnh, nhãn hoặc tương tác bổ sung.
 
 ```powershell
 .\data\demo-seed\.venv\Scripts\python.exe data/demo-seed/seed.py --apply --extend-demo01 --env-file .env.demo-seed --target-database soulspace_demo

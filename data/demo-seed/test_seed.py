@@ -4,12 +4,26 @@ import tempfile
 import unittest
 
 import generate
+import demo01_posts
 
 
 ROOT = Path(__file__).resolve().parent
 
 
 class DatasetTests(unittest.TestCase):
+    def test_usernames_are_natural_and_keep_user_order(self):
+        users = generate.build_dataset()["users"]
+        self.assertTrue(all(not user["username"].startswith("demo") for user in users))
+        self.assertEqual(users[0]["username"], "minhkhoi")
+        self.assertEqual(users[-1]["username"], "vinhan")
+        self.assertEqual([user["id"] for user in users], sorted(user["id"] for user in users))
+
+    def test_profile_extension_uses_user_identity_after_username_change(self):
+        data = generate.build_dataset()
+        data["users"][0]["username"] = "changedusername"
+        posts = demo01_posts.build_posts(data)
+        self.assertEqual({post["author_id"] for post in posts}, {data["users"][0]["id"]})
+
     def test_dataset_and_relationships(self):
         data = generate.build_dataset()
         self.assertEqual({name: len(rows) for name, rows in data.items()}, {

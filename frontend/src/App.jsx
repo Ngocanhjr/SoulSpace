@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import appCSS from "./App.module.css";
 import Navigation from "./Components/Navigation/Navigation";
 import Router from "./routes/Routes";
 import Login from "./Components/Login/Login";
 import { refreshSession, useAuth } from "./config/auth";
+import { getPageAccess } from "./config/pageAccess";
 
 function App() {
   const [isGuest, setGuest] = useState(false);
   const [isFeedScrolling, setIsFeedScrolling] = useState(false);
   const pageRef = useRef(null);
   const location = useLocation();
-  const navigate = useNavigate();
   const auth = useAuth();
   const isHome = location.pathname === "/" || location.pathname === "/home";
+  const access = getPageAccess(auth, isGuest, location.pathname);
 
   useEffect(() => {
     refreshSession().catch(() => {});
@@ -44,7 +45,7 @@ function App() {
       document.removeEventListener("visibilitychange", stop);
       stop();
     };
-  }, [isHome]);
+  }, [isHome, access]);
 
   // Nếu đang ở /signin thì chỉ render SignIn
   if (location.pathname === "/signin" || location.pathname.startsWith("/auth/google/")) {
@@ -65,29 +66,36 @@ function App() {
   }
 
   const isLoggedIn = Boolean(auth.user);
-  const isPostPage = location.pathname === "/post";
-  const requiresLogin = isPostPage || location.pathname === "/user";
-  const showLogin = requiresLogin && auth.ready && !auth.error && !isLoggedIn;
+  const tabsDisabled = !isLoggedIn && !isGuest;
 
   return (
     <div className={appCSS["layout-web"]}>
       <div className={appCSS["nav"]}>
-        <Navigation feedScrolling={isHome && isFeedScrolling} />
+        <Navigation
+          feedScrolling={isHome && isFeedScrolling}
+          tabsDisabled={tabsDisabled}
+          onSignOut={() => setGuest(false)}
+        />
       </div>
 
       <div className={appCSS["pages-container"]}>
-        {!showLogin && (
+        {auth.ready && !auth.error && tabsDisabled && !isHome && (
+          <Navigate to="/" replace />
+        )}
+
+        {access === "content" && (
           <div className={appCSS["page-slot"]}>
             <div
               ref={pageRef}
-              className={`${appCSS["page-render"]} ${requiresLogin && !isLoggedIn ? appCSS["post-state"] : ""}`}
+              className={appCSS["page-render"]}
             >
               <Router />
             </div>
           </div>
         )}
 
-        {auth.error && !isPostPage && (
+        {access === "pending" && <p role="status">Checking your session...</p>}
+        {access === "error" && (
           <div role="alert">
             {auth.error}
             <button onClick={() => refreshSession().catch(() => {})}>
@@ -95,17 +103,9 @@ function App() {
             </button>
           </div>
         )}
-        {auth.ready &&
-          !auth.error &&
-          !isLoggedIn &&
-          (!isGuest || requiresLogin) && (
-            <Login
-              guest={(value) => {
-                setGuest(value);
-                if (requiresLogin) navigate("/");
-              }}
-            />
-          )}
+        {access === "prompt" && (
+          <Login guest={!isGuest ? () => setGuest(true) : undefined} />
+        )}
       </div>
     </div>
   );

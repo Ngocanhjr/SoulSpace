@@ -1,37 +1,40 @@
-"""Bước 02 — Chạy tìm kiếm keyword, semantic hoặc cả hai trên bộ đã chốt.
+"""Bước 02 — Chạy keyword, semantic hoặc cả hai trên cùng corpus đã chốt nhãn.
 
-Đầu vào: corpus.csv, queries.csv, ground-truth-final.csv và dataset-info.json
-trong ../data/. Script dùng chung dữ liệu này và kiểm tra hash trước/sau lượt chạy.
-Đầu ra: ../results/keyword-search/<ma-luot>/ và/hoặc
-../results/semantic-search/<ma-luot>/, mỗi phương pháp có kết quả riêng.
-results.csv kèm câu truy vấn, nội dung bài và nhãn chốt để đọc trực tiếp.
-Chạy từ gốc repository, không cần DB/backend nếu chỉ chọn keyword:
-    python semantic-search/experiment/runner/02-run-experiment.py --method keyword
-Semantic/both: chạy bước 01 --check trước; cần backend, Jina và cookie đăng nhập.
-Tiếp theo: 03-evaluate.py với đường dẫn từng thư mục lượt chạy đã hoàn tất.
+Keyword là baseline đếm token theo chuỗi con. Semantic gọi Jina cho query rồi
+xếp hạng cosine trực tiếp trên đúng các ID corpus trong PostgreSQL, trước LIMIT.
+Không cần backend/cookie, không sửa DB và không tạo lại vector bài đăng.
+Mỗi lượt tạo đúng một folder results/<method>-search_<timestamp>/.
+Both lưu chung hai phương pháp; tiếp theo chạy 03-evaluate.py một lần cho folder đó.
 """
-
 import argparse
-import getpass
 import json
 import math
-import os
 import random
+import sys
 import time
 import unicodedata
-import warnings
+from contextlib import ExitStack
 from datetime import datetime, timezone
-from http.client import HTTPException
 from pathlib import Path
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode, urlsplit
-from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from experiment_data import file_hash, read_csv, write_csv
-from experiment_data import load_dataset as read_dataset
+from experiment_data import database_config, database_snapshot, file_hash, load_dataset, write_csv
 
 BASE = Path(__file__).resolve().parent.parent / "data"
-RESULTS = Path(__file__).resolve().parent.parent / "results"
+ROOT = Path(__file__).resolve().parents[3]
+RESULTS = BASE.parent / "results"
+SEMANTIC_SQL = """
+WITH scoped AS MATERIALIZED (
+    SELECT p.blog_id, p.content, e.embedding
+    FROM public.v_public_blog_feed p
+    JOIN public.blog_embeddings e USING (blog_id)
+    WHERE p.blog_id = ANY(%s::uuid[])
+      AND e.content_sha256 = encode(sha256(convert_to(p.content, 'UTF8')), 'hex')
+)
+SELECT blog_id::text, content, 1 - (embedding <=> %s::vector) AS similarity
+FROM scoped
+ORDER BY similarity DESC, blog_id
+LIMIT 10
+"""
 
 
 def normalize(text):
@@ -45,192 +48,148 @@ def keyword_search(query, corpus):
         content = normalize(post["content"])
         score = sum(token in content for token in tokens)
         if score:
-            ranked.append({"id": post["blog_id"], "score": score})
-    return sorted(ranked, key=lambda row: (-row["score"], row["id"]))[:10]
+            ranked.append(dict(id=post["blog_id"], score=score))
+    return sorted(ranked, key=lambda r: (-r["score"], r["id"]))[:10]
 
 
-def load_dataset():
-    return read_dataset(BASE)
+def embed_query(api_key, query):
+    scripts = str(ROOT / "semantic-search" / "scripts")
+    if scripts not in sys.path:
+        sys.path.insert(0, scripts)
+    from embeddings import embed_texts
+    return embed_texts(api_key, [query], "retrieval.query")[0]
 
 
-class NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
-
-
-def get_json(base_url, path, cookie):
-    request = Request(base_url + path, headers={"Accept": "application/json", "Cookie": cookie})
+def open_semantic(env_file):
+    import psycopg
+    url, options, key = database_config(env_file, require_jina=True)
     try:
-        with build_opener(NoRedirect()).open(request, timeout=90) as response:
-            return json.load(response)
-    except HTTPError as error:
-        raise ValueError(f"Backend trả HTTP {error.code}; kiểm tra backend và phiên đăng nhập.") from None
-    except (URLError, TimeoutError, OSError, HTTPException):
-        raise ValueError("Không kết nối được backend hoặc yêu cầu hết thời gian.") from None
-    except (UnicodeError, json.JSONDecodeError):
-        raise ValueError("Backend không trả JSON hợp lệ.") from None
+        connection = psycopg.connect(url, **options, autocommit=True)
+    except psycopg.Error:
+        raise ValueError("Không kết nối được PostgreSQL; kiểm tra Docker, file env và quyền SELECT.") from None
+    return connection, key
 
 
-def check_public_feed(data, posts):
-    if not isinstance(data, list):
-        raise ValueError("Feed không phải danh sách.")
-    current = {}
-    for row in data:
-        if not isinstance(row, dict) or not isinstance(row.get("content"), str):
-            raise ValueError("Feed thiếu nội dung văn bản.")
-        if row["content"].strip():
-            blog_id = row.get("id")
-            if not isinstance(blog_id, str) or blog_id in current:
-                raise ValueError("Feed có ID không hợp lệ hoặc bị trùng.")
-            current[blog_id] = {"content": row["content"]}
-    if any(bid not in current or current[bid]["content"] != post["content"] for bid, post in posts.items()):
-        raise ValueError("Bài trong corpus bị thiếu hoặc đổi nội dung trên backend.")
-    return current
-
-
-def semantic_results(data, posts, public_posts=None):
-    if not isinstance(data, list) or len(data) > 50:
-        raise ValueError("Kết quả ngữ nghĩa không đúng danh sách tối đa 50 ứng viên.")
-    public_posts = posts if public_posts is None else public_posts
-    seen, results = set(), []
-    for row in data:
-        if not isinstance(row, dict):
-            raise ValueError("Bài trả về không hợp lệ.")
-        blog_id = row.get("id")
-        score = row.get("similarity")
-        if not isinstance(blog_id, str) or blog_id not in public_posts or blog_id in seen:
-            raise ValueError("Kết quả có ID trùng hoặc ngoài feed đã kiểm tra.")
-        if row.get("content") != public_posts[blog_id]["content"]:
-            raise ValueError("Nội dung bài trả về đã khác snapshot.")
+def semantic_search(connection, query, api_key, posts):
+    vector = embed_query(api_key, query)
+    rows = connection.execute(SEMANTIC_SQL, (list(posts), vector)).fetchall()
+    if len(rows) > 10:
+        raise ValueError("Truy vấn semantic trả quá 10 bài.")
+    results, seen = [], set()
+    for bid, content, score in rows:
+        bid = str(bid)
+        if bid not in posts or bid in seen or content != posts[bid]["content"]:
+            raise ValueError("Semantic trả bài ngoài corpus, trùng ID hoặc nội dung đã đổi.")
         if type(score) not in (int, float) or not math.isfinite(score):
-            raise ValueError("Điểm tương đồng không hợp lệ.")
+            raise ValueError("Điểm cosine không hợp lệ.")
         if results and score > results[-1]["score"]:
-            raise ValueError("Ứng viên ngữ nghĩa không theo điểm giảm dần.")
-        seen.add(blog_id)
-        results.append({"id": blog_id, "score": score})
-    scoped = [row for row in results if row["id"] in posts]
-    # A full candidate page with fewer than ten targets cannot prove their top 10.
-    if len(data) == 50 and len(scoped) < 10:
-        raise ValueError("50 ứng viên chưa đủ xác định top 10 trong corpus; cần truy vấn DB giới hạn đúng tập bài.")
-    return scoped[:10]
+            raise ValueError("Kết quả không theo điểm giảm dần.")
+        seen.add(bid)
+        results.append(dict(id=bid, score=score))
+    return results
 
 
-def run_method(args, output, stamp):
-    input_hashes = {name: file_hash(BASE / name) for name in
-                    ("corpus.csv", "queries.csv", "ground-truth-final.csv", "dataset-info.json")}
-    corpus, queries, labels, digest = load_dataset()
-    posts = {post["blog_id"]: post for post in corpus}
-    run_semantic = args.method == "semantic"
-    cookie = ""
-    base_url = args.base_url.rstrip("/")
-    if run_semantic:
-        url = urlsplit(base_url)
-        if (url.scheme not in ("http", "https") or not url.hostname or url.username or url.password
-                or url.path or url.query or url.fragment
-                or (url.scheme == "http" and url.hostname not in ("localhost", "127.0.0.1", "::1"))):
-            raise ValueError("Backend cần URL gốc localhost/127.0.0.1 qua HTTP, hoặc HTTPS.")
-        token = os.environ.get("SOULSPACE_SESSION")
-        if not token:
+def error_message(error):
+    return str(error) if isinstance(error, ValueError) else f"Lượt chạy gặp {type(error).__name__}; kiểm tra DB/mạng/cấu hình."
+
+
+def run_experiment(args):
+    if args.repeats < 1:
+        raise ValueError("repeats phải >= 1.")
+    corpus, queries, labels, digest = load_dataset(BASE)
+    inputs = {name: file_hash(BASE / name) for name in
+              ("corpus.csv", "queries.csv", "ground-truth-final.csv", "dataset-info.json")}
+    methods = ("keyword", "semantic") if args.method == "both" else (args.method,)
+    posts = {p["blog_id"]: p for p in corpus}
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    output = (args.output or RESULTS) / f"{args.method}-search_{stamp}"
+    with ExitStack() as stack:
+        connection, api_key, before = None, None, None
+        if "semantic" in methods:
+            context, api_key = open_semantic(args.env_file)
+            connection = stack.enter_context(context)
             try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("error", getpass.GetPassWarning)
-                    token = getpass.getpass("Giá trị cookie SOULSPACESESSION (ẩn): ")
-            except (getpass.GetPassWarning, EOFError):
-                raise ValueError("Terminal không hỗ trợ nhập ẩn; cấu hình SOULSPACE_SESSION rồi chạy lại.") from None
-        if not token or any(char in token for char in "\r\n;"):
-            raise ValueError("Chỉ nhập giá trị cookie phiên, không nhập cả header Cookie.")
-        cookie = "SOULSPACESESSION=" + token
-        get_json(base_url, "/api/v1/auth/me", cookie)
-        public_posts = check_public_feed(get_json(base_url, "/api/v1/soulspaces", cookie), posts)
-    output.mkdir(parents=True, exist_ok=False)
-    results, timings = [], []
-    failure = None
-    completed = False
-    try:
-        if args.method == "keyword":
-            for query in queries:
-                for rank, result in enumerate(keyword_search(query["query"], corpus), 1):
-                    results.append(dict(query_id=query["query_id"], method="keyword", rank=rank,
-                                        blog_id=result["id"], score=result["score"]))
-        if run_semantic:
-            for repeat in range(args.repeats):
-                order = list(queries)
-                random.Random(42 + repeat).shuffle(order)
-                for query in order:
-                    start = time.perf_counter()
-                    try:
-                        data = get_json(base_url, "/api/v1/search?" + urlencode({"q": query["query"], "limit": 50}), cookie)
+                connection.execute("SET default_transaction_read_only = on")
+                before = database_snapshot(connection, corpus)
+            except Exception as error:
+                raise ValueError(error_message(error)) from None
+        output.mkdir(parents=True, exist_ok=False)
+        rankings, timings = [], []
+        completed, failure = False, None
+        try:
+            for method in methods:
+                repeats = args.repeats if method == "semantic" else 1
+                for repeat in range(repeats):
+                    order = list(queries)
+                    if method == "semantic":
+                        random.Random(42 + repeat).shuffle(order)
+                    for query in order:
+                        start = time.perf_counter()
+                        try:
+                            ranked = (keyword_search(query["query"], corpus) if method == "keyword"
+                                      else semantic_search(connection, query["query"], api_key, posts))
+                        except Exception as error:
+                            if method == "semantic":
+                                timings.append(dict(query_id=query["query_id"], repeat=repeat + 1,
+                                                    elapsed_ms=round((time.perf_counter() - start) * 1000, 3),
+                                                    status="error", error=error_message(error)))
+                            raise ValueError(error_message(error)) from None
                         elapsed = (time.perf_counter() - start) * 1000
-                        ranked = semantic_results(data, posts, public_posts)
-                    except ValueError as error:
-                        timings.append(dict(query_id=query["query_id"], repeat=repeat + 1,
-                                            elapsed_ms=round((time.perf_counter() - start) * 1000, 3),
-                                            status="error", error=str(error)))
-                        raise
-                    timings.append(dict(query_id=query["query_id"], repeat=repeat + 1,
-                                        elapsed_ms=round(elapsed, 3), status="ok", error=""))
-                    if repeat == 0:
-                        for rank, result in enumerate(ranked, 1):
-                            results.append(dict(query_id=query["query_id"], method="semantic", rank=rank,
-                                                blog_id=result["id"], score=result["score"]))
-                    print(f"{query['query_id']} lượt {repeat + 1}: {len(ranked)} bài, {elapsed:.0f} ms")
-            if check_public_feed(get_json(base_url, "/api/v1/soulspaces", cookie), posts) != public_posts:
-                raise ValueError("Feed công khai thay đổi trong khi chạy; không dùng lượt này để đánh giá.")
-        if any(file_hash(BASE / name) != expected for name, expected in input_hashes.items()):
-            raise ValueError("Dữ liệu trong data/ thay đổi trong khi chạy; không dùng lượt này để đánh giá.")
-        completed = True
-    except (ValueError, OSError, KeyError, TypeError, KeyboardInterrupt) as error:
-        failure = str(error) or "Lượt chạy bị ngắt."
-    finally:
-        query_lookup = {query["query_id"]: query for query in queries}
-        label_lookup = {(row["query_id"], row["blog_id"]): row["label"] for row in labels}
-        readable_results = [dict(row, group=query_lookup[row["query_id"]]["group"],
-                                 query=query_lookup[row["query_id"]]["query"],
-                                 content=posts[row["blog_id"]]["content"],
-                                 label=label_lookup[row["query_id"], row["blog_id"]]) for row in results]
-        write_csv(output / "results.csv", ("group", "query_id", "query", "method", "rank",
-                                           "blog_id", "content", "score", "label"), readable_results)
-        write_csv(output / "timings.csv", ("query_id", "repeat", "elapsed_ms", "status", "error"), timings)
-        metadata = {"created_at_utc": stamp, "method": args.method, "complete": completed,
-                    "schema_version": 2, "corpus_count": len(corpus), "query_count": len(queries),
-                    "corpus_fingerprint": digest, "repeats": args.repeats if run_semantic else 1,
-                    "queries_sha256": input_hashes["queries.csv"],
-                    "ground_truth_sha256": input_hashes["ground-truth-final.csv"],
-                    "results_sha256": file_hash(output / "results.csv"),
-                    "timings_sha256": file_hash(output / "timings.csv"),
-                    "semantic_candidate_limit": 50 if run_semantic else None,
-                    "public_post_count": len(public_posts) if run_semantic else None,
-                    "base_url": base_url if run_semantic else None,
-                    "shuffle_seed": 42, "quality_run": "repeat 1 only",
-                    "error": failure or (None if completed else "Lượt chạy bị ngắt trước khi xác minh hoàn tất.")}
-        (output / "run-info.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    if failure:
-        raise ValueError(f"Lượt chạy chưa hoàn tất: {failure} Kết quả một phần ở {output}; chưa dùng để tính chỉ số.")
-    print(f"Đã lưu kết quả ở {output}; chạy 03-evaluate.py để tính bốn metrics bằng dữ liệu trong data/.")
+                        if method == "semantic":
+                            timings.append(dict(query_id=query["query_id"], repeat=repeat + 1,
+                                                elapsed_ms=round(elapsed, 3), status="ok", error=""))
+                            print(f"{query['query_id']} lượt {repeat + 1}: {len(ranked)} bài, {elapsed:.0f} ms")
+                        if repeat == 0:
+                            rankings.extend(dict(query_id=query["query_id"], method=method, rank=rank,
+                                                 blog_id=r["id"], score=r["score"])
+                                            for rank, r in enumerate(ranked, 1))
+            if connection is not None and database_snapshot(connection, corpus) != before:
+                raise ValueError("Nội dung hoặc vector corpus thay đổi trong lúc chạy; không dùng lượt này.")
+            if any(file_hash(BASE / name) != value for name, value in inputs.items()):
+                raise ValueError("Dữ liệu trong data/ thay đổi trong lúc chạy; không dùng lượt này.")
+            completed = True
+        except (Exception, KeyboardInterrupt) as error:
+            failure = error_message(error)
+        finally:
+            query_lookup = {q["query_id"]: q for q in queries}
+            label_lookup = {(r["query_id"], r["blog_id"]): r["label"] for r in labels}
+            readable = [dict(row, group=query_lookup[row["query_id"]]["group"],
+                             query=query_lookup[row["query_id"]]["query"],
+                             content=posts[row["blog_id"]]["content"],
+                             label=label_lookup[row["query_id"], row["blog_id"]]) for row in rankings]
+            write_csv(output / "results.csv", ("group", "query_id", "query", "method", "rank",
+                                               "blog_id", "content", "score", "label"), readable)
+            write_csv(output / "timings.csv", ("query_id", "repeat", "elapsed_ms", "status", "error"), timings)
+            info = dict(created_at_utc=stamp, method=args.method, complete=completed, schema_version=3,
+                        corpus_count=len(corpus), query_count=len(queries), corpus_fingerprint=digest,
+                        repeats=args.repeats if "semantic" in methods else 1,
+                        queries_sha256=inputs["queries.csv"],
+                        ground_truth_sha256=inputs["ground-truth-final.csv"],
+                        dataset_info_sha256=inputs["dataset-info.json"],
+                        results_sha256=file_hash(output / "results.csv"),
+                        timings_sha256=file_hash(output / "timings.csv"),
+                        semantic_scope="Exact cosine on corpus IDs before LIMIT 10" if connection is not None else None,
+                        model="jina-embeddings-v3" if connection is not None else None,
+                        dimensions=1024 if connection is not None else None,
+                        shuffle_seed=42, quality_run="repeat 1 only", error=failure)
+            (output / "run-info.json").write_text(json.dumps(info, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if failure:
+            raise ValueError(f"Lượt chưa hoàn tất: {failure} Kết quả một phần ở {output}.")
+    print(f"Đã lưu {output}; chạy 03-evaluate.py với thư mục này để tính metrics.")
+    return output
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--method", choices=("keyword", "semantic", "both"), default="keyword")
-    parser.add_argument("--base-url", default="http://127.0.0.1:8080")
-    parser.add_argument("--repeats", type=int, default=3)
-    parser.add_argument("--output", type=Path, help="Thư mục gốc kết quả; mặc định experiment/results, luôn tách hai phương pháp")
-    args = parser.parse_args()
-    if args.repeats < 1:
-        raise ValueError("repeats phải >= 1.")
-    root = args.output or RESULTS
-    for folder in ("keyword-search", "semantic-search"):
-        (root / folder).mkdir(parents=True, exist_ok=True)
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
-    methods = ("keyword", "semantic") if args.method == "both" else (args.method,)
-    for method in methods:
-        method_args = argparse.Namespace(**vars(args))
-        method_args.method = method
-        run_method(method_args, root / f"{method}-search" / stamp, stamp)
+    parser.add_argument("--env-file", type=Path, default=ROOT / ".env.docker")
+    parser.add_argument("--repeats", type=int, default=3, help="Số lượt semantic; keyword chạy một lượt.")
+    parser.add_argument("--output", type=Path, default=RESULTS, help="Thư mục gốc kết quả, tạo một folder cho mỗi lượt.")
+    run_experiment(parser.parse_args())
 
 
 if __name__ == "__main__":
     try:
         main()
-    except (ValueError, OSError, KeyError) as error:
+    except (ValueError, OSError, ImportError, KeyError) as error:
         raise SystemExit(str(error)) from None

@@ -1,34 +1,43 @@
 {
-  "exported_at_utc": "2026-11-15T18:23:12.478441+00:00",
-  "source": "Neon PostgreSQL public.v_public_blog_feed + blog_embeddings",
-  "corpus_fingerprint": "9b1a6e4a6a39d3f7dc829e30e31d7f16913c9f1cf9c0d8cdfe5814413ceaaf25",
+  "prepared_at_utc": "2026-11-16T16:26:04.829402+00:00",
+  "source": "semantic-search/data-semantic-1000.csv",
+  "source_sha256": "f976782b78ae427ba6032dc9c30911fc7f4da9d8d10afa9c53f13d190898ae4c",
+  "selection_topics": [
+    "hoc_tap",
+    "cong_nghe"
+  ],
+  "selection_rule": "Union: include a post with at least one selected topic; count each source ID once",
+  "source_count": 1000,
+  "corpus_count": 175,
+  "query_count": 10,
+  "pair_count": 1750,
+  "query_counts": {
+    "A": 2,
+    "B": 2,
+    "C": 2,
+    "D": 2,
+    "E": 2
+  },
+  "blog_id_mapping": "md5('soulspace.csv.data-semantic-1000.' || source_id)::uuid",
+  "corpus_fingerprint": "68190d8a97f7b7028be653860d7bf219968ce65b86555129319b7e84b14c5008",
+  "corpus_sha256": "5e3c66ae871f29bca7eb791d425305df349d3b95135589166d07bca653314de5",
+  "queries_sha256": "1274e7e8026c5b369285c0787ca5ea089c3bc7c88dfba5fd9dc5821be06555ff",
+  "ground_truth_status": "finalized",
+  "ground_truth_file": "ground-truth-final.csv",
+  "ground_truth_sha256": "33a52bf41b49d97722148e82facb0a7f44bcdd7c143409196cd89d8a9d8ce03c",
+  "ground_truth_template_file": "ground-truth-template.csv",
+  "ground_truth_template_sha256": "f74be766c6ad864e765ad1dbcd0e365c6a113a10dbe09b65fa4801e54fbb804e",
+  "label_definitions": {
+    "0": "Không liên quan",
+    "1": "Liên quan một phần",
+    "2": "Liên quan rõ ràng"
+  },
+  "query_source": "AI-authored from the 175-post subset; not real user search logs",
   "model_config_from_source": {
     "model": "jina-embeddings-v3",
     "dimensions": 1024,
     "query_task": "retrieval.query",
     "passage_task": "retrieval.passage"
   },
-  "embedding_origin_note": "Cấu hình lấy từ source; không suy ra lịch sử tạo vector chỉ từ hash.",
-  "query_counts": {
-    "A": 3,
-    "B": 3,
-    "C": 3,
-    "D": 3,
-    "E": 3
-  },
-  "query_source": "AI-authored from current public corpus; not real user search logs",
-  "original_export_counts": {
-    "public_text_posts": 351,
-    "eligible_posts": 351
-  },
-  "corpus_count": 350,
-  "query_count": 15,
-  "queries_sha256": "f2fcf4c3244a5cd86728557862cba3cb5fd537d1423e762bda021ce7b3f63742",
-  "ground_truth_sha256": "0ad697ca8ae557598a3a3923454c035aaa1a2b65f8d42605b07c612eda8834fd",
-  "ground_truth_file": "ground-truth-final.csv",
-  "ground_truth_policy": "Finalized relevance labels 0/1/2.",
-  "excluded_blog_ids": [
-    "01a1df83-427c-77a0-b1cc-68ad4e30c81f"
-  ],
-  "exclusion_note": "Text-only hihi post excluded before labeling the 350-post evaluation corpus."
+  "db_verification_status": "Run 01-check-corpus.py against local DB before semantic experiments"
 }

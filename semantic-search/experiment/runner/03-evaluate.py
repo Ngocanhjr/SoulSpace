@@ -4,11 +4,11 @@ Chạy sau 02-run-experiment.py; chỉ nhận lượt có complete=true và hash
 Đầu vào: thư mục lượt chạy và dữ liệu/nhãn 0/1/2 dùng chung trong ../data/.
 Hash dữ liệu phải khớp run-info.json; không cần sao chép dữ liệu vào kết quả.
 Đầu ra: thư mục evaluation-<timestamp>/ bên trong lượt chạy, chứa metrics
-từng query, tổng hợp A–E/ALL, thời gian API và báo cáo summary.md.
+từng query, tổng hợp A–E/ALL, thời gian semantic và báo cáo summary.md.
 Ví dụ chạy từ gốc repository (thay <ma-luot> bằng thư mục thực tế):
-    python semantic-search/experiment/runner/03-evaluate.py semantic-search/experiment/results/keyword-search/<ma-luot>
-Nếu chạy cả hai phương pháp, đánh giá riêng từng nhánh keyword-search và
-semantic-search. Bước này chạy local, không cần DB/backend và không gọi Jina.
+    python semantic-search/experiment/runner/03-evaluate.py semantic-search/experiment/results/both-search_<ma-luot>
+Both chỉ cần evaluate một lần; báo cáo gồm cả keyword và semantic.
+Bước này chạy local, không cần DB/backend và không gọi Jina.
 """
 
 import argparse
@@ -52,6 +52,8 @@ def evaluate(run_dir, dataset_dir, ground_truth_path):
     methods = {"keyword": ["keyword"], "semantic": ["semantic"], "both": ["keyword", "semantic"]}.get(info.get("method"))
     if not methods:
         raise ValueError("Phương pháp trong run-info.json không hợp lệ.")
+    if info.get("dataset_info_sha256") != file_hash(dataset_dir / "dataset-info.json"):
+        raise ValueError("Metadata dataset đã thay đổi sau lượt chạy.")
     for path, key in ((dataset_dir / "queries.csv", "queries_sha256"),
                       (ground_truth_path, "ground_truth_sha256"),
                       (run_dir / "results.csv", "results_sha256"),
@@ -99,7 +101,7 @@ def evaluate(run_dir, dataset_dir, ground_truth_path):
         if seen != expected or any(row["status"] != "ok" for row in timings):
             raise ValueError("Timing thiếu lượt hoặc có lỗi nhưng metadata báo hoàn tất.")
     elif timings:
-        raise ValueError("Lượt chỉ chạy từ khóa không được có timing API ngữ nghĩa.")
+        raise ValueError("Lượt chỉ chạy từ khóa không được có timing ngữ nghĩa.")
 
     per_query = []
     for query in queries:
@@ -164,14 +166,15 @@ def main():
                   for key in ("precision_at_5", "recall_at_5", "mrr_at_10", "ndcg_at_10")]
         report.append(f"| {row['method']} | {row['group']} | {row['queries']} | " + " | ".join(values)
                       + f" | {row['recall_valid_queries']} | {row['ndcg_valid_queries']} |")
-    report += ["", "## Thời gian API ngữ nghĩa", "",
-               "Đo yêu cầu API limit=50 để lọc đúng corpus trước khi chọn top 10; gồm mạng, Jina và DB.",
+    report += ["", "## Thời gian tìm kiếm ngữ nghĩa", "",
+               "Đo Jina tạo vector query và truy vấn PostgreSQL; giới hạn corpus trước khi xếp hạng exact cosine Top 10.",
                "p50 là trung vị; p95 là vị trí ceil(0.95 × n) trong các lần thành công. Không so trực tiếp với baseline đọc CSV.", ""]
     for row in latency:
         report.append(f"- {row['scope']}: {row['successes']}/{row['attempts']} thành công, {row['errors']} lỗi; p50={row['p50_ms']} ms, p95={row['p95_ms']} ms.")
     if not latency:
-        report.append("Lượt chạy này không có số đo API ngữ nghĩa.")
-    report += ["", "Bộ truy vấn nhỏ, do AI soạn; nhãn đa số ba agent chưa bảo đảm mọi cặp đều đúng.",
+        report.append("Lượt chạy này không có số đo ngữ nghĩa.")
+    report += ["", "Bộ 175 bài thuộc Học tập/Công nghệ và 10 query là thực nghiệm quy mô nhỏ; chỉ kết luận trong phạm vi này.",
+               "Nhãn do người dùng cung cấp/chốt; công cụ không tự xác nhận độ đúng của mọi nhãn.",
                "Baseline đếm token theo chuỗi con, không đại diện BM25 hoặc mọi hệ thống tìm kiếm từ khóa.", ""]
     (output / "summary.md").write_text("\n".join(report), encoding="utf-8")
     provenance = {key: file_hash(path) for key, path in (

@@ -205,7 +205,7 @@ def run(conn, data, password, phase=3, verify_only=False, all_phases=True, exten
         extended = counts["blogs"] == len(data["blogs"]) + len(extra_posts)
         if verify_only:
             require(current >= phase, "Database chưa đủ đợt yêu cầu. Nạp đợt còn thiếu trước khi xác nhận.")
-            require(not extend_demo01 or extended, "Database chưa có bộ bài mở rộng cho demo01.")
+            require(not extend_demo01 or extended, "Database chưa có bộ bài mở rộng cho tài khoản đầu tiên.")
             return {"status": "verified", "phase": current, "counts": counts}
         if current >= phase and (not extend_demo01 or extended):
             return {"status": "already-seeded", "phase": current, "counts": counts}
@@ -256,7 +256,7 @@ def main():
     parser.add_argument("--target-database", help="Tên database demo phải khớp kết nối")
     parser.add_argument("--env-file", type=Path, help="File KEY=value theo mẫu dự án, env đang có được ưu tiên")
     parser.add_argument("--phase", choices=("1", "2", "3", "all"), default="all")
-    parser.add_argument("--extend-demo01", action="store_true", help="Bổ sung demo01 tới 1.000 bài public và 300 bài private")
+    parser.add_argument("--extend-demo01", action="store_true", help="Bổ sung tài khoản đầu tiên tới 1.000 bài public và 300 bài private")
     args = parser.parse_args()
     data = load_dataset()
     if args.check:

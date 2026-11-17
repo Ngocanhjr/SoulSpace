@@ -38,6 +38,11 @@
     background-color: rgba(219, 217, 217, 0.733);
 }
 
+.iconprivate[aria-disabled="true"] {
+    pointer-events: none;
+    opacity: 0.45;
+}
+
 .top-bar {
     flex: 1;
 }

@@ -10,8 +10,10 @@ function Login({ guest }) {
             <button className="buttonLogin" onClick={() => navigate('/signin')}>
                 Sign in
             </button>
-            <button onClick={() => navigate("/signup")} className="buttonLogin">Sign up</button><br />
-            <a onClick={(event) => { event.preventDefault(); guest(true); }} href='#' >Continue as guest</a>
+            <button onClick={() => navigate("/signup")} className="buttonLogin">Sign up</button>
+            {guest && (
+                <a onClick={(event) => { event.preventDefault(); guest(); }} href='#' >Continue as guest</a>
+            )}
         </div>
     );
 }

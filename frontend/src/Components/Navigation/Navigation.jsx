@@ -12,16 +12,22 @@ import {
 } from "../ui/dropdown-menu";
 import navcss from "./Navigation.module.css";
 
-export default function Navigation({ feedScrolling = false }) {
+export default function Navigation({ feedScrolling = false, tabsDisabled = false, onSignOut }) {
   const [signingOut, setSigningOut] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const restrictedTabProps = tabsDisabled ? {
+    "aria-disabled": true,
+    tabIndex: -1,
+    onClick: (event) => event.preventDefault(),
+  } : {};
 
   const logout = async () => {
     if (signingOut) return;
     setSigningOut(true);
     try {
       await signOut();
+      onSignOut?.();
       toast.success("Signed out successfully!");
       navigate("/");
     } catch (error) {
@@ -58,6 +64,7 @@ export default function Navigation({ feedScrolling = false }) {
 
           <NavLink
             to="/search"
+            {...restrictedTabProps}
             className={({ isActive }) =>
               `${navcss["iconprivate"]} ${isActive ? navcss["active"] : ""}`
             }
@@ -67,6 +74,7 @@ export default function Navigation({ feedScrolling = false }) {
 
           <NavLink
             to="/post"
+            {...restrictedTabProps}
             className={({ isActive }) =>
               `${navcss["iconprivate"]} ${isActive ? navcss["active"] : ""}`
             }
@@ -81,6 +89,7 @@ export default function Navigation({ feedScrolling = false }) {
 
           <NavLink
             to="/user"
+            {...restrictedTabProps}
             className={({ isActive }) =>
               `${navcss["iconprivate"]} ${isActive ? navcss["active"] : ""}`
             }

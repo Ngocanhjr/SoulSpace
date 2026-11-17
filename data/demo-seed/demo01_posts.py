@@ -1,4 +1,4 @@
-"""Bài mô phỏng để thử phân trang hồ sơ demo01."""
+"""Bài mô phỏng để thử phân trang hồ sơ tài khoản đầu tiên của bộ demo."""
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from itertools import product
@@ -85,7 +85,7 @@ PRIVATE_ENDINGS = (
 
 
 def build_posts(data):
-    user_id = next(row["id"] for row in data["users"] if row["username"] == "demo01")
+    user_id = data["users"][0]["id"]
     counts = Counter(row["published"] for row in data["blogs"] if row["author_id"] == user_id)
     rng = random.Random(13112026)
     used = {row["content"] for row in data["blogs"]}

@@ -102,8 +102,11 @@ def build_dataset():
         "blog_likes", "comment_likes", "blog_shares",
     )}
     for i, name in enumerate(NAMES):
+        handle = "".join(name.split()[-2:]).lower().replace("đ", "d")
+        username = "".join(char for char in unicodedata.normalize("NFD", handle)
+                           if not unicodedata.combining(char))
         created = datetime(2026, 5, 1, tzinfo=timezone.utc) + timedelta(hours=i * 29 + rng.randrange(20))
-        data["users"].append(dict(id=fixed_id("users", i, created), username=f"demo{i+1:02d}",
+        data["users"].append(dict(id=fixed_id("users", i, created), username=username,
                                   fullname=name, dob=date(1988 + i % 16, i % 12 + 1, i % 25 + 1).isoformat(),
                                   created_at=stamp(created), updated_at=stamp(created)))
     for i, (slug, name) in enumerate(TOPICS):

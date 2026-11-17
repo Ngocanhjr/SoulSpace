@@ -107,8 +107,8 @@ class SeedIntegrationTests(unittest.TestCase):
             self.assertEqual(run_extension(verify=True)["status"], "verified")
             rows = conn.execute("""
                 SELECT published, count(*) FROM blogs JOIN users ON users.id=blogs.author_id
-                WHERE username='demo01' GROUP BY published
-            """).fetchall()
+                WHERE users.id=%s GROUP BY published
+            """, (self.data["users"][0]["id"],)).fetchall()
             self.assertEqual(dict(rows), {True: 1000, False: 300})
             self.assertEqual(conn.execute("SELECT count(*) FROM blogs").fetchone()[0], 1684)
             self.assertTrue(set(original) <= set(conn.execute("SELECT id FROM blogs").fetchall()))
