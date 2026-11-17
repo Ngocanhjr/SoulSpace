@@ -13,7 +13,7 @@
 | Gốc | `2_tong_hop/tongHopNhan_goc.csv` | 6 cột nhãn từ 4 nguồn, chưa hợp nhất |
 | Rule | `2_tong_hop/tongHopNhan_rule.csv` | Đã hợp nhất bằng rule ở mục 4 |
 | AI | `2_tong_hop/tongHopNhan_rule_ai.csv` | Sau khi LLM xử lý các dòng `AI xác định` (mục 6) |
-| Final | `3_final/tongHopNhan_final.csv` | 39.995 dòng có nhãn, bỏ 5 dòng rác |
+| Final | `3_final/tongHopNhan_final.csv` | 39.995 dòng có nhãn, bỏ 5 dòng rác (lý do: `4_bao_cao/dong_bi_loai.csv`) |
 | Báo cáo | `4_bao_cao/` | Thống kê nhãn qua từng giai đoạn |
 
 

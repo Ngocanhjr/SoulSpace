@@ -1,0 +1,6 @@
+﻿id,content,labels_original,grok-4.7,gemini-hydrogen,gpt-6.1-sol,ghi_chu,ly_do_loai
+SS_042003,Không tin bố con nhà thằng nào hớt,cong_viec,gia_dinh,cuoc_song,cong_viec,cong_viec,"Câu chửi, không bàn chủ đề nào; ghi_chu chỉ có cong_viec nhưng bài không nói về công việc."
+SS_063386,"8998494 5 võ xuân lâm, thuỷ lương , hương thuỷ, tt huế",xa_hoi,cuoc_song,mua_sam|cuoc_song,xa_hoi,xa_hoi|cuoc_song,"Chỉ có dãy số và địa chỉ, không có nội dung để xác định chủ đề."
+SS_066212,#NAME?,hoc_tap,cuoc_song,hoc_tap,cuoc_song,hoc_tap|cuoc_song,"Nội dung là ""#NAME?"" (lỗi công thức Excel), bài gốc đã mất."
+SS_075376,Ad quên mẹ là nó có thể địt cả bố ad à 😂,gia_dinh|xa_hoi,cuoc_song,cuoc_song,gia_dinh|xa_hoi,gia_dinh|xa_hoi|cuoc_song,"Câu chửi đùa; chữ ""mẹ"", ""bố"" dùng để chửi, không bàn quan hệ gia đình hay vấn đề xã hội."
+SS_075917,Cha bố nhà mấy ông,gia_dinh,cuoc_song,cuoc_song,gia_dinh,gia_dinh|cuoc_song,"Câu cảm thán/chửi ngắn; ""cha bố"" là tiếng chửi, không bàn quan hệ gia đình."
