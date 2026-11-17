@@ -78,7 +78,7 @@ def expected_notifications(data, phase):
     return result
 
 
-def check_state(conn, data, hasher, password, extra_posts):
+def check_state(conn, data, hasher, password, blog_sets):
     from psycopg import sql
     from argon2.exceptions import VerificationError, InvalidHashError
 
@@ -94,8 +94,11 @@ def check_state(conn, data, hasher, password, extra_posts):
     for stage, tables in enumerate(PHASES, 1):
         for name in tables:
             expected = data[name] if stage <= phase else []
-            if name == "blogs" and counts[name] == len(expected) + len(extra_posts) and phase:
-                expected = expected + extra_posts
+            if name == "blogs" and phase:
+                expected = blog_sets.get(counts[name], expected)
+            if name == "users" and counts[name] == len(expected) - 1:
+                # Bộ cũ có đúng 40 tài khoản và chưa có demo41.
+                expected = [row for row in expected if row["username"] != "demo41"]
             require(counts[name] == len(expected),
                     f"Database có dữ liệu khác hoặc seed dở dang ở {name}. Dùng database/branch demo riêng.")
             columns = list(data[name][0])
@@ -173,18 +176,23 @@ def insert_rows(conn, table, rows):
         cur.executemany(command, [tuple(None if row[c] == "" else row[c] for c in columns) for row in rows])
 
 
-def run(conn, data, password, phase=3, verify_only=False, all_phases=True, extend_demo01=False):
+def run(conn, data, password, phase=3, verify_only=False, all_phases=True,
+        extend_demo01=False, extend_demo41=False):
     from argon2 import PasswordHasher
     from psycopg import sql
 
     require(conn.autocommit, "Seed cần kết nối autocommit để tự quản lý một transaction hoàn chỉnh.")
     require(phase in (1, 2, 3), "Đợt phải là 1, 2 hoặc 3")
-    require(not extend_demo01 or (all_phases and phase == 3), "--extend-demo01 đi cùng --phase all.")
+    require(not (extend_demo01 or extend_demo41) or (all_phases and phase == 3),
+            "Tùy chọn bài mở rộng đi cùng --phase all.")
     require(15 <= len(password) <= 128 and not any(unicodedata.category(ch) == "Cc" for ch in password),
             "DEMO_USER_PASSWORD cần 15–128 ký tự Unicode, không chứa ký tự điều khiển.")
     require(datetime.now(timezone.utc) >= generate.END, "Dataset chỉ dùng từ 01/11/2026 trở đi.")
     generate.validate(data)
-    extra_posts = demo01_posts.build_posts(data)
+    extra01 = demo01_posts.build_posts(data)
+    extra41 = demo01_posts.build_posts(data, "demo41")
+    base = data["blogs"]
+    blog_sets = {len(base) + len(extra): base + extra for extra in ([], extra01, extra41, extra01 + extra41)}
     hasher = PasswordHasher(time_cost=2, memory_cost=19456, parallelism=1, salt_len=16, hash_len=32)
     # Salt sinh riêng từng tài khoản, làm trước khi giữ khóa database.
     hashes = [hasher.hash(password) for _ in data["users"]] if not verify_only else []
@@ -201,28 +209,38 @@ def run(conn, data, password, phase=3, verify_only=False, all_phases=True, exten
             conn.execute(sql.SQL("LOCK TABLE {} IN SHARE ROW EXCLUSIVE MODE").format(
                 sql.SQL(", ").join(sql.Identifier("public", name) for name in sorted(set(TABLES)-{"notifications"}))))
         schema_check(conn)
-        current, counts = check_state(conn, data, hasher, password, extra_posts)
-        extended = counts["blogs"] == len(data["blogs"]) + len(extra_posts)
+        current, counts = check_state(conn, data, hasher, password, blog_sets)
+        extended01 = counts["blogs"] in (len(base) + len(extra01), len(base) + len(extra01) + len(extra41))
+        extended41 = counts["blogs"] in (len(base) + len(extra41), len(base) + len(extra01) + len(extra41))
+        add_users = counts["users"] < len(data["users"])
         if verify_only:
             require(current >= phase, "Database chưa đủ đợt yêu cầu. Nạp đợt còn thiếu trước khi xác nhận.")
-            require(not extend_demo01 or extended, "Database chưa có bộ bài mở rộng cho tài khoản đầu tiên.")
+            require(not add_users, "Database chưa có demo41. Chạy --apply để bổ sung.")
+            require(not extend_demo01 or extended01, "Database chưa có bộ bài mở rộng cho tài khoản đầu tiên.")
+            require(not extend_demo41 or extended41, "Database chưa có bộ bài mở rộng cho demo41.")
             return {"status": "verified", "phase": current, "counts": counts}
-        if current >= phase and (not extend_demo01 or extended):
+        add_posts = ([] if not extend_demo01 or extended01 else extra01) + (
+            [] if not extend_demo41 or extended41 else extra41)
+        if current >= phase and not add_users and not add_posts:
             return {"status": "already-seeded", "phase": current, "counts": counts}
-        require(current == phase-1 or all_phases,
+        require(current >= phase-1 or all_phases,
                 "Chạy đợt trước trước khi nạp đợt này, hoặc dùng --phase all.")
+        if add_users:
+            existing = counts["users"]
+            users = [dict(row, password_hash=value) for row, value in
+                     zip(data["users"][existing:], hashes[existing:])]
+            insert_rows(conn, "users", users)
         # --phase all đi từ trạng thái hiện có tới đợt 3 trong cùng transaction.
         for stage in range(current+1, phase+1):
             for table in PHASES[stage-1]:
-                rows = data[table]
-                if table == "users":
-                    rows = [dict(row, password_hash=value) for row, value in zip(rows, hashes)]
-                insert_rows(conn, table, rows)
-        if extend_demo01 and not extended:
-            insert_rows(conn, "blogs", extra_posts)
+                if table != "users":
+                    insert_rows(conn, table, data[table])
+        if add_posts:
+            insert_rows(conn, "blogs", add_posts)
         conn.execute("SET CONSTRAINTS ALL IMMEDIATE")
-        final, counts = check_state(conn, data, hasher, password, extra_posts)
-        require(final == phase, "Seed chưa đạt đợt yêu cầu")
+        final, counts = check_state(conn, data, hasher, password, blog_sets)
+        require(final == max(current, phase) and counts["users"] == len(data["users"]),
+                "Seed chưa đạt đợt yêu cầu")
     return {"status": "seeded", "phase": final, "counts": counts}
 
 
@@ -257,12 +275,15 @@ def main():
     parser.add_argument("--env-file", type=Path, help="File KEY=value theo mẫu dự án, env đang có được ưu tiên")
     parser.add_argument("--phase", choices=("1", "2", "3", "all"), default="all")
     parser.add_argument("--extend-demo01", action="store_true", help="Bổ sung tài khoản đầu tiên tới 1.000 bài public và 300 bài private")
+    parser.add_argument("--extend-demo41", action="store_true", help="Nạp 1.000 bài public và 300 bài private cho demo41")
     args = parser.parse_args()
     data = load_dataset()
     if args.check:
         counts = {k: len(v) for k,v in data.items()}
         if args.extend_demo01:
             counts["blogs"] += len(demo01_posts.build_posts(data))
+        if args.extend_demo41:
+            counts["blogs"] += len(demo01_posts.build_posts(data, "demo41"))
         print(json.dumps({"status": "dataset-valid", "counts": counts}, ensure_ascii=False))
         return
     require(args.target_database, "Cần --target-database tên_database_demo để xác nhận đích.")
@@ -279,7 +300,8 @@ def main():
     with psycopg.connect(connection_settings(env), autocommit=True) as conn:
         require(conn.info.dbname == args.target_database, "Tên database kết nối khác --target-database. Dừng seed.")
         result = run(conn, data, password, phase=3 if args.phase == "all" else int(args.phase),
-                     verify_only=args.verify, all_phases=args.phase == "all", extend_demo01=args.extend_demo01)
+                     verify_only=args.verify, all_phases=args.phase == "all",
+                     extend_demo01=args.extend_demo01, extend_demo41=args.extend_demo41)
     print(json.dumps(result, ensure_ascii=False))
 
 

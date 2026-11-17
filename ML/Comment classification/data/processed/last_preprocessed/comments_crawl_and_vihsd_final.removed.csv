@@ -1,0 +1,137 @@
+source,source_name,source_id,document_id,parent_id,free_text,published_at,collected_at,url,context,label_id,filter_reason
+youtube,youtube_selected_videos,UgyzcLArSLiDB2H9gUh4AaABAg.Aap0Db6V4SLAap18dFiit7,r1rmnvgJcI4,UgyzcLArSLiDB2H9gUh4AaABAg,Tủm tỉm,2026-09-16T14:39:11Z,2026-11-08T11:55:06.294952+00:00,https://www.youtube.com/watch?v=r1rmnvgJcI4,tủm tỉm,0,duplicate
+youtube,youtube_selected_videos,UgyVwTVmmxgN440unt94AaABAg,r1rmnvgJcI4,,qv là ai vậy,2026-09-14T10:15:19Z,2026-11-08T11:55:47.374674+00:00,https://www.youtube.com/watch?v=r1rmnvgJcI4,,0,duplicate
+youtube,youtube_selected_videos,UgyVwTVmmxgN440unt94AaABAg.AajPMCCPCcvAajlkKQOpqM,r1rmnvgJcI4,UgyVwTVmmxgN440unt94AaABAg,quế vân á,2026-09-14T13:39:43Z,2026-11-08T11:55:48.346259+00:00,https://www.youtube.com/watch?v=r1rmnvgJcI4,qv là ai vậy,0,duplicate
+youtube,youtube_selected_videos,UgytUmgREdjdMFosnnN4AaABAg.AahifIy0I1LAajoJWkv9gh,r1rmnvgJcI4,UgytUmgREdjdMFosnnN4AaABAg,đại nghĩa á,2026-09-14T14:02:08Z,2026-11-08T11:56:23.502523+00:00,https://www.youtube.com/watch?v=r1rmnvgJcI4,Nuỵ là ai,0,duplicate
+youtube,youtube_selected_videos,Ugykr-xECbNcV0sIgbF4AaABAg,BzVrfId5GkU,,U,2026-11-04T14:52:07Z,2026-11-08T11:52:39.783898+00:00,https://www.youtube.com/watch?v=BzVrfId5GkU,,0,duplicate
+youtube,youtube_selected_videos,Ugy99z8tloFn0W8HuiB4AaABAg,Mzjtwf0FbW0,,Tập này hay quá,2026-11-08T07:20:13Z,2026-11-08T11:51:36.673430+00:00,https://www.youtube.com/watch?v=Mzjtwf0FbW0,,0,duplicate
+youtube,youtube_selected_videos,UgyrN96GWVJAM__V--F4AaABAg,Mzjtwf0FbW0,,Mê Diệu Nhi,2026-11-08T03:55:15Z,2026-11-08T11:51:45.633380+00:00,https://www.youtube.com/watch?v=Mzjtwf0FbW0,,0,duplicate
+youtube,youtube_selected_videos,Ugxlhcald3OM5Dec5XJ4AaABAg,Mzjtwf0FbW0,,cười điên,2026-11-08T02:24:03Z,2026-11-08T11:51:54.831572+00:00,https://www.youtube.com/watch?v=Mzjtwf0FbW0,,0,duplicate
+youtube,youtube_selected_videos,UgwWewl9BrYhA-FlOVJ4AaABAg.AaiiavoQY8xAajWe6H9qvG,r1rmnvgJcI4,UgwWewl9BrYhA-FlOVJ4AaABAg,cười ỉa,2026-09-14T11:19:04Z,2026-11-08T11:56:09.475313+00:00,https://www.youtube.com/watch?v=r1rmnvgJcI4,Vãi cả phút giây linh thiêng:).,2,duplicate_label_conflict
+facebook,facebook_public_browser,1890966545398087,https://www.facebook.com/permalink.php?story_fbid=pfbid0rKD2bHDFWec5j7DUSALBTAxxZqaVYB5x4pEX2EMkeqgVfh82BirxxX1oyGxhKSPJl&id=61555318964717,,Ngu,,2026-11-10T23:26:39.537863+00:00,https://www.facebook.com/permalink.php?story_fbid=pfbid0rKD2bHDFWec5j7DUSALBTAxxZqaVYB5x4pEX2EMkeqgVfh82BirxxX1oyGxhKSPJl&id=61555318964717&comment_id=1890966545398087,Rung Động - Trong 3 thằng phản anh Bảy. T ghét nhất là... | Facebook,2,duplicate_label_conflict
+facebook,facebook_public_browser,1808264056960967,https://www.facebook.com/quang.uc.343437/posts/pfbid0D9cro2FfMNxTc4jaXGqA3iDiPYo7VibpLqHdEA63oWhfWF6jjcMvr6wqZiAZNZJ3l,,Chết đi,,2026-11-10T23:31:24.706692+00:00,https://www.facebook.com/quang.uc.343437/posts/pfbid0D9cro2FfMNxTc4jaXGqA3iDiPYo7VibpLqHdEA63oWhfWF6jjcMvr6wqZiAZNZJ3l?comment_id=1808264056960967,Quang Đức - 4 anh em trong nhóm nhạc TỨ ĐẠI THIÊN VƯƠNG... | Facebook,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:68,,,Nghe giọng lứng quá,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:344,,,Abe mua áo như này là chet con di me sela rồi =)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:392,,,Hán hoá từ từ,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:581,,,Toàn giáo án lủng mà cứ dựng lonnn là sao=)))),,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:592,,,Clgv abe !,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:798,,,Nguyễn Hoàng Sâm lồnnn Sâm,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:1105,,,Mini Tae dơ vcl,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:1860,,,Đức Mạnh Cứng clmm,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:2008,,,2,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:2414,,,Giáo án cc gì đây,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:2582,,,Loại nghiện game + săm trổ k có tương lai đâu nha,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:2678,,,Anh ba láo nháo là Tú xiên giờ,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:3088,,,Lưu Bảo Toàn đọc hại não vcl,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:3384,,,Phúc Hưng clm :))),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:3438,,,Ba gà,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:3579,,,Nghe giọng lứng quá,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:3602,,,Nguyễn Tài koi ccc bn,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:4081,,,Dễ thương,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:4146,,,Hau Nguyen con cặc :v,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:4706,,,Giáo án cc gì đây,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:4801,,,Mini Tae dơ vcl,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:4922,,,Ba gà,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5061,,,cái mỏ l*n trong làng hài khẩu nghiệp!,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5202,,,Nguyễn Tài koi ccc bn,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5499,,,Mini Tae cai l,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5632,,,Nguyễn Hoàng Sâm lồnnn Sâm,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5648,,,Mini Tae cai l,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5847,,,"Tú said:"" cho cái lồn nè anh Ba"".",,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:5919,,,Nguyễn Quang Huy thăng l nào chế cái này @@,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:6317,,,Con bóng sa đéc,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:6373,,,như buồi thầy ạ :)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:6517,,,Đẹp trai như thầy thì đ có ai mua ?,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:6736,,,- cả 2 cũng chỉ ngu như nhau thoii khỏi so sánh :)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:6933,,,Dạng háng bắt Sele buscu chứ gì thầy 😍,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:7183,,,Sela tuổi gì với abe :))),,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:7633,,,Dạng háng bắt Sele buscu chứ gì thầy 😍,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:7687,,,Tối Thầy stream đá phò đi thầy ơi,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:8226,,,Chán,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:8257,,,Hieu Trung ưng vcc mà,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:8482,,,Hieu Trung ưng vcc mà,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:8581,,,- cả 2 cũng chỉ ngu như nhau thoii khỏi so sánh :)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9255,,,sale cc à thầy 😆😆,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9338,,,Phá sản r làm đĩ đực thôi abr,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9424,,,Toàn giáo án máu lồn chảy ngược,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9473,,,chết đi,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9585,,,Nguyễn Sơn tđn ghét thầy ba thế à mà tút cu nào cũng thấy cmt :)))),,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9730,,,Gia cát bị đồng bóng à,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:9919,,,"Buồn quá,k biết mấy cái tượng nghìn tỷ có bị ngập nc k nữa.",,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10098,,,ThanhHuy Nguyen dơ vcl=))),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10114,,,Đơm chết mẹ nó liền :)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10125,,,Clgv abe !,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10159,,,Trần Trung Tín vãi lồn kkk,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10248,,,Lee Sin lol mẹ giáo án kiểm soát của thầy Tú,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10327,,,Chán,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10334,,,ấu dâm vãi lz hèn dì cô phương linh bốc phốt =))),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:10501,,,lz ma no do =)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:11499,,,sale cc à thầy 😆😆,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:11768,,,hi,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:12179,,,Rút kinh nghiệm là lại đc sài nghìn tỷ .,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:12267,,,Nguyen van Giang thắng tới nơi sủa bậy,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:12427,,,Gia cát bị đồng bóng à,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:12442,,,Con điên,,,,,2,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:12556,,,Trần Trung Tín vãi lồn kkk,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:13288,,,Kick nó đi Abe,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:13404,,,Toàn giáo án lủng mà cứ dựng lonnn là sao=)))),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:13849,,,Đức Mạnh Cứng clmm,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:13891,,,Kkkk,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:13966,,,Phúc Hưng clm :))),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14160,,,Trường hợp này có cho tao cũng đéo húp Levi said,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14484,,,con chó phải không,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14577,,,Rút kinh nghiệm là lại đc sài nghìn tỷ .,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14661,,,Tối Thầy stream đá phò đi thầy ơi,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14941,,,Hau Nguyen con cặc :v,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:14961,,,ấu dâm vãi lz hèn dì cô phương linh bốc phốt =))),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15022,,,như buồi thầy ạ :)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15121,,,Toàn giáo án máu lồn chảy ngược,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15258,,,múa như cái biệt danh Susan : Chó :)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15313,,,Quá vui,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15643,,,Thân? Chửi học trò như 1 con chó... Thương cái lồl..,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15770,,,Thân? Chửi học trò như 1 con chó... Thương cái lồl..,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15870,,,ngu,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:15976,,,Anh ba láo nháo là Tú xiên giờ,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:16074,,,Clm =)),,,,,1,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:16833,,,Ditme mặt thầy cũng thần thái vãi l*n :)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:17461,,,Anh Trung bóng lộn sa đéc,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:17667,,,đút vào mồm thầy,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18269,,,Phá sản r làm đĩ đực thôi abr,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18308,,,Con bóng sa đéc,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18518,,,cái địt con mẹ m,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18760,,,Clm :))))) Trí Xuân,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18783,,,haha,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:18969,,,Anh Trung bóng lộn sa đéc,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:19367,,,lz ma no do =)),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:19421,,,Ditme mặt thầy cũng thần thái vãi l*n :)),,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:19602,,,Hán hoá từ từ,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:19835,,,Clm :))))) Trí Xuân,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20045,,,#ERROR!,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20313,,,Kick nó đi Abe,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20585,,,múa như cái biệt danh Susan : Chó :)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20652,,,Clm nó dơ như chó rách,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20679,,,Cười ỉa,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20704,,,fan cứng,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:20714,,,đút vào mồm thầy,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:21443,,,ThanhHuy Nguyen dơ vcl=))),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:21487,,,Nguyễn Sơn tđn ghét thầy ba thế à mà tút cu nào cũng thấy cmt :)))),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:21858,,,Trường hợp này có cho tao cũng đéo húp Levi said,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:21864,,,"Tú said:"" cho cái lồn nè anh Ba"".",,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:21985,,,Nguyễn Quang Huy thăng l nào chế cái này @@,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22000,,,#ERROR!,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22011,,,Lưu Bảo Toàn đọc hại não vcl,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22180,,,Loại nghiện game + săm trổ k có tương lai đâu nha,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22322,,,Sela tuổi gì với abe :))),,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22594,,,cái mỏ l*n trong làng hài khẩu nghiệp!,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22656,,,Clm nó dơ như chó rách,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22677,,,Cc,,,,,1,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22692,,,Đơm chết mẹ nó liền :)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22899,,,Cười xỉu luôn,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:22919,,,cái địt con mẹ m,,,,,2,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:23362,,,Cảm ơn anh,,,,,0,duplicate
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:23798,,,con chó phải không,,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:23938,,,Đẹp trai như thầy thì đ có ai mua ?,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:23978,,,"Buồn quá,k biết mấy cái tượng nghìn tỷ có bị ngập nc k nữa.",,,,,0,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:23997,,,Abe mua áo như này là chet con di me sela rồi =)),,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:24458,,,Lee Sin lol mẹ giáo án kiểm soát của thầy Tú,,,,,1,duplicate_label_conflict
+vihsd,vihsd_train_dev_clean_reduced,vihsd_train_dev_clean:24641,,,Nguyen van Giang thắng tới nơi sủa bậy,,,,,0,duplicate_label_conflict

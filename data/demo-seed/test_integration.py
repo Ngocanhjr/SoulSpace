@@ -114,6 +114,31 @@ class SeedIntegrationTests(unittest.TestCase):
             self.assertTrue(set(original) <= set(conn.execute("SELECT id FROM blogs").fetchall()))
             self.assertEqual(conn.execute("SELECT count(*) FROM v_public_blog_feed").fetchone()[0], 1338)
 
+    def test_adds_demo41_to_existing_seed_without_changing_accounts(self):
+        with psycopg.connect(self.runtime, autocommit=True) as conn:
+            self.seed_module.run(conn, self.data, self.password, extend_demo01=True)
+        with psycopg.connect(self.runtime, autocommit=True) as conn:
+            conn.execute("DELETE FROM users WHERE username='demo41'")
+            before = conn.execute("SELECT id,password_hash FROM users ORDER BY id").fetchall()
+            self.assertEqual(len(before), 40)
+            result = self.seed_module.run(conn, self.data, self.password, extend_demo41=True)
+            self.assertEqual(result["status"], "seeded")
+            self.assertEqual(result["counts"]["users"], 41)
+            self.assertEqual(result["counts"]["blogs"], 2984)
+            self.assertEqual(conn.execute(
+                "SELECT id,password_hash FROM users WHERE username<>'demo41' ORDER BY id"
+            ).fetchall(), before)
+            posts = conn.execute("""
+                SELECT username,published,count(*) FROM blogs JOIN users ON users.id=blogs.author_id
+                WHERE username IN (%s,'demo41') GROUP BY username,published
+            """, (self.data["users"][0]["username"],)).fetchall()
+            first_username = self.data["users"][0]["username"]
+            self.assertCountEqual(posts, [(first_username, True, 1000), (first_username, False, 300),
+                                         ("demo41", True, 1000), ("demo41", False, 300)])
+            self.assertEqual(self.seed_module.run(
+                conn, self.data, self.password, extend_demo41=True
+            )["status"], "already-seeded")
+
     def test_phases_resume_and_order(self):
         with self.assertRaises(ValueError):
             self.seed(verify=True)
@@ -122,6 +147,21 @@ class SeedIntegrationTests(unittest.TestCase):
         for phase in (1, 2, 3):
             self.assertEqual(self.seed(phase)["phase"], phase)
             self.assertEqual(self.seed(phase)["status"], "already-seeded")
+
+    def test_semantic_assignment_keeps_original_40_authors(self):
+        script = (REPO / "semantic-search/scripts/assign-demo-users.sql").read_text(encoding="utf-8")
+        user_import = script.split("CREATE TEMP TABLE incoming_semantic_posts", 1)[0]
+        create, after_copy = user_import[user_import.index("CREATE TEMP TABLE incoming_demo_users"):].split("\\copy", 1)
+        after_copy = after_copy.split("\n", 1)[1].strip()
+        with psycopg.connect(self.dsn) as conn:
+            conn.execute(create)
+            with conn.cursor().copy("COPY incoming_demo_users FROM STDIN WITH (FORMAT csv, HEADER true)") as copy:
+                copy.write((ROOT / "users.csv").read_bytes())
+            if after_copy:
+                conn.execute(after_copy)
+            users = conn.execute("SELECT id FROM incoming_demo_users ORDER BY id").fetchall()
+            self.assertEqual([str(row[0]) for row in users],
+                             [user["id"] for user in self.data["users"][:40]])
 
     def test_changed_content_or_password_is_not_overwritten(self):
         self.seed()

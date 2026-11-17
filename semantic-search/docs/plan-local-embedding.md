@@ -192,7 +192,7 @@ Giữ worker `false` nếu chỉ chạy backfill Python thủ công.
 
 Chạy khi đã có 1.000 bài và bảng embedding. Bước này chỉ nạp riêng `data/demo-seed/users.csv`, không chạy `seed.py` và không nạp 400 bài cũ hay các tương tác của bộ demo. Dừng backend và lệnh backfill đang chạy trước khi thực hiện.
 
-Script gán lần lượt bài theo ID nguồn đã sắp xếp cho 40 user trong `users.csv`, theo thứ tự UUID tăng dần, lặp lại 25 vòng. Username hiện tại được đặt theo tên thật của nhân vật, ví dụ `minhkhoi`, `ngocan`, `hoaiphuong`, …, `vinhan`. Thứ tự UUID chính là thứ tự user cũ `demo01`–`demo40`, nên đổi username không làm chuyển bài sang người khác. Giữ nguyên ID bài, nội dung, trạng thái công khai và vector; không cần tạo lại embedding.
+Script gán lần lượt bài theo ID nguồn đã sắp xếp cho 40 user đầu tiên trong `users.csv`, theo thứ tự UUID tăng dần, lặp lại 25 vòng. Tài khoản mở rộng `demo41` được bỏ qua khi gán bài. Username hiện tại được đặt theo tên thật của nhân vật, ví dụ `minhkhoi`, `ngocan`, `hoaiphuong`, …, `vinhan`. Thứ tự UUID chính là thứ tự user cũ `demo01`–`demo40`, nên đổi username không làm chuyển bài sang người khác. Giữ nguyên ID bài, nội dung, trạng thái công khai và vector; không cần tạo lại embedding.
 
 ```powershell
 cd D:\3-SoulSpace

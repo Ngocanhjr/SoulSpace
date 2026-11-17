@@ -1,0 +1,155 @@
+﻿giai_doan,nguon,nhan,so_bai,ty_le_pct,tong_dong
+1_raw,labels_original,hoc_tap,3973,9.93,40000
+1_raw,labels_original,cong_viec,3982,9.96,40000
+1_raw,labels_original,tai_chinh,3789,9.47,40000
+1_raw,labels_original,cong_nghe,3888,9.72,40000
+1_raw,labels_original,the_thao,3785,9.46,40000
+1_raw,labels_original,du_lich,3727,9.32,40000
+1_raw,labels_original,am_thuc,3776,9.44,40000
+1_raw,labels_original,mua_sam,4190,10.47,40000
+1_raw,labels_original,suc_khoe,3899,9.75,40000
+1_raw,labels_original,lam_dep,3842,9.61,40000
+1_raw,labels_original,giai_tri,4208,10.52,40000
+1_raw,labels_original,gia_dinh,4131,10.33,40000
+1_raw,labels_original,tinh_cam,3985,9.96,40000
+1_raw,labels_original,xa_hoi,4303,10.76,40000
+1_raw,labels_original,cuoc_song,4344,10.86,40000
+1_raw,grok-4.7,hoc_tap,3754,9.38,40000
+1_raw,grok-4.7,cong_viec,3732,9.33,40000
+1_raw,grok-4.7,tai_chinh,3234,8.09,40000
+1_raw,grok-4.7,cong_nghe,3297,8.24,40000
+1_raw,grok-4.7,the_thao,3671,9.18,40000
+1_raw,grok-4.7,du_lich,3581,8.95,40000
+1_raw,grok-4.7,am_thuc,4229,10.57,40000
+1_raw,grok-4.7,mua_sam,4309,10.77,40000
+1_raw,grok-4.7,suc_khoe,4045,10.11,40000
+1_raw,grok-4.7,lam_dep,3542,8.86,40000
+1_raw,grok-4.7,giai_tri,4316,10.79,40000
+1_raw,grok-4.7,gia_dinh,4544,11.36,40000
+1_raw,grok-4.7,tinh_cam,3864,9.66,40000
+1_raw,grok-4.7,xa_hoi,4109,10.27,40000
+1_raw,grok-4.7,cuoc_song,4118,10.29,40000
+1_raw,gemini-hydrogen,hoc_tap,4296,10.74,40000
+1_raw,gemini-hydrogen,cong_viec,3900,9.75,40000
+1_raw,gemini-hydrogen,tai_chinh,4342,10.86,40000
+1_raw,gemini-hydrogen,cong_nghe,4282,10.71,40000
+1_raw,gemini-hydrogen,the_thao,3839,9.6,40000
+1_raw,gemini-hydrogen,du_lich,3796,9.49,40000
+1_raw,gemini-hydrogen,am_thuc,4297,10.74,40000
+1_raw,gemini-hydrogen,mua_sam,4202,10.51,40000
+1_raw,gemini-hydrogen,suc_khoe,4143,10.36,40000
+1_raw,gemini-hydrogen,lam_dep,4110,10.28,40000
+1_raw,gemini-hydrogen,giai_tri,4907,12.27,40000
+1_raw,gemini-hydrogen,gia_dinh,4352,10.88,40000
+1_raw,gemini-hydrogen,tinh_cam,4078,10.2,40000
+1_raw,gemini-hydrogen,xa_hoi,4792,11.98,40000
+1_raw,gemini-hydrogen,cuoc_song,5667,14.17,40000
+1_raw,gpt-6.1-sol,hoc_tap,3434,8.59,40000
+1_raw,gpt-6.1-sol,cong_viec,3115,7.79,40000
+1_raw,gpt-6.1-sol,tai_chinh,3025,7.56,40000
+1_raw,gpt-6.1-sol,cong_nghe,3417,8.54,40000
+1_raw,gpt-6.1-sol,the_thao,3617,9.04,40000
+1_raw,gpt-6.1-sol,du_lich,3447,8.62,40000
+1_raw,gpt-6.1-sol,am_thuc,3680,9.2,40000
+1_raw,gpt-6.1-sol,mua_sam,3746,9.37,40000
+1_raw,gpt-6.1-sol,suc_khoe,3509,8.77,40000
+1_raw,gpt-6.1-sol,lam_dep,3619,9.05,40000
+1_raw,gpt-6.1-sol,giai_tri,4023,10.06,40000
+1_raw,gpt-6.1-sol,gia_dinh,3444,8.61,40000
+1_raw,gpt-6.1-sol,tinh_cam,3787,9.47,40000
+1_raw,gpt-6.1-sol,xa_hoi,3856,9.64,40000
+1_raw,gpt-6.1-sol,cuoc_song,4428,11.07,40000
+2_sau_rule,da_so (rule),hoc_tap,3296,9.57,34431
+2_sau_rule,da_so (rule),cong_viec,2856,8.29,34431
+2_sau_rule,da_so (rule),tai_chinh,2857,8.3,34431
+2_sau_rule,da_so (rule),cong_nghe,3092,8.98,34431
+2_sau_rule,da_so (rule),the_thao,3380,9.82,34431
+2_sau_rule,da_so (rule),du_lich,3110,9.03,34431
+2_sau_rule,da_so (rule),am_thuc,3518,10.22,34431
+2_sau_rule,da_so (rule),mua_sam,3290,9.56,34431
+2_sau_rule,da_so (rule),suc_khoe,3103,9.01,34431
+2_sau_rule,da_so (rule),lam_dep,3303,9.59,34431
+2_sau_rule,da_so (rule),giai_tri,3661,10.63,34431
+2_sau_rule,da_so (rule),gia_dinh,3282,9.53,34431
+2_sau_rule,da_so (rule),tinh_cam,3405,9.89,34431
+2_sau_rule,da_so (rule),xa_hoi,3326,9.66,34431
+2_sau_rule,da_so (rule),cuoc_song,3193,9.27,34431
+2_sau_rule,hoa_2_2 (chua_xu_ly),hoc_tap,377,6.77,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),cong_viec,528,9.48,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),tai_chinh,363,6.52,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),cong_nghe,366,6.57,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),the_thao,297,5.33,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),du_lich,436,7.83,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),am_thuc,308,5.53,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),mua_sam,518,9.3,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),suc_khoe,486,8.73,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),lam_dep,342,6.14,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),giai_tri,337,6.05,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),gia_dinh,616,11.06,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),tinh_cam,311,5.58,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),xa_hoi,544,9.77,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),cuoc_song,601,10.79,5569
+2_sau_rule,hoa_2_2 (chua_xu_ly),(khong_co_nhan),467,8.39,5569
+2_sau_rule,tong,hoc_tap,3673,9.18,40000
+2_sau_rule,tong,cong_viec,3384,8.46,40000
+2_sau_rule,tong,tai_chinh,3220,8.05,40000
+2_sau_rule,tong,cong_nghe,3458,8.64,40000
+2_sau_rule,tong,the_thao,3677,9.19,40000
+2_sau_rule,tong,du_lich,3546,8.87,40000
+2_sau_rule,tong,am_thuc,3826,9.56,40000
+2_sau_rule,tong,mua_sam,3808,9.52,40000
+2_sau_rule,tong,suc_khoe,3589,8.97,40000
+2_sau_rule,tong,lam_dep,3645,9.11,40000
+2_sau_rule,tong,giai_tri,3998,9.99,40000
+2_sau_rule,tong,gia_dinh,3898,9.74,40000
+2_sau_rule,tong,tinh_cam,3716,9.29,40000
+2_sau_rule,tong,xa_hoi,3870,9.68,40000
+2_sau_rule,tong,cuoc_song,3794,9.48,40000
+2_sau_rule,tong,(khong_co_nhan),467,1.17,40000
+3_sau_ai,tong,hoc_tap,3712,9.28,40000
+3_sau_ai,tong,cong_viec,3405,8.51,40000
+3_sau_ai,tong,tai_chinh,3257,8.14,40000
+3_sau_ai,tong,cong_nghe,3487,8.72,40000
+3_sau_ai,tong,the_thao,3692,9.23,40000
+3_sau_ai,tong,du_lich,3562,8.9,40000
+3_sau_ai,tong,am_thuc,3855,9.64,40000
+3_sau_ai,tong,mua_sam,3877,9.69,40000
+3_sau_ai,tong,suc_khoe,3609,9.02,40000
+3_sau_ai,tong,lam_dep,3676,9.19,40000
+3_sau_ai,tong,giai_tri,4075,10.19,40000
+3_sau_ai,tong,gia_dinh,3943,9.86,40000
+3_sau_ai,tong,tinh_cam,3765,9.41,40000
+3_sau_ai,tong,xa_hoi,3905,9.76,40000
+3_sau_ai,tong,cuoc_song,3918,9.79,40000
+3_sau_ai,tong,(khong_co_nhan),5,0.01,40000
+3_sau_ai,da_so (rule),hoc_tap,3296,9.57,34431
+3_sau_ai,da_so (rule),cong_viec,2856,8.29,34431
+3_sau_ai,da_so (rule),tai_chinh,2857,8.3,34431
+3_sau_ai,da_so (rule),cong_nghe,3092,8.98,34431
+3_sau_ai,da_so (rule),the_thao,3380,9.82,34431
+3_sau_ai,da_so (rule),du_lich,3110,9.03,34431
+3_sau_ai,da_so (rule),am_thuc,3518,10.22,34431
+3_sau_ai,da_so (rule),mua_sam,3290,9.56,34431
+3_sau_ai,da_so (rule),suc_khoe,3103,9.01,34431
+3_sau_ai,da_so (rule),lam_dep,3303,9.59,34431
+3_sau_ai,da_so (rule),giai_tri,3661,10.63,34431
+3_sau_ai,da_so (rule),gia_dinh,3282,9.53,34431
+3_sau_ai,da_so (rule),tinh_cam,3405,9.89,34431
+3_sau_ai,da_so (rule),xa_hoi,3326,9.66,34431
+3_sau_ai,da_so (rule),cuoc_song,3193,9.27,34431
+3_sau_ai,hoa_2_2 (sau_AI),hoc_tap,416,7.47,5569
+3_sau_ai,hoa_2_2 (sau_AI),cong_viec,549,9.86,5569
+3_sau_ai,hoa_2_2 (sau_AI),tai_chinh,400,7.18,5569
+3_sau_ai,hoa_2_2 (sau_AI),cong_nghe,395,7.09,5569
+3_sau_ai,hoa_2_2 (sau_AI),the_thao,312,5.6,5569
+3_sau_ai,hoa_2_2 (sau_AI),du_lich,452,8.12,5569
+3_sau_ai,hoa_2_2 (sau_AI),am_thuc,337,6.05,5569
+3_sau_ai,hoa_2_2 (sau_AI),mua_sam,587,10.54,5569
+3_sau_ai,hoa_2_2 (sau_AI),suc_khoe,506,9.09,5569
+3_sau_ai,hoa_2_2 (sau_AI),lam_dep,373,6.7,5569
+3_sau_ai,hoa_2_2 (sau_AI),giai_tri,414,7.43,5569
+3_sau_ai,hoa_2_2 (sau_AI),gia_dinh,661,11.87,5569
+3_sau_ai,hoa_2_2 (sau_AI),tinh_cam,360,6.46,5569
+3_sau_ai,hoa_2_2 (sau_AI),xa_hoi,579,10.4,5569
+3_sau_ai,hoa_2_2 (sau_AI),cuoc_song,725,13.02,5569
+3_sau_ai,hoa_2_2 (sau_AI),(khong_co_nhan),5,0.09,5569

@@ -4,7 +4,7 @@ Bộ dữ liệu hư cấu, tự biên soạn bằng tiếng Việt, dành cho d
 
 | Đợt | Bảng | Số hàng |
 |---|---|---:|
-| 1 | users | 40 |
+| 1 | users | 41 |
 | 1 | categories | 16 |
 | 1 | blogs | 400 |
 | 1 | blog_categories | 640 |
@@ -13,7 +13,7 @@ Bộ dữ liệu hư cấu, tự biên soạn bằng tiếng Việt, dành cho d
 | 3 | comment_likes | 200 |
 | 3 | blog_shares | 150 |
 
-350 bài public (87,5%), 50 bài private. Mỗi tài khoản có 4–18 bài; có bài ngắn, bài nhiều đoạn và hai chuỗi bình luận sâu 12 cấp. Private chỉ có tương tác của chính tác giả; share chỉ trỏ bài public. Lượt tương tác có phân bố lệch, nhiều bài không có like/share.
+350 bài public (87,5%), 50 bài private. Mỗi tài khoản trong 40 tài khoản đầu tiên có 4–18 bài trong bộ gốc. Bài của `demo41` được nạp bằng tùy chọn mở rộng. Bộ gốc có bài ngắn, bài nhiều đoạn và hai chuỗi bình luận sâu 12 cấp. Bài riêng tư chỉ có tương tác của chính tác giả. Share chỉ trỏ bài công khai. Lượt tương tác có phân bố lệch, nhiều bài không có like hoặc share.
 
 Đủ 16 nhãn của đặc tả phân loại đa nhãn: mã ML dùng `_`, slug CSDL đổi thành `-`, ví dụ `hoc_tap` → `hoc-tap`. Tất cả liên kết đều `MANUAL`, `confidence = NULL`; `blogs.category_mode = MANUAL`. Không thể hiện đây là kết quả model.
 
@@ -91,7 +91,7 @@ Nạp toàn bộ ba đợt:
 
 Mong đợi `seeded`, sau đó `verified`, phase 3 và số hàng như bảng trên. Lần `--apply` kế tiếp trả `already-seeded`, không tạo thêm hàng, không đổi hash hoặc ID thông báo. Mã thoát 0 là thành công; khác 0 thì dừng và đọc thông báo.
 
-40 tài khoản trong `users.csv` dùng username theo tên nhân vật như `minhkhoi`, `ngocan`, `hoaiphuong`, …, `vinhan`, cùng dùng `DEMO_USER_PASSWORD` khi nạp bằng `seed.py`. Hash Argon2id định dạng PHC, `m=19456 KiB, t=2, p=1`, salt riêng từng user; hash chỉ sinh khi nạp, không lưu vào CSV/Git. Đây là cơ chế theo đặc tả bảo mật hiện tại. CSV không chứa mật khẩu; nạp riêng user bằng SQL không tự tạo hash. Không seed lại để giả lập đăng nhập.
+40 tài khoản đầu tiên trong `users.csv` dùng username theo tên nhân vật như `minhkhoi`, `ngocan`, `hoaiphuong`, …, `vinhan`; tài khoản bổ sung giữ username `demo41`. Tất cả cùng dùng `DEMO_USER_PASSWORD`. Hash Argon2id định dạng PHC có tham số `m=19456 KiB, t=2, p=1` và salt riêng cho từng tài khoản. Runner sinh hash khi nạp, với cùng tham số như bộ mã hóa mật khẩu Spring Security. CSV chỉ chứa thông tin hồ sơ.
 
 ## 5. Ranh giới transaction và seed lại
 
@@ -122,7 +122,7 @@ Mỗi người có PostgreSQL riêng thì thực hiện bước 1–4 trên máy
 
 ## 7. Tạo lại CSV và kiểm tra
 
-### Thử hồ sơ tài khoản đầu tiên (`minhkhoi`) với 1.300 bài
+### Thử hồ sơ `minhkhoi` hoặc `demo41` với 1.300 bài
 
 Thêm `--extend-demo01` khi nạp cả ba đợt (giữ tên tham số cũ; tài khoản đầu tiên hiện là `minhkhoi`). Tùy chọn dùng được trên database demo trống đã migrate hoặc database đang chứa bộ seed nguyên bản. Với bộ seed nguyên bản, runner chỉ thêm 988 bài công khai và 296 bài riêng tư, đưa riêng tài khoản đầu tiên lên đúng 1.000 bài công khai và 300 bài riêng tư. Cả database có 1.684 bài. Các bài bổ sung là dữ liệu mô phỏng từ mẫu câu tiếng Việt để thử phân trang, không có ảnh, nhãn hoặc tương tác bổ sung.
 
@@ -132,6 +132,15 @@ Thêm `--extend-demo01` khi nạp cả ba đợt (giữ tên tham số cũ; tài
 ```
 
 Runner nạp trong cùng transaction và đối soát nội dung trước khi commit. Chạy lại không thêm bản ghi. Nếu dữ liệu demo đã bị sửa hoặc có thêm dữ liệu của nhóm, dùng database demo riêng mới.
+
+`demo41` nằm trong `users.csv`. Trên database còn đúng bộ seed 40 tài khoản cũ với username theo tên nhân vật, lệnh sau thêm tài khoản nếu thiếu và nạp 1.000 bài công khai, 300 bài riêng tư cho riêng `demo41`. Nếu tài khoản đầu tiên (`minhkhoi`) đã được mở rộng, các bài của tài khoản đó vẫn giữ nguyên.
+
+```powershell
+.\data\demo-seed\.venv\Scripts\python.exe data/demo-seed/seed.py --apply --extend-demo41 --env-file .env.demo-seed --target-database soulspace_demo
+.\data\demo-seed\.venv\Scripts\python.exe data/demo-seed/seed.py --verify --extend-demo41 --env-file .env.demo-seed --target-database soulspace_demo
+```
+
+Trên database mới, thêm cả `--extend-demo01 --extend-demo41` nếu cần 1.300 bài cho mỗi tài khoản. Khi cả hai bộ mở rộng đã nạp, database có 41 tài khoản và 2.984 bài.
 
 ### Tái tạo bộ CSV gốc
 

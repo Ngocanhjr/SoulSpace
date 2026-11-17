@@ -17,6 +17,8 @@ CREATE TEMP TABLE incoming_demo_users (
     updated_at TIMESTAMPTZ NOT NULL
 ) ON COMMIT DROP;
 \copy incoming_demo_users FROM '/tmp/demo-users.csv' WITH (FORMAT csv, HEADER true, ENCODING 'UTF8')
+-- The optional profile account must not change the original author mapping.
+DELETE FROM incoming_demo_users WHERE username = 'demo41';
 
 CREATE TEMP TABLE incoming_semantic_posts (
     source_id TEXT PRIMARY KEY,
